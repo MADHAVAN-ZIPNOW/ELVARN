@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pt
+*.pth
+*.ckpt
+.env
+.env.*
+backend/data/raw/
+backend/data/train.txt
+*.log
+.vscode/

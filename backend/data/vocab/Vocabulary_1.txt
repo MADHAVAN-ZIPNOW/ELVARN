@@ -1,0 +1,2721 @@
+corruption
+bribery
+bribe
+public servant
+public duty
+government servant
+undue advantage
+illegal gratification
+legal remuneration
+valuable thing
+demand
+acceptance
+receipt
+offer
+promise
+attempted acceptance
+corrupt practice
+criminal misconduct
+abuse of official position
+misuse of authority
+pecuniary advantage
+wrongful gain
+wrongful loss
+disproportionate assets
+illicit enrichment
+known sources of income
+unaccounted income
+unexplained income
+bribe giver
+bribe taker
+complainant
+accused
+co-accused
+informant
+victim
+public prosecutor
+special public prosecutor
+government advocate
+defence counsel
+investigating officer
+vigilance officer
+trap laying officer
+shadow witness
+decoy witness
+independent witness
+prosecution witness
+defence witness
+expert witness
+hostile witness
+approver
+DVAC
+Directorate of Vigilance and Anti-Corruption
+CBI
+ED
+Anti-Corruption Bureau
+complaint
+written complaint
+oral complaint
+allegation
+accusation
+imputation
+information
+source report
+source information
+preliminary inquiry
+preliminary enquiry
+discreet inquiry
+factual verification
+complaint verification
+source verification
+document verification
+FIR
+First Information Report
+crime number
+case diary
+general diary
+investigation
+registration of case
+cognizable offence
+non-cognizable offence
+trap case
+trap operation
+trap proceedings
+pre-trap proceedings
+post-trap proceedings
+trap mahazar
+mahazar
+observation mahazar
+seizure mahazar
+recovery mahazar
+tainted currency
+currency notes
+phenolphthalein
+sodium carbonate
+chemical test
+hand wash
+pocket wash
+recovery
+seizure
+search
+material object
+documentary evidence
+oral evidence
+electronic evidence
+digital evidence
+audio recording
+video recording
+telephone conversation
+call detail record
+mobile phone
+CCTV footage
+forensic report
+chemical analysis report
+scientific evidence
+expert opinion
+handwriting expert
+voice sample
+specimen signature
+specimen handwriting
+chain of custody
+sealed cover
+sample seal
+witness statement
+Section 161 statement
+Section 164 statement
+confession
+admission
+disclosure statement
+contradiction
+omission
+improvement
+corroboration
+credibility
+reliability
+admissibility
+relevance
+material evidence
+direct evidence
+circumstantial evidence
+presumption
+statutory presumption
+rebuttable presumption
+burden of proof
+standard of proof
+proof beyond reasonable doubt
+reasonable doubt
+benefit of doubt
+prima facie case
+prima facie evidence
+motive
+intention
+knowledge
+mens rea
+actus reus
+conspiracy
+criminal conspiracy
+abetment
+common intention
+common object
+overt act
+participation
+role attributed
+active involvement
+official act
+official function
+official favour
+public office
+competent authority
+sanctioning authority
+disciplinary authority
+appointing authority
+sanction for prosecution
+prosecution sanction
+sanction order
+valid sanction
+invalid sanction
+defective sanction
+prior approval
+prior permission
+prosecution approval
+charge sheet
+final report
+closure report
+police report
+investigation report
+supplementary charge sheet
+additional charge sheet
+accused list
+witness list
+document list
+cognizance
+process issuance
+summons
+warrant
+non-bailable warrant
+appearance
+surrender
+custody
+police custody
+judicial custody
+remand
+bail
+regular bail
+anticipatory bail
+interim bail
+bail bond
+surety
+Special Court
+Special Judge
+trial court
+subordinate court
+district court
+sessions court
+magistrate court
+High Court
+Supreme Court
+appellate court
+jurisdiction
+territorial jurisdiction
+subject-matter jurisdiction
+court competence
+criminal case
+criminal proceeding
+criminal trial
+charge
+framing of charge
+discharge
+discharge petition
+discharge application
+plea
+plea of guilty
+plea of not guilty
+prosecution evidence
+defence evidence
+examination-in-chief
+cross-examination
+re-examination
+witness examination
+witness recall
+court witness
+official witness
+interested witness
+independent testimony
+trustworthy witness
+unreliable witness
+material contradiction
+minor contradiction
+material omission
+minor omission
+witness credibility
+prosecution version
+defence version
+alternative defence
+false implication
+final argument
+oral argument
+written submission
+prosecution argument
+defence argument
+written argument
+legal submission
+court observation
+judicial finding
+finding of fact
+finding of law
+question of fact
+question of law
+mixed question of law and fact
+appreciation of evidence
+evaluation of evidence
+prosecution failure
+defence failure
+prosecution established
+prosecution failed
+charge proved
+charge not proved
+guilt established
+guilt not established
+judgment
+order
+final order
+interim order
+reasoned order
+speaking order
+operative portion
+conviction
+acquittal
+discharge
+guilty
+not guilty
+sentence
+imprisonment
+rigorous imprisonment
+simple imprisonment
+fine
+compensation
+probation
+suspension of sentence
+stay of conviction
+conviction upheld
+conviction set aside
+conviction reversed
+acquittal confirmed
+acquittal set aside
+criminal appeal
+appeal against conviction
+appeal against acquittal
+criminal revision
+revision petition
+review petition
+writ petition
+criminal writ petition
+special leave petition
+appeal allowed
+appeal dismissed
+petition allowed
+petition dismissed
+order confirmed
+order modified
+order quashed
+order set aside
+matter remanded
+case remanded
+fresh consideration
+de novo trial
+retrial
+finality of judgment
+pending appeal
+appeal pending
+case pending
+trial pending
+investigation pending
+conviction pending appeal
+acquittal pending appeal
+case closed
+proceedings terminated
+Prevention of Corruption Act
+Prevention of Corruption Act 1988
+Prevention of Corruption Amendment Act
+Section 2(c)
+Section 2(d)
+Section 3
+Section 4
+Section 7
+Section 7(a)
+Section 7(b)
+Section 8
+Section 9
+Section 10
+Section 11
+Section 12
+Section 13
+Section 13(1)(d)
+Section 13(2)
+Section 14
+Section 15
+Section 17
+Section 17A
+Section 18
+Section 19
+Section 20
+public servant under Section 2(c)
+undue advantage under Section 2(d)
+criminal misconduct under Section 13
+prior approval under Section 17A
+sanction under Section 19
+presumption under Section 20
+bribe-taking offence
+bribe-giving offence
+abetment of bribery
+corporate bribery
+illicit enrichment
+disproportionate property
+pecuniary resources
+property in possession
+property acquired
+property held
+income calculation
+asset calculation
+expenditure calculation
+check period
+period of check
+known income
+known source
+unknown source
+legitimate income
+lawful income
+illegal income
+salary income
+business income
+agricultural income
+rental income
+interest income
+dividend income
+capital gain
+pension income
+household expenditure
+family expenditure
+living expenses
+medical expenses
+education expenses
+marriage expenses
+travel expenses
+house construction
+land purchase
+property purchase
+immovable property
+movable property
+residential property
+commercial property
+agricultural property
+bank account
+savings account
+current account
+fixed deposit
+loan account
+cash deposit
+cash withdrawal
+bank statement
+passbook
+ledger
+account book
+voucher
+invoice
+receipt
+bill
+tax return
+income tax return
+property statement
+asset declaration
+salary certificate
+valuation report
+market value
+guideline value
+fair market value
+registered value
+sale deed
+gift deed
+settlement deed
+partition deed
+mortgage deed
+lease deed
+power of attorney
+encumbrance certificate
+patta
+chitta
+adangal
+revenue record
+survey number
+subdivision number
+registration document
+sub-registrar
+registrar office
+land register
+property register
+benami property
+shell company
+front company
+company director
+shareholder
+beneficial owner
+corporate record
+company account
+tender
+government tender
+public procurement
+contract
+work order
+purchase order
+quotation
+bid
+bidder
+lowest bidder
+tender process
+technical bid
+financial bid
+comparative statement
+tender committee
+evaluation committee
+selection committee
+contractor
+subcontractor
+supplier
+vendor
+government contract
+procurement rule
+tender condition
+technical qualification
+financial qualification
+eligibility condition
+disqualification
+bid manipulation
+tender manipulation
+tender favouritism
+contract favouritism
+collusion
+cartel
+kickback
+commission
+facilitation payment
+influence peddling
+nepotism
+favouritism
+conflict of interest
+administrative discretion
+official favour
+licence
+permit
+approval
+clearance
+certificate
+no objection certificate
+NOC
+building approval
+planning permission
+layout approval
+occupation certificate
+completion certificate
+tax receipt
+property tax
+stamp duty
+registration fee
+guideline price
+government order
+GO
+notification
+circular
+memorandum
+office memorandum
+proceedings
+administrative order
+sanction order
+file noting
+noting file
+movement of file
+approval note
+delegation of power
+financial rules
+treasury rules
+accounting rules
+procurement rules
+service regulations
+statutory rule
+executive instruction
+government policy
+policy decision
+administrative decision
+discretionary power
+mandatory requirement
+directory requirement
+substantial compliance
+strict compliance
+non-compliance
+violation
+breach
+contravention
+irregularity
+illegality
+invalidity
+void
+voidable
+ultra vires
+within jurisdiction
+without jurisdiction
+excess of jurisdiction
+jurisdictional error
+error of law
+error of fact
+error apparent
+perversity
+non-application of mind
+mechanical order
+arbitrary order
+unreasonable order
+disproportionate punishment
+natural justice violation
+procedural irregularity
+material irregularity
+fatal irregularity
+curable defect
+prejudice
+failure of justice
+miscarriage of justice
+fair trial
+speedy trial
+open court
+in camera proceedings
+confidential document
+sealed document
+privileged document
+public document
+private document
+original document
+certified copy
+attested copy
+true copy
+photocopy
+secondary evidence
+primary evidence
+best evidence
+production of documents
+summoning records
+calling for records
+record of proceedings
+lower court record
+trial record
+deposition record
+examination record
+accused statement
+explanation
+denial
+suggestion
+put to witness
+cross-examined
+cross-examination completed
+re-examined
+witness turned hostile
+prosecution witness declared hostile
+contradiction proved
+contradiction not proved
+omission proved
+omission not proved
+improvement in testimony
+consistent testimony
+inconsistent testimony
+interested witness
+chance witness
+stock witness
+related witness
+partisan witness
+natural witness
+competent witness
+child witness
+expert witness
+delay in complaint
+delay in lodging FIR
+prompt complaint
+belated complaint
+omnibus allegation
+vague allegation
+specific allegation
+general allegation
+unsubstantiated allegation
+false allegation
+malicious prosecution
+malafide prosecution
+selective prosecution
+vindictive prosecution
+abuse of process
+process of law
+ends of justice
+interest of justice
+public interest
+larger public interest
+public confidence
+purity of administration
+integrity in public life
+rule of law
+constitutional morality
+accountability
+transparency
+good governance
+clean administration
+institutional integrity
+public trust
+democratic accountability
+anti-corruption
+corruption prevention
+corruption investigation
+corruption prosecution
+corruption conviction
+corruption acquittal
+corruption appeal
+corruption case
+bribery case
+trap case
+disproportionate assets case
+tender corruption
+procurement corruption
+recruitment corruption
+land corruption
+revenue corruption
+police corruption
+municipal corruption
+political corruption
+administrative corruption
+electoral corruption
+tax corruption
+licensing corruption
+permit corruption
+contract corruption
+welfare scheme corruption
+public distribution corruption
+education department corruption
+health department corruption
+transport department corruption
+electricity department corruption
+mining corruption
+environmental corruption
+illegal mining
+illegal quarrying
+land grabbing
+encroachment
+forged patta
+fake document
+fabricated document
+false document
+manipulated record
+tampered record
+altered record
+missing file
+destroyed record
+withheld document
+suppressed material
+suppression of evidence
+tampering with evidence
+fabrication of evidence
+false evidence
+perjury
+obstruction of justice
+interference with investigation
+witness intimidation
+witness protection
+threatened witness
+compromise
+settlement
+withdrawal of complaint
+hostile compromise
+compounding
+compoundable offence
+non-compoundable offence
+cognizable offence
+non-cognizable offence
+bailable offence
+non-bailable offence
+scheduled offence
+predicate offence
+economic offence
+white-collar crime
+organised crime
+serious offence
+minor offence
+continuing offence
+completed offence
+attempted offence
+commission of offence
+place of trial
+date of occurrence
+place of occurrence
+time of occurrence
+scene of occurrence
+date of arrest
+date of release
+period of custody
+period undergone
+sentence already undergone
+custodial interrogation
+police interrogation
+investigative custody
+medical examination
+arrest memo
+personal search memo
+bail bond
+solvent surety
+bond conditions
+travel restriction
+passport surrender
+attendance condition
+non-tampering condition
+cooperation with investigation
+join investigation
+release on bail
+bail granted
+bail rejected
+bail cancelled
+anticipatory bail granted
+anticipatory bail rejected
+regular bail granted
+regular bail rejected
+interim protection
+interim order
+final hearing
+admission hearing
+preliminary hearing
+oral hearing
+written submission
+written argument
+case law
+precedent
+citation
+reported judgment
+unreported judgment
+landmark judgment
+leading judgment
+binding decision
+coordinate bench
+larger bench
+referred matter
+reference order
+question of law
+substantial question of law
+question of fact
+mixed question of law and fact
+statutory interpretation
+constitutional interpretation
+legislative intent
+object and purpose
+in accordance with law
+in the interest of justice
+for the reasons stated
+for the foregoing reasons
+this court is of the view
+this court finds
+this court holds
+this court observes
+this court concludes
+the prosecution has failed
+the prosecution has proved
+the prosecution established
+the accused is entitled
+the accused is not entitled
+the appeal is allowed
+the appeal is dismissed
+the petition is allowed
+the petition is dismissed
+the writ petition is allowed
+the writ petition is dismissed
+the order is set aside
+the order is confirmed
+the conviction is upheld
+the conviction is set aside
+the sentence is modified
+the matter is remanded
+the case is restored
+the accused is acquitted
+the accused is convicted
+the accused is discharged
+the accused is found guilty
+the accused is found not guilty
+benefit of doubt is extended
+reasonable doubt exists
+demand and acceptance are proved
+demand is not proved
+acceptance is not proved
+recovery is proved
+recovery is not sufficient
+mere recovery is insufficient
+mere recovery does not establish guilt
+demand is an essential ingredient
+acceptance is an essential ingredient
+corroboration is required
+independent corroboration
+presumption is rebutted
+presumption is not rebutted
+sanction is valid
+sanction is invalid
+sanction is defective
+sanction is not required
+investigation is defective
+investigation is fair
+investigation is unfair
+investigation is incomplete
+trial is vitiated
+trial is not vitiated
+prejudice is caused
+no prejudice is caused
+failure of justice is caused
+no failure of justice
+Tamil Nadu
+State of Tamil Nadu
+Government of Tamil Nadu
+Madras High Court
+Madurai Bench
+Supreme Court of India
+Chennai
+Madurai
+Coimbatore
+Salem
+Tiruchirappalli
+Tirunelveli
+Thoothukudi
+Erode
+Vellore
+Thanjavur
+Dindigul
+Kanyakumari
+Virudhunagar
+Ramanathapuram
+Sivaganga
+Pudukkottai
+Namakkal
+Dharmapuri
+Krishnagiri
+Cuddalore
+Villupuram
+Kallakurichi
+Tiruvannamalai
+Kancheepuram
+Tiruvallur
+Chengalpattu
+The Nilgiris
+Alandur
+DVAC headquarters
+DVAC detachment
+Deputy Superintendent of Police
+Inspector of Police
+Superintendent of Police
+Director of Vigilance
+Deputy Director
+Joint Director
+Additional Director
+Director General of Police
+district detachment
+vigilance detachment
+police officer
+public official
+civil servant
+administrative officer
+revenue officer
+district collector
+revenue divisional officer
+tahsildar
+deputy tahsildar
+village administrative officer
+assistant engineer
+executive engineer
+superintending engineer
+chief engineer
+commercial tax officer
+motor vehicle inspector
+police inspector
+deputy superintendent of police
+superintendent of police
+commissioner
+additional commissioner
+secretary
+under secretary
+principal secretary
+chief secretary
+minister
+member of legislative assembly
+member of parliament
+elected representative
+local body representative
+municipal commissioner
+corporation commissioner
+panchayat president
+block development officer
+district revenue officer
+registration officer
+sub-registrar
+transport officer
+electricity board officer
+health officer
+education officer
+welfare officer
+cooperative society officer
+housing board officer
+public works officer
+revenue department
+registration department
+commercial taxes department
+transport department
+police department
+rural development department
+public works department
+electricity department
+health department
+education department
+municipal administration department
+water supply department
+cooperation department
+civil supplies department
+Tamil Nadu Police
+Tamil Nadu Public Service Commission
+Tamil Nadu Uniformed Services Recruitment Board
+Tamil Nadu Electricity Board
+Tamil Nadu Generation and Distribution Corporation
+Tamil Nadu Civil Supplies Corporation
+Tamil Nadu Medical Services Corporation
+Tamil Nadu State Marketing Corporation
+Greater Chennai Corporation
+Chennai Metropolitan Development Authority
+Rajapalayam Taluk Cooperative Housing Society
+Mogappair Eri Scheme
+government scheme
+public project
+public works
+water supply project
+municipal project
+housing loan
+cooperative society
+government office
+district office
+taluk office
+collectorate
+secretariat
+police station
+vigilance office
+special court complex
+court registry
+filing counter
+cause list
+case number
+Crl.A.
+Crl.R.C.
+Crl.O.P.
+W.P.
+W.A.
+S.L.P.
+Suo motu
+criminal appeal
+criminal original petition
+criminal revision case
+writ appeal
+writ petition
+special leave petition
+review application
+interlocutory application
+miscellaneous petition
+connected petition
+common order
+separate order
+bench
+single bench
+division bench
+learned judge
+presiding judge
+prosecuting counsel
+defence counsel
+amicus curiae
+petitioner
+respondent
+appellant
+revision petitioner
+revision respondent
+applicant
+opposite party
+State respondent
+first accused
+second accused
+third accused
+A1
+A2
+A3
+A4
+A5
+co-conspirator
+approver witness
+complainant witness
+official witness
+independent witness
+document witness
+recovery witness
+sanction witness
+investigation witness
+medical witness
+forensic witness
+expert witness
+court witness
+case property
+property register
+material exhibit
+prosecution exhibit
+defence exhibit
+court exhibit
+marked document
+unmarked document
+documentary record
+original record
+certified record
+case file
+lower court file
+trial court record
+deposition
+deposition sheet
+deposition transcript
+chief deposition
+cross deposition
+re-examination record
+examination record
+evidence affidavit
+counter affidavit
+reply affidavit
+written statement
+objection statement
+statement of objections
+counter statement
+legal notice
+show cause notice
+summons notice
+arrest notice
+appearance notice
+section notice
+charge memo
+departmental charge
+disciplinary charge
+misconduct charge
+departmental inquiry
+disciplinary inquiry
+vigilance inquiry
+preliminary report
+inquiry report
+enquiry officer
+disciplinary authority
+inquiry finding
+departmental punishment
+suspension from service
+dismissal from service
+removal from service
+compulsory retirement
+censure
+reprimand
+withholding increment
+recovery from salary
+service record
+conduct rules
+service rules
+disciplinary proceedings
+criminal proceedings
+parallel proceedings
+departmental proceedings
+administrative action
+criminal liability
+departmental liability
+vicarious liability
+individual liability
+joint liability
+constructive liability
+strict liability
+civil liability
+constitutional liability
+mens rea requirement
+actus reus requirement
+essential ingredient
+ingredient of offence
+statutory requirement
+mandatory condition
+jurisdictional requirement
+procedural safeguard
+legal requirement
+compliance
+non-compliance
+substantial compliance
+strict compliance
+curable defect
+incurable defect
+fatal defect
+technical defect
+material defect
+legal infirmity
+procedural infirmity
+jurisdictional infirmity
+legal error
+factual error
+error apparent
+error of law
+error of fact
+misdirection
+non-direction
+wrong approach
+perverse finding
+perverse decision
+mechanical exercise
+application of mind
+non-application of mind
+independent application of mind
+reasoned decision
+speaking decision
+unreasoned order
+non-speaking order
+arbitrary decision
+unreasonable decision
+discriminatory decision
+mala fide
+malafide
+bona fide
+bonafide
+bad faith
+good faith
+natural justice
+fair hearing
+audi alteram partem
+nemo judex in causa sua
+procedural fairness
+constitutional fairness
+fair investigation
+fair trial
+speedy trial
+open justice
+public interest
+interest of justice
+ends of justice
+miscarriage of justice
+failure of justice
+prejudice
+substantial prejudice
+actual prejudice
+no prejudice
+public confidence
+institutional integrity
+purity of administration
+clean governance
+transparent administration
+accountable government
+rule of law
+constitutional morality
+public trust
+democratic accountability
+official accountability
+administrative transparency
+anti-corruption measure
+vigilance mechanism
+preventive vigilance
+punitive vigilance
+surveillance
+secret surveillance
+discreet surveillance
+source development
+intelligence input
+confidential information
+secret information
+credible information
+reliable information
+anonymous complaint
+pseudonymous complaint
+named complaint
+written representation
+oral representation
+petition submission
+online complaint
+email complaint
+postal complaint
+complaint acknowledgement
+complaint receipt
+complaint number
+complaint register
+complaint disposal
+complaint closure
+complaint transfer
+complaint forwarding
+complaint jurisdiction
+complaint verification report
+verification officer
+verification note
+verification result
+verification finding
+prima facie material
+prima facie satisfaction
+sufficient material
+insufficient material
+credible material
+incriminating material
+exculpatory material
+adverse material
+relevant material
+material collected
+record collected
+document collected
+witness examined
+statement recorded
+statement not recorded
+recording of statement
+verification completed
+verification pending
+inquiry completed
+inquiry pending
+FIR registered
+FIR not registered
+case registered
+case not registered
+crime registered
+crime not registered
+investigation commenced
+investigation completed
+investigation pending
+investigation transferred
+investigation monitored
+investigation supervised
+investigation closed
+final report filed
+charge sheet filed
+closure report filed
+protest petition
+further investigation
+reinvestigation
+fresh investigation
+supplementary investigation
+independent investigation
+fair investigation
+biased investigation
+defective investigation
+incomplete investigation
+unfair investigation
+delayed investigation
+investigation officer report
+case diary entry
+case diary inspection
+case diary production
+case diary contradiction
+search warrant
+search authorization
+search memo
+personal search
+house search
+office search
+vehicle search
+bank search
+digital search
+seizure list
+seizure record
+seized currency
+seized document
+seized device
+seized mobile phone
+seized computer
+seized hard disk
+seized pen drive
+seized register
+seized file
+seized ledger
+seized voucher
+seized receipt
+seized property
+property identification
+sample collection
+sample forwarding
+sample preservation
+sample seal
+seal impression
+sealed packet
+sealed parcel
+laboratory forwarding
+forensic laboratory
+FSL report
+chemical examiner
+chemical examination
+scientific officer
+scientific report
+expert report
+expert evidence
+expert testimony
+opinion evidence
+technical evidence
+digital forensic evidence
+mobile forensic report
+call recording
+voice recording
+video recording
+CCTV recording
+photograph evidence
+image evidence
+metadata
+email record
+text message
+SMS record
+WhatsApp message
+chat record
+electronic record
+computer output
+electronic certificate
+Section 65B certificate
+certificate of authenticity
+hash value
+digital signature
+server record
+cloud record
+call data
+location data
+tower location
+subscriber details
+bank transaction
+online transfer
+UPI transaction
+payment record
+transaction statement
+cash transaction
+cash recovery
+currency recovery
+marked currency
+unmarked currency
+serial number
+currency serial number
+pre-trap note
+pre-trap memorandum
+demonstration
+chemical demonstration
+trap signal
+predetermined signal
+transaction signal
+entry signal
+exit signal
+trap location
+trap vehicle
+trap participant
+trap witness
+trap officer
+trap team
+trap preparation
+trap execution
+trap failure
+trap success
+trap interruption
+demand conversation
+acceptance conversation
+bribe amount
+bribe demand
+bribe offer
+bribe payment
+bribe receipt
+bribe recovery
+bribe amount recovered
+amount demanded
+amount accepted
+amount paid
+amount recovered
+money trail
+financial trail
+transaction trail
+proceeds
+corrupt proceeds
+illegal benefit
+undue benefit
+unlawful benefit
+personal benefit
+third-party benefit
+benefit to another
+financial benefit
+monetary benefit
+valuable benefit
+pecuniary benefit
+official favour sought
+official favour granted
+official favour denied
+file movement
+file processing
+file clearance
+file approval
+file delay
+file withholding
+file disposal
+application processing
+certificate processing
+licence processing
+permit processing
+registration processing
+tax assessment
+tax demand
+tax refund
+land mutation
+patta transfer
+survey approval
+building permission
+planning approval
+contract award
+tender award
+work order issue
+bill clearance
+payment release
+salary release
+pension release
+loan sanction
+housing loan
+scholarship approval
+welfare benefit
+ration card
+income certificate
+community certificate
+legal heir certificate
+birth certificate
+death certificate
+marriage certificate
+transfer order
+posting order
+promotion order
+appointment order
+recruitment process
+selection process
+interview process
+examination process
+mark manipulation
+answer-sheet manipulation
+recruitment irregularity
+appointment irregularity
+transfer irregularity
+posting irregularity
+promotion irregularity
+tender irregularity
+procurement irregularity
+contract irregularity
+financial irregularity
+administrative irregularity
+record manipulation
+record alteration
+record fabrication
+record destruction
+file tampering
+document tampering
+evidence tampering
+witness influence
+witness threat
+witness intimidation
+witness protection
+obstruction
+obstruction of investigation
+obstruction of justice
+interference
+interference with evidence
+interference with witness
+interference with public duty
+criminal intimidation
+threat
+coercion
+pressure
+influence
+political influence
+official influence
+recommendation
+favouritism
+nepotism
+collusion
+cartel
+conflict of interest
+private interest
+public interest conflict
+undisclosed interest
+beneficial interest
+related party
+family member
+associate
+intermediary
+middleman
+agent
+broker
+contractor
+supplier
+consultant
+facilitator
+front person
+dummy bidder
+dummy company
+shell company
+benami holder
+nominee
+ultimate beneficiary
+money laundering
+proceeds of crime
+predicate offence
+attachment
+property attachment
+provisional attachment
+confiscation
+forfeiture
+seizure of property
+freezing of account
+bank account freeze
+asset tracing
+asset identification
+asset valuation
+asset disclosure
+property disclosure
+income disclosure
+liability disclosure
+wealth statement
+asset statement
+property statement
+expense statement
+income statement
+balance sheet
+annual return
+tax assessment record
+income tax record
+bank record
+loan record
+insurance record
+investment record
+shareholding record
+company incorporation record
+land registration record
+property valuation
+valuation certificate
+valuer report
+government valuer
+private valuer
+market assessment
+fair market price
+guideline market value
+purchase consideration
+sale consideration
+under-valuation
+over-valuation
+undervaluation
+overvaluation
+benami transaction
+cash component
+unaccounted cash
+black money
+white money
+layering
+placement
+integration
+hawala
+foreign remittance
+domestic remittance
+cash deposit pattern
+suspicious transaction
+unusual transaction
+financial intelligence
+transaction monitoring
+source of funds
+use of funds
+end use
+fund diversion
+misappropriation
+embezzlement
+criminal breach of trust
+cheating
+forgery
+fabrication
+using forged document
+falsification of accounts
+false entry
+bogus entry
+fake invoice
+false bill
+inflated bill
+duplicate bill
+ghost employee
+ghost beneficiary
+fake beneficiary
+duplicate beneficiary
+duplicate payment
+excess payment
+wrongful payment
+unauthorised payment
+illegal payment
+misappropriation of funds
+diversion of funds
+public money
+government money
+public revenue
+government revenue
+tax revenue
+grant money
+scheme funds
+project funds
+welfare funds
+development funds
+local body funds
+municipal funds
+panchayat funds
+departmental funds
+treasury funds
+contingency funds
+public exchequer
+loss to government
+loss to public exchequer
+financial loss
+revenue loss
+pecuniary loss
+wrongful loss caused
+wrongful gain obtained
+gain to accused
+gain to third party
+benefit to contractor
+benefit to relative
+benefit to company
+official misconduct
+service misconduct
+disciplinary misconduct
+dereliction of duty
+failure of duty
+neglect of duty
+wilful neglect
+wilful disobedience
+insubordination
+unauthorised absence
+false certification
+false verification
+false recommendation
+illegal recommendation
+unauthorised recommendation
+abuse of discretion
+arbitrary discretion
+discretionary abuse
+official negligence
+gross negligence
+recklessness
+wilful misconduct
+dishonest intention
+corrupt intention
+criminal intention
+knowledge of illegality
+mens rea proved
+mens rea not proved
+actus reus proved
+actus reus not proved
+common intention proved
+common intention not proved
+conspiracy proved
+conspiracy not proved
+abetment proved
+abetment not proved
+participation proved
+participation not proved
+role established
+role not established
+identity established
+identity not established
+presence established
+presence not established
+motive established
+motive not established
+demand established
+demand not established
+acceptance established
+acceptance not established
+recovery established
+recovery not established
+possession established
+possession not established
+link evidence
+connecting evidence
+circumstantial link
+chain of circumstances
+complete chain
+broken chain
+missing link
+incriminating circumstance
+explanation of accused
+false explanation
+plausible explanation
+reasonable explanation
+alternative explanation
+defence explanation
+alibi
+mistaken identity
+false implication
+political rivalry
+personal enmity
+civil dispute
+prior enmity
+delay in complaint
+delay in FIR
+prompt FIR
+belated FIR
+improvement in FIR
+contradictory FIR
+omnibus allegation
+vague allegation
+specific allegation
+general allegation
+consistent allegation
+inconsistent allegation
+substantiated allegation
+unsubstantiated allegation
+proved allegation
+unproved allegation
+disproved allegation
+false allegation
+frivolous complaint
+vexatious complaint
+malicious complaint
+motivated complaint
+anonymous complaint
+confidential complaint
+complaint withdrawal
+complaint settlement
+compromise petition
+settlement deed
+undertaking
+assurance
+undertaking to court
+compliance affidavit
+status report
+progress report
+action taken report
+compliance report
+monitoring report
+periodic report
+court direction
+court order
+court notice
+notice to respondent
+notice to accused
+notice to State
+notice to DVAC
+counter filed
+reply filed
+objection filed
+written response
+oral response
+hearing
+final hearing
+interim hearing
+admission hearing
+preliminary hearing
+mentioning
+listing
+adjournment
+short adjournment
+long adjournment
+case posted
+case reserved
+order reserved
+judgment reserved
+judgment pronounced
+order pronounced
+open court
+in camera
+sealed proceedings
+confidential proceedings
+interlocutory order
+interim protection
+interim stay
+stay order
+status quo
+restraining order
+direction
+mandamus
+certiorari
+prohibition
+habeas corpus
+quo warranto
+constitutional remedy
+writ remedy
+judicial review
+judicial supervision
+suo motu
+public interest litigation
+locus standi
+maintainability
+cause of action
+cause title
+prayer
+relief
+grounds
+averments
+pleadings
+petition
+application
+affidavit
+counter-affidavit
+reply affidavit
+rejoinder
+written statement
+statement of objections
+legal notice
+statutory notice
+limitation
+delay
+condonation of delay
+delay petition
+sufficient cause
+bona fide explanation
+maintainable petition
+non-maintainable petition
+alternative remedy
+effective remedy
+exhaustion of remedy
+locus
+jurisdictional objection
+territorial objection
+pecuniary objection
+procedural objection
+technical objection
+preliminary objection
+legal objection
+constitutional objection
+statutory objection
+merits
+demerits
+prima facie satisfaction
+balance of convenience
+irreparable injury
+public interest test
+equitable relief
+discretionary relief
+interim relief
+final relief
+declaration
+quashing
+setting aside
+modification
+confirmation
+restoration
+remand
+release
+discharge
+acquittal
+conviction
+sentence
+punishment
+fine
+compensation
+victim compensation
+restitution
+forfeiture
+confiscation
+costs
+litigation costs
+default sentence
+concurrent sentence
+consecutive sentence
+substantive sentence
+sentence reduction
+sentence enhancement
+sentence modification
+sentence suspension
+sentence remission
+parole
+furlough
+custody period
+period undergone
+set-off
+benefit of set-off
+probation of offenders
+admonition
+warning
+release on bond
+good conduct bond
+surety bond
+personal bond
+bail condition
+attendance condition
+travel condition
+passport condition
+non-tampering condition
+cooperation condition
+investigation cooperation
+appearance condition
+bail cancellation
+bail rejection
+bail grant
+anticipatory protection
+interim protection
+regular bail
+default bail
+statutory bail
+medical bail
+transit bail
+parity bail
+custodial interrogation
+police remand
+judicial remand
+remand extension
+production warrant
+prisoner production
+arrest
+lawful arrest
+illegal arrest
+arrest memo
+grounds of arrest
+right to counsel
+right to silence
+right against self-incrimination
+legal aid
+free legal aid
+defence representation
+effective representation
+fair trial right
+constitutional safeguard
+Article 14
+Article 19
+Article 20
+Article 21
+Article 22
+Article 32
+Article 136
+Article 226
+Article 227
+CrPC
+Code of Criminal Procedure
+BNSS
+IPC
+Indian Penal Code
+BNS
+Bharatiya Nyaya Sanhita
+Indian Evidence Act
+Evidence Act
+Bharatiya Sakshya Adhiniyam
+BSA
+Constitution of India
+Lokpal and Lokayuktas Act
+Money Laundering Act
+PMLA
+Companies Act
+Income Tax Act
+Benami Transactions Act
+Representation of the People Act
+General Clauses Act
+Limitation Act
+Tamil Nadu Government Servants Conduct Rules
+All India Services Conduct Rules
+Central Civil Services Conduct Rules
+financial code
+treasury code
+accounts code
+procurement code
+service code
+conduct code
+vigilance manual
+investigation manual
+standing order
+office procedure
+government instruction
+administrative circular
+departmental circular
+government notification
+gazette notification
+statutory notification
+delegation order
+appointment notification
+transfer notification
+posting notification
+sanction notification
+prosecution notification
+special judge notification
+court designation
+case allocation
+territorial allocation
+district allocation
+administrative approval
+technical sanction
+financial sanction
+expenditure sanction
+budget approval
+fund release
+grant release
+payment approval
+bill approval
+invoice approval
+work completion certificate
+measurement book
+running account bill
+final bill
+completion certificate
+quality certificate
+inspection certificate
+stock register
+measurement record
+work register
+attendance register
+muster roll
+log book
+vehicle log book
+movement register
+dispatch register
+inward register
+outward register
+file register
+cash book
+cheque register
+voucher register
+bill register
+receipt register
+issue register
+stock register
+dead stock register
+asset register
+property register
+service register
+attendance register
+leave register
+pay register
+salary register
+pension register
+loan register
+beneficiary register
+ration register
+tax register
+assessment register
+demand register
+collection register
+arrear register
+land register
+patta register
+encumbrance register
+birth register
+death register
+marriage register
+school register
+admission register
+mark register
+answer sheet
+recruitment register
+selection register
+seniority register
+promotion register
+transfer register
+posting register
+disciplinary register
+vigilance register
+complaint register
+FIR register
+crime register
+case property register
+malkhana register
+court deposit register
+dispatch record
+postal record
+acknowledgement card
+receipt acknowledgement
+email acknowledgement
+digital acknowledgement
+electronic signature
+digital signature
+biometric record
+attendance data
+access log
+server log
+audit trail
+system log
+database record
+database entry
+user account
+login record
+password record
+IP address
+location record
+GPS data
+mobile tower
+subscriber identity
+call log
+message log
+chat history
+email header
+email body
+attachment
+digital file
+scanned document
+PDF record
+spreadsheet
+database export
+printout
+computer output
+electronic certificate
+certificate under Section 65B
+certificate under BSA
+authenticity
+integrity
+tamper proof
+hash
+hash value
+digital hash
+forensic image
+mirror image
+backup copy
+original device
+clone device
+seized device
+device password
+encryption
+decryption
+password disclosure
+data extraction
+data recovery
+deleted data
+metadata extraction
+forensic imaging
+chain of possession
+chain of custody
+sample integrity
+seal integrity
+laboratory seal
+control sample
+specimen sample
+comparison sample
+test sample
+chemical sample
+voice sample
+handwriting sample
+fingerprint sample
+DNA sample
+medical sample
+expert examination
+laboratory examination
+scientific examination
+chemical examination
+forensic examination
+technical examination
+site inspection
+spot inspection
+field inspection
+official inspection
+surprise inspection
+vigilance inspection
+departmental inspection
+audit inspection
+internal audit
+external audit
+special audit
+social audit
+performance audit
+financial audit
+compliance audit
+audit objection
+audit report
+audit finding
+audit para
+irregular expenditure
+unauthorised expenditure
+excess expenditure
+avoidable expenditure
+wasteful expenditure
+loss assessment
+recovery assessment
+financial liability
+personal liability
+government liability
+departmental liability
+audit recovery
+surcharge
+surcharge proceedings
+recovery certificate
+revenue recovery
+attachment proceedings
+confiscation proceedings
+forfeiture proceedings
+property identification
+property tracing
+asset tracing
+asset attachment
+bank attachment
+land attachment
+vehicle attachment
+property release
+property restoration
+custody of property
+interim custody
+final custody
+superdari
+release of property
+return of property
+destruction of property
+disposal of property
+case exhibit
+exhibit number
+marking of exhibit
+objection to exhibit
+exhibit admitted
+exhibit rejected
+exhibit identified
+document proved
+document not proved
+signature proved
+signature not proved
+execution proved
+execution not proved
+contents proved
+contents not proved
+secondary evidence permitted
+secondary evidence rejected
+primary evidence produced
+best evidence rule
+electronic record admitted
+electronic record rejected
+expert opinion accepted
+expert opinion rejected
+witness statement accepted
+witness statement rejected
+testimony consistent
+testimony inconsistent
+testimony corroborated
+testimony uncorroborated
+testimony reliable
+testimony unreliable
+testimony natural
+testimony interested
+testimony official
+testimony independent
+testimony trustworthy
+testimony doubtful
+witness present
+witness absent
+witness summons
+witness warrant
+witness recalled
+witness discharged
+witness examined
+witness cross-examined
+witness re-examined
+witness declared hostile
+hostile witness permission
+leading question
+suggestive question
+irrelevant question
+inadmissible question
+objection sustained
+objection overruled
+question disallowed
+answer struck off
+statement marked
+contradiction confronted
+contradiction proved
+contradiction not proved
+omission confronted
+omission proved
+omission not proved
+prior statement
+previous statement
+earlier statement
+subsequent statement
+improvement in testimony
+inconsistency
+variance
+material variance
+minor variance
+core prosecution case
+foundational fact
+essential fact
+relevant fact
+fact in issue
+fact admitted
+fact denied
+fact proved
+fact disproved
+fact not proved
+burden shifted
+burden discharged
+burden not discharged
+presumption raised
+presumption rebutted
+presumption unrebutted
+inference drawn
+inference not available
+adverse inference
+reasonable inference
+unreasonable inference
+logical inference
+legal inference
+factual inference
+circumstantial chain
+complete chain of circumstances
+missing link
+last seen
+conduct of accused
+post-occurrence conduct
+pre-occurrence conduct
+conscious possession
+exclusive possession
+joint possession
+constructive possession
+knowledge inferred
+intention inferred
+motive inferred
+participation inferred
+common design
+meeting of minds
+agreement
+concerted action
+prior meeting
+subsequent conduct
+overt act
+specific overt act
+role specific
+role general
+role attributed
+role not attributed
+individual act
+collective act
+joint act
+common act
+illegal omission
+criminal omission
+commission
+omission
+attempt
+preparation
+abetment
+instigation
+aid
+assistance
+harbouring
+concealment
+conspiracy agreement
+criminal agreement
+unlawful agreement
+object of conspiracy
+result of conspiracy
+beneficiary
+co-beneficiary
+recipient
+intermediary
+messenger
+carrier
+custodian
+handler
+facilitator
+middleman
+agent
+broker
+contractor
+subcontractor
+supplier
+vendor
+consultant
+employee
+officer
+supervisor
+senior officer
+junior officer
+subordinate officer
+superior officer
+reporting officer
+sanctioning officer
+approving officer
+certifying officer
+verifying officer
+recommending officer
+processing officer
+dealing assistant
+section officer
+head of office
+drawing officer
+disbursing officer
+treasury officer
+accounts officer
+audit officer
+vigilance officer
+law officer
+investigation officer
+prosecution officer
+court officer
+registry officer
+ministerial staff
+clerical staff
+field staff
+technical staff
+contract staff
+temporary employee
+permanent employee
+retired employee
+former official
+serving official
+elected official
+political executive
+administrative executive
+local authority
+municipal authority
+panchayat authority
+statutory authority
+government corporation
+public sector undertaking
+cooperative society
+board
+commission
+department
+directorate
+secretariat
+collectorate
+taluk office
+revenue division
+block office
+village office
+municipal office
+corporation office
+police headquarters
+vigilance headquarters
+special court
+trial court
+appellate court
+constitutional court
+subordinate judiciary
+High Court registry
+Supreme Court registry
+case filing
+case numbering
+registration number
+diary number
+filing number
+old number
+new number
+connected case
+companion case
+lead case
+main case
+tagged case
+batch case
+common judgment
+separate judgment
+split judgment
+reserved judgment
+pronounced judgment
+certified judgment
+authenticated copy
+certified copy
+free copy
+true copy
+typed set
+paper book
+appeal paper book
+trial bundle
+document bundle
+compilation
+index
+pagination
+annexure
+schedule
+appendix
+exhibit list
+witness list
+synopsis
+chronology
+list of dates
+brief facts
+case history
+procedural history
+cause title
+prayer clause
+grounds of appeal
+substantial question
+question framed
+issue framed
+issue decided
+relief sought
+relief granted
+relief refused
+partial relief
+alternative relief
+declaration sought
+prohibition sought
+mandamus sought
+certiorari sought
+quashing sought
+stay sought
+interim direction
+final direction
+compliance direction
+monitoring direction
+time-bound direction
+status report direction
+investigation direction
+FIR direction
+reinvestigation direction
+further investigation direction
+trial direction
+expeditious trial
+day-to-day trial
+time limit
+period fixed
+extension granted
+extension refused
+delay explained
+delay unexplained
+condonation granted
+condonation refused
+limitation expired
+within limitation
+barred by limitation
+maintainable
+not maintainable
+premature
+infructuous
+academic
+moot
+alternative remedy available
+alternative remedy exhausted
+effective alternative remedy
+exceptional jurisdiction
+extraordinary jurisdiction
+discretionary jurisdiction
+writ jurisdiction
+appellate jurisdiction
+revisional jurisdiction
+inherent jurisdiction
+inherent powers
+Section 482 CrPC
+Section 528 BNSS
+quashing petition
+quashing FIR
+quashing proceedings
+abuse of process
+ends of justice
+inherent power
+interference refused
+interference warranted
+limited scope
+appellate restraint
+revisional restraint
+judicial discretion
+judicial review
+judicial intervention
+judicial oversight
+court supervision
+administrative review
+departmental review
+executive review
+legality
+propriety
+correctness
+reasonableness
+fairness
+constitutional validity
+statutory validity
+legal validity
+factual validity
+order legality
+procedure legality
+sanction validity
+investigation legality
+arrest legality
+search legality
+seizure legality
+trial legality
+conviction legality
+sentence legality
+natural justice compliance
+hearing opportunity
+notice opportunity
+representation opportunity
+cross-examination opportunity
+defence opportunity
+effective opportunity
+prejudice caused
+prejudice not caused
+failure of justice
+failure of justice not shown
+miscarriage of justice
+substantial compliance
+technical violation
+material violation
+fundamental violation
+constitutional violation
+statutory violation
+mandatory violation
+directory violation
+curable irregularity
+incurable irregularity
+fatal irregularity
+non-fatal irregularity
+material irregularity
+technical irregularity
+procedural lapse
+investigative lapse
+prosecutorial lapse
+judicial error
+trial error
+evidentiary error
+sentencing error
+legal misdirection
+factual misdirection
+perverse appreciation
+wrong appreciation
+non-appreciation
+misappreciation
+omission to consider
+failure to consider
+relevant consideration
+irrelevant consideration
+extraneous consideration
+application of mind
+independent consideration
+reasoned consideration
+speaking reasons
+recorded reasons
+adequate reasons
+insufficient reasons
+no reasons
+mechanical reasons
+arbitrary reasons
+perverse reasons
+discriminatory reasons
+mala fide intention
+bona fide intention
+good faith
+bad faith
+clean hands
+equitable conduct
+public duty
+statutory duty
+constitutional duty
+official duty
+fiduciary duty
+duty to act
+duty to decide
+duty to process
+duty to report
+duty to investigate
+duty to prosecute
+duty to disclose
+duty to preserve
+duty to cooperate
+duty to assist
+failure to act
+failure to report
+failure to investigate
+failure to prosecute
+failure to disclose
+failure to preserve
+failure to cooperate
+dereliction of duty
+neglect of duty
+breach of duty
+breach of trust
+fiduciary breach
+statutory breach
+contractual breach
+administrative breach
+service breach
+conduct violation
+service violation
+rule violation
+regulation violation
+policy violation
+circular violation
+order violation
+court order violation
+contempt
+civil contempt
+criminal contempt
+wilful disobedience
+disobedience of order
+non-compliance with order
+contempt petition
+contempt notice
+compliance affidavit
+purging contempt
+apology
+undertaking
+assurance of compliance
