@@ -5,8 +5,7 @@ import torch ,os
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-
-torch.set_num_threads(os.cpu_count())
+torch.set_num_threads(min(4, os.cpu_count() or 1))
 torch.set_num_interop_threads(2)
 # =========================================================
 # PATH SETUP
@@ -42,34 +41,25 @@ CHECKPOINT_DIR.mkdir(
 # MODEL CONFIGURATION
 # =========================================================
 
-# IMPORTANT:
-# Always take vocabulary size directly from vocab.json.
-# Do NOT hardcode 5515 or 5605.
-
 VOCAB_SIZE = len(vocab)
 
 EMBEDDING_SIZE = 128
-HIDDEN_SIZE = 512
-NUM_LAYERS = 100
+HIDDEN_SIZE = 256
+NUM_LAYERS = 2
 
 
 # =========================================================
 # TRAINING CONFIGURATION
 # =========================================================
 
-SEQUENCE_LENGTH = 128
+SEQUENCE_LENGTH = 64
+BATCH_SIZE = 4
 
-BATCH_SIZE = 32
-
-LEARNING_RATE = 0.001
-
+LEARNING_RATE = 0.0003
 NUM_EPOCHS = 5
 
 TRAIN_RATIO = 0.90
-
 RANDOM_SEED = 42
-
-
 # =========================================================
 # DEVICE
 # =========================================================

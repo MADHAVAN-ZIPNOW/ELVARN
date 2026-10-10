@@ -27,18 +27,18 @@ CHECKPOINT_FILE = (
 )
 
 VOCAB_SIZE = len(vocab)
-
 EMBEDDING_SIZE = 128
-HIDDEN_SIZE = 512
-SEQUENCE_LENGTH = 128
-NUM_LAYERS = 100
-
+HIDDEN_SIZE = 256
+SEQUENCE_LENGTH = 64
+NUM_LAYERS = 2
 MAX_NEW_TOKENS = 50
 
 TEMPERATURE = 0.8
 TOP_K = 20
 
-device = torch.device("cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
 
 
 # =========================================================
@@ -227,7 +227,7 @@ def generate(prompt):
 prompts = [
     "Tamil Nadu corruption",
     "The case involved",
-    "The investigation",
+    "political",
     "J. Jayalalithaa",
     "Prevention of Corruption Act",
 ]

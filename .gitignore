@@ -11,3 +11,7 @@ backend/data/raw/
 backend/data/train.txt
 *.log
 .vscode/
+
+*.zip
+elvarn_upload/
+zip_test/

@@ -1,16 +1,31 @@
+
+import sys
+from pathlib import Path
+
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
+
+# =========================================================
+# PATHS AND IMPORTS
+# =========================================================
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BACKEND_DIR))
+
+from tokenizer.tokenizer import vocab
+from model.attention import CausalSelfAttention
 
 # =========================================================
 # MODEL CONFIGURATION
 # =========================================================
 
+vocab_size = len(vocab)
 embedding_size = 128
-hidden_size = 512
-sequence_length = 128
-num_layers = 100
-vocab_size = 5515
+hidden_size = 256
+sequence_length = 64
+num_layers = 2
 
 
 # =========================================================
@@ -22,28 +37,10 @@ class DecoderBlock(nn.Module):
     def __init__(self, embedding_size, hidden_size):
         super().__init__()
 
-        # Self-attention projections
-        self.W_Q = nn.Linear(
-            embedding_size,
+        self.attention = CausalSelfAttention(
             embedding_size
         )
 
-        self.W_K = nn.Linear(
-            embedding_size,
-            embedding_size
-        )
-
-        self.W_V = nn.Linear(
-            embedding_size,
-            embedding_size
-        )
-
-        self.W_O = nn.Linear(
-            embedding_size,
-            embedding_size
-        )
-
-        # Layer normalization
         self.layer_norm1 = nn.LayerNorm(
             embedding_size
         )
@@ -52,7 +49,6 @@ class DecoderBlock(nn.Module):
             embedding_size
         )
 
-        # Feed-forward network
         self.fc1 = nn.Linear(
             embedding_size,
             hidden_size
@@ -65,121 +61,24 @@ class DecoderBlock(nn.Module):
 
     def forward(self, H):
 
-        # -------------------------------------------------
-        # H shape:
-        #
-        # [sequence, embedding]
-        # OR
-        # [batch, sequence, embedding]
-        # -------------------------------------------------
+        # Self-attention + residual connection
+        attention_output = self.attention(H)
 
-        Q = self.W_Q(H)
-        K = self.W_K(H)
-        V = self.W_V(H)
-
-        # -------------------------------------------------
-        # Attention scores
-        # -------------------------------------------------
-
-        if H.dim() == 2:
-
-            # [sequence, embedding]
-            scores = Q @ K.transpose(-2, -1)
-
-            sequence_length_current = H.size(0)
-
-        else:
-
-            # [batch, sequence, embedding]
-            scores = Q @ K.transpose(-2, -1)
-
-            sequence_length_current = H.size(1)
-
-        # -------------------------------------------------
-        # Scale attention scores
-        # -------------------------------------------------
-
-        scale = self.W_Q.in_features ** 0.5
-
-        scaled_scores = scores / scale
-
-        # -------------------------------------------------
-        # Causal mask
-        #
-        # Prevents a token from seeing future tokens.
-        # -------------------------------------------------
-
-        mask = torch.triu(
-            torch.ones(
-                sequence_length_current,
-                sequence_length_current,
-                device=H.device
-            ),
-            diagonal=1
+        H = self.layer_norm1(
+            H + attention_output
         )
 
-        if H.dim() == 3:
-
-            # Add batch dimension
-            mask = mask.unsqueeze(0)
-
-        scaled_scores = scaled_scores.masked_fill(
-            mask == 1,
-            float("-inf")
-        )
-
-        # -------------------------------------------------
-        # Attention weights
-        # -------------------------------------------------
-
-        attention_weights = torch.softmax(
-            scaled_scores,
-            dim=-1
-        )
-
-        # -------------------------------------------------
-        # Attention output
-        # -------------------------------------------------
-
-        attention_output = attention_weights @ V
-
-        projected_output = self.W_O(
-            attention_output
-        )
-
-        # -------------------------------------------------
-        # First residual connection + LayerNorm
-        # -------------------------------------------------
-
-        normalized_output = self.layer_norm1(
-            H + projected_output
-        )
-
-        # -------------------------------------------------
         # Feed-forward network
-        # -------------------------------------------------
+        mlp_output = self.fc1(H)
+        mlp_output = F.gelu(mlp_output)
+        mlp_output = self.fc2(mlp_output)
 
-        mlp_hidden = self.fc1(
-            normalized_output
+        # Feed-forward residual connection
+        H = self.layer_norm2(
+            H + mlp_output
         )
 
-        mlp_hidden = torch.nn.functional.gelu(
-            mlp_hidden
-        )
-
-        mlp_output = self.fc2(
-            mlp_hidden
-        )
-
-        # -------------------------------------------------
-        # Second residual connection + LayerNorm
-        # -------------------------------------------------
-
-        block_output = self.layer_norm2(
-            normalized_output + mlp_output
-        )
-
-        return block_output
+        return H
 
 
 # =========================================================
@@ -196,31 +95,23 @@ class TransformerModel(nn.Module):
         sequence_length,
         num_layers
     ):
-
         super().__init__()
 
-        # -------------------------------------------------
-        # Token embedding
-        # -------------------------------------------------
+        self.sequence_length = sequence_length
 
+        # Token embeddings
         self.token_embedding = nn.Embedding(
             vocab_size,
             embedding_size
         )
 
-        # -------------------------------------------------
-        # Position embedding
-        # -------------------------------------------------
-
+        # Position embeddings
         self.position_embedding = nn.Embedding(
             sequence_length,
             embedding_size
         )
 
-        # -------------------------------------------------
         # Decoder blocks
-        # -------------------------------------------------
-
         self.decoder_blocks = nn.ModuleList([
             DecoderBlock(
                 embedding_size,
@@ -229,18 +120,12 @@ class TransformerModel(nn.Module):
             for _ in range(num_layers)
         ])
 
-        # -------------------------------------------------
         # Final normalization
-        # -------------------------------------------------
-
         self.final_layer_norm = nn.LayerNorm(
             embedding_size
         )
 
-        # -------------------------------------------------
-        # Language-model head
-        # -------------------------------------------------
-
+        # Predict vocabulary scores
         self.lm_head = nn.Linear(
             embedding_size,
             vocab_size
@@ -248,96 +133,50 @@ class TransformerModel(nn.Module):
 
     def forward(self, token_ids):
 
-        # =================================================
-        # TOKEN EMBEDDINGS
-        # =================================================
-
+        # Token IDs -> token vectors
         token_vectors = self.token_embedding(
             token_ids
         )
 
-        # =================================================
-        # POSITION IDS
-        # =================================================
+        # Create position IDs
+        current_sequence_length = token_ids.size(-1)
 
-        if token_ids.dim() == 1:
-
-            # ---------------------------------------------
-            # Input:
-            # [sequence]
-            # ---------------------------------------------
-
-            current_sequence_length = token_ids.size(0)
-
-            position_ids = torch.arange(
-                current_sequence_length,
-                device=token_ids.device
+        if current_sequence_length > self.sequence_length:
+            raise ValueError(
+                "Input exceeds the configured sequence length."
             )
 
-        else:
+        position_ids = torch.arange(
+            current_sequence_length,
+            device=token_ids.device
+        )
 
-            # ---------------------------------------------
-            # Input:
-            # [batch, sequence]
-            # ---------------------------------------------
-
-            current_sequence_length = token_ids.size(1)
-
-            position_ids = torch.arange(
-                current_sequence_length,
-                device=token_ids.device
-            )
-
-        # =================================================
-        # POSITION EMBEDDINGS
-        # =================================================
-
+        # Position IDs -> position vectors
         position_vectors = self.position_embedding(
             position_ids
         )
 
-        # =================================================
-        # INITIAL HIDDEN STATES
-        #
-        # H⁰ = Token Embedding + Position Embedding
-        # =================================================
-
+        # Initial hidden states
         H = token_vectors + position_vectors
 
-        # =================================================
-        # DECODER BLOCKS
-        # =================================================
-
-        x = H
-
+        # Process through decoder blocks
         for block in self.decoder_blocks:
+            H = block(H)
 
-            x = block(x)
+        # Final hidden states
+        H = self.final_layer_norm(H)
 
-        # =================================================
-        # FINAL LAYER NORMALIZATION
-        # =================================================
-
-        x = self.final_layer_norm(x)
-
-        # =================================================
-        # LANGUAGE MODEL HEAD
-        # =================================================
-
-        logits = self.lm_head(x)
+        # Vocabulary logits
+        logits = self.lm_head(H)
 
         return logits
 
 
 # =========================================================
-# TEST
+# BASIC MODEL TEST
 # =========================================================
 
 if __name__ == "__main__":
-
-    print("===================================")
-    print("TRANSFORMER MODEL TEST")
-    print("===================================")
 
     model = TransformerModel(
         vocab_size=vocab_size,
@@ -347,61 +186,22 @@ if __name__ == "__main__":
         num_layers=num_layers
     )
 
-    # -----------------------------------------------------
-    # Single sequence test
-    # -----------------------------------------------------
-
+    # Example input: four valid token IDs
     token_ids = torch.tensor(
-        [3972, 3974, 4, 5],
+        [1, 2, 3, 4],
         dtype=torch.long
     )
 
     logits = model(token_ids)
-
-    print("\nSingle sequence:")
-    print("Input shape:")
-    print(token_ids.shape)
-
-    print("\nLogits shape:")
-    print(logits.shape)
-
-    # -----------------------------------------------------
-    # Batch test
-    # -----------------------------------------------------
-
-    batch_token_ids = torch.tensor(
-        [
-            [3972, 3974, 4, 5],
-            [3972, 3974, 4, 5],
-            [3972, 3974, 4, 5],
-            [3972, 3974, 4, 5]
-        ],
-        dtype=torch.long
-    )
-
-    batch_logits = model(
-        batch_token_ids
-    )
-
-    print("\nBatch:")
-    print("Input shape:")
-    print(batch_token_ids.shape)
-
-    print("\nBatch logits shape:")
-    print(batch_logits.shape)
-
-    # -----------------------------------------------------
-    # Parameter count
-    # -----------------------------------------------------
 
     total_parameters = sum(
         parameter.numel()
         for parameter in model.parameters()
     )
 
-    print("\nComplete model parameters:")
-    print(f"{total_parameters:,}")
+    print("ELVARN Transformer Test")
+    print("Vocabulary size:", vocab_size)
+    print("Input shape:", token_ids.shape)
+    print("Logits shape:", logits.shape)
+    print(f"Total parameters: {total_parameters:,}")
 
-    print("\n===================================")
-    print("TEST COMPLETE")
-    print("===================================")
