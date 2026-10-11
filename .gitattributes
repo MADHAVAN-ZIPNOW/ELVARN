@@ -1,0 +1,7 @@
+# Never rewrite line endings of these: their byte-for-byte hash is checked when a model is loaded.
+*.json -text
+*.pt binary
+*.png binary
+*.gif binary
+*.webp binary
+*.svg -text

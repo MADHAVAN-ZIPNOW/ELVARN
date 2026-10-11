@@ -47,3 +47,12 @@ def test_vocabulary_is_fixed(tok):
 def test_missing_file_message(tmp_path):
     with pytest.raises(FileNotFoundError, match="train_bpe"):
         BPETokenizer(tmp_path / "nope.json")
+
+
+def test_hash_ignores_windows_line_endings(tok_file, tmp_path):
+    """A git checkout on Windows can turn LF into CRLF; the tokenizer must still match its checkpoints."""
+    crlf = tmp_path / "tokenizer.json"
+    crlf.write_bytes(tok_file.read_bytes().replace(b"\n", b"\r\n"))
+    assert crlf.read_bytes() != tok_file.read_bytes()
+    assert BPETokenizer(crlf).sha256 == BPETokenizer(tok_file).sha256
+    assert BPETokenizer(crlf).encode("What is the CAG?") == BPETokenizer(tok_file).encode("What is the CAG?")

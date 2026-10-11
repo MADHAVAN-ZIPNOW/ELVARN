@@ -31,7 +31,8 @@ class BPETokenizer:
             )
         self.path = path
         self._tok = Tokenizer.from_file(str(path))
-        self.sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        # Hash with line endings normalised, so a checkout that turned LF into CRLF (Windows git) still matches.
+        self.sha256 = hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
         self.pad_id = self._tok.token_to_id("<PAD>")
         self.unk_id = self._tok.token_to_id("<UNK>")
         self.bos_id = self._tok.token_to_id("<BOS>")
