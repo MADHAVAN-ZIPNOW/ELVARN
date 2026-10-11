@@ -1,0 +1,23 @@
+# Render Blueprint: connect this repo in Render (New > Blueprint) and it reads this file.
+services:
+  - type: web
+    name: elvarn
+    runtime: python
+    plan: starter            # 512 MB (free) is very tight for PyTorch; use "free" only to try it out
+    buildCommand: pip install --upgrade pip && pip install -r requirements-render.txt
+    startCommand: python -m uvicorn backend.api.server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ELVARN_CHECKPOINT_DIR
+        value: deploy/models/7m      # or deploy/models/tiny (smaller, uses less memory)
+      - key: ELVARN_PUBLIC
+        value: "1"                   # rate limit + concurrency cap + reload disabled
+      - key: ELVARN_RATE_LIMIT
+        value: "20"                  # chat requests per visitor per minute
+      - key: ELVARN_MAX_CONCURRENT
+        value: "2"                   # simultaneous replies
+      - key: OMP_NUM_THREADS
+        value: "1"

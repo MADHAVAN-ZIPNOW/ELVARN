@@ -94,16 +94,18 @@ python -m pytest backend\tests -q
 
 ## Model
 
-Token + learned position embeddings, 2 decoder blocks (4 attention heads,
+Sizes are presets chosen with `--size` (`tiny`, `7m`, `1b`). Training refuses a size that will not fit in RAM (the `1b` preset is about 1.0 billion parameters and needs about 16 GB just for training state, so it needs a bigger machine). Each training run keeps its own copy of the tokenizer next to its checkpoint, and the server loads that copy.
+
+Default `tiny` model: token + learned position embeddings, 2 decoder blocks (4 attention heads,
 post-norm, GELU MLP), final LayerNorm, output head tied to the token embedding.
 Embedding 128, hidden 256, context 128 tokens, about 0.8M parameters.
 Dropout 0.1. Everything runs on CPU.
 
 Choices worth knowing:
 
-* **Vocab 4096.** The corpus is only a few hundred thousand tokens. A larger
-  vocabulary would leave many tokens rarely seen; a much smaller one makes
-  sequences longer. 4096 is a middle point. Byte-level BPE never needs `<UNK>`.
+* **Vocabulary.** `train_bpe.py` defaults to 16,384, but BPE stops when no useful
+  merges are left (about 13.7k on this corpus). Byte-level BPE never needs `<UNK>`.
+  The older 4,096 tokenizer is kept as `tokenizer/bpe/tokenizer_4096.json`.
 * **4 heads** instead of 1: same parameter count, and each head can learn a
   different pattern.
 * **Context 128** instead of 64: many answers are longer than 64 BPE tokens.
@@ -116,6 +118,7 @@ Choices worth knowing:
 | `GET /api/health` | Server / model / tokenizer status and any load error. |
 | `GET /api/model` | Loaded checkpoint, step, parameters, vocabulary. |
 | `POST /api/chat` | `{text, mode, history, temperature, top_k, max_new_tokens, greedy}` |
+| `POST /api/chat/stream` | Same body. Streams real events as lines of JSON: `start` (prompt and token counts), one `token` per generated piece (text, probability, speed), then `done`. The UI uses this. |
 | `POST /api/generate` | Same body; for testing generation settings. |
 | `POST /api/reload` | Load the newest completed checkpoint (old one kept if the load fails). |
 
@@ -123,8 +126,38 @@ Modes: `chat`, `domain`, `english`, `humour`, `raw`. Interactive docs: `/api/doc
 
 ## UI
 
-Colourful responsive chat for desktop and phone. Voice input (🎤) and read-aloud
+Colourful (cyan, indigo, rose) responsive chat for desktop and phone. While ELVARN answers, a live card shows the real steps and measurements from the backend (prompt tokens, tokens generated, speed, confidence). It does not search or research anything. Each new question scrolls to the top, and the send button becomes a stop button during generation. Voice input (🎤) and read-aloud
 (🔊) use the browser's built-in speech features: use Chrome or Edge on
 `localhost`. Voice input may send audio to the browser vendor's speech
 service. Settings (temperature, max tokens, top-k, greedy, voice, speed,
 listening language) are in the ⚙️ panel.
+
+## Deploying on Render
+
+The repo is ready for a Render **Blueprint** (`render.yaml`).
+
+1. Push this repo to GitHub (the weights-only models in `deploy/models/` are committed on purpose).
+2. On <https://dashboard.render.com> choose **New > Blueprint**, connect the GitHub repo, and press **Apply**.
+3. Render runs `pip install -r requirements-render.txt` (CPU-only PyTorch) and then
+   `python -m uvicorn backend.api.server:app --host 0.0.0.0 --port $PORT`.
+4. When the deploy is live, open the `https://<your-service>.onrender.com` address. The page and the API
+   are served by the same server, so no other setting is needed.
+
+Settings (environment variables, already set in `render.yaml`):
+
+| Variable | Meaning |
+|---|---|
+| `ELVARN_CHECKPOINT_DIR` | Model folder: `deploy/models/7m` (6.7M parameters) or `deploy/models/tiny` (0.8M, uses less memory). |
+| `ELVARN_PUBLIC` | `1` = public site: per-visitor rate limit, cap on simultaneous replies, `/api/reload` disabled. |
+| `ELVARN_RATE_LIMIT` | Chat requests per visitor per minute (default 20 when public). |
+| `ELVARN_MAX_CONCURRENT` | Replies generated at the same time (default 2 when public). |
+
+Notes:
+
+* **Memory.** Render's free plan has 512 MB of RAM, which is tight for PyTorch. If the service restarts with
+  "out of memory", switch `ELVARN_CHECKPOINT_DIR` to `deploy/models/tiny` or use the Starter plan.
+* **Free plan sleeps** after about 15 minutes without visitors and takes about a minute to wake.
+* The site has no login. Anyone with the link can use it, which is why the rate limit exists.
+* ELVARN is a small model. Its replies can be wrong, and the page says so. Do not present it as a source of legal facts.
+* To deploy a newly trained model: `python backend/training/export_deploy.py <checkpoint_dir> deploy/models/<name>`,
+  commit the new folder, point `ELVARN_CHECKPOINT_DIR` at it and push.

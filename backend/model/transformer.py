@@ -26,6 +26,23 @@ DEFAULT_CONFIG = {
 }
 
 
+# Named size presets. "tiny" is the model that is trained on this CPU.
+# "1b" is about 1.0 billion parameters: it needs roughly 16 GB for training
+# state alone (weights + gradients + AdamW), so it needs a bigger machine.
+PRESETS = {
+    "tiny": {},  # DEFAULT_CONFIG as is: ~0.8M parameters
+    "7m": {"embedding_size": 256, "hidden_size": 1024, "num_layers": 4, "num_heads": 8},
+    "1b": {"embedding_size": 2048, "hidden_size": 8192, "num_layers": 20,
+           "num_heads": 16, "sequence_length": 512},
+}
+
+
+def preset_config(name):
+    if name not in PRESETS:
+        raise ValueError(f"Unknown size '{name}'. Choose from: {', '.join(PRESETS)}")
+    return {**DEFAULT_CONFIG, **PRESETS[name]}
+
+
 class DecoderBlock(nn.Module):
     def __init__(self, embedding_size, hidden_size, num_heads=1, dropout=0.0):
         super().__init__()

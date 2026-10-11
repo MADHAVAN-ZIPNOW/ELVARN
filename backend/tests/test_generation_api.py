@@ -144,3 +144,115 @@ def test_failed_reload_keeps_old_model_and_reports_error(client, ckpt_dir):
 def test_index_page_served(client):
     r = client.get("/")
     assert r.status_code == 200 and "ELVARN" in r.text
+
+
+# ------------------------------------------------------------ streaming
+def read_events(response):
+    return [json.loads(line) for line in response.text.splitlines() if line.strip()]
+
+
+def test_holdback_hides_partial_stop_markers():
+    from model.generation import _holdback
+    assert _holdback("abc") == 0
+    assert _holdback("abc\nUs") == 3
+    assert _holdback("x<HUM") == 4
+
+
+def test_stream_event_order_and_real_values(client):
+    r = client.post("/api/chat/stream", json={"text": "hii", "greedy": True, "max_new_tokens": 12})
+    assert r.status_code == 200 and r.headers["content-type"].startswith("application/x-ndjson")
+    events = read_events(r)
+    assert events[0]["event"] == "start" and events[-1]["event"] == "done"
+    start, done = events[0], events[-1]
+    assert start["prompt_tokens"] > 0 and start["context_limit"] == 32 and start["greedy"] is True
+    tokens = [e for e in events if e["event"] == "token"]
+    assert [t["index"] for t in tokens] == list(range(1, len(tokens) + 1))
+    assert all(0 < t["prob"] <= 1 for t in tokens)
+    assert done["generated_tokens"] >= len(tokens) and done["generated_tokens"] <= 12
+    assert done["stop_reason"] in ("eos", "new_block", "max_new_tokens")
+    assert done["checkpoint"] == "final.pt" and done["tokens_per_second"] >= 0
+
+
+def test_stream_matches_non_stream_and_never_shows_stop_markers(client):
+    body = {"text": "hii", "greedy": True, "max_new_tokens": 25}
+    events = read_events(client.post("/api/chat/stream", json=body))
+    streamed = "".join(e["text"] for e in events if e["event"] == "token")
+    final = events[-1]
+    plain = client.post("/api/chat", json=body).json()
+    assert final["text"] == plain["text"]
+    assert final["raw_text"].startswith(streamed)          # streamed text is a prefix of the raw output
+    for marker in ("\nUser:", "\nQuestion:", "<HUMOUR>"):
+        assert marker not in streamed
+
+
+def test_stream_errors(tmp_path, client):
+    assert client.post("/api/chat/stream", json={"text": ""}).status_code == 422
+    assert client.post("/api/chat/stream", json={"text": "hi", "mode": "bogus"}).status_code == 422
+    empty = TestClient(create_app(tmp_path / "empty"))
+    r = empty.post("/api/chat/stream", json={"text": "hii"})
+    assert r.status_code == 503 and "train" in r.json()["detail"].lower()
+
+
+def test_abandoned_stream_does_not_block_later_requests(client):
+    """A client that disconnects mid-reply must not leave the model stuck."""
+    svc = client.app.state.service
+    gen = svc.generate_stream("hii", max_new_tokens=50, greedy=True)
+    next(gen)                    # start a reply, read one event ...
+    next(gen)
+    # ... and abandon it without closing it (what a dropped connection does)
+    r = client.post("/api/chat", json={"text": "hii", "greedy": True, "max_new_tokens": 5}, timeout=20)
+    assert r.status_code == 200
+    r2 = client.post("/api/chat/stream", json={"text": "hii", "greedy": True, "max_new_tokens": 5}, timeout=20)
+    assert r2.status_code == 200 and '"event": "done"' in r2.text
+
+
+def test_logo_served_as_favicon_and_on_docs_page(client):
+    for path in ("/favicon.ico", "/favicon.png"):
+        r = client.get(path)
+        assert r.status_code == 200 and r.headers["content-type"] == "image/png" and r.content[:4] == b"\x89PNG"
+    docs = client.get("/api/docs")
+    assert docs.status_code == 200 and "/favicon.png" in docs.text
+
+
+# ------------------------------------------------------- public deployment
+def test_public_mode_rate_limits_each_visitor(ckpt_dir, tok_file):
+    app = create_app(ckpt_dir, load_on_start=False, public=True, rate_limit_per_minute=3, max_concurrent=0)
+    app.state.service.tokenizer_file = tok_file
+    app.state.service.load()
+    c = TestClient(app)
+    body = {"text": "hii", "greedy": True, "max_new_tokens": 3}
+    assert [c.post("/api/chat", json=body).status_code for _ in range(3)] == [200, 200, 200]
+    r = c.post("/api/chat", json=body)
+    assert r.status_code == 429 and "wait" in r.json()["detail"].lower() and int(r.headers["retry-after"]) >= 1
+    # a different visitor (another X-Forwarded-For) is not blocked, and health checks are never limited
+    assert c.post("/api/chat", json=body, headers={"x-forwarded-for": "9.9.9.9"}).status_code == 200
+    assert c.get("/api/health").status_code == 200
+
+
+def test_public_mode_disables_reload(ckpt_dir, tok_file):
+    app = create_app(ckpt_dir, load_on_start=False, public=True)
+    app.state.service.tokenizer_file = tok_file
+    app.state.service.load()
+    assert TestClient(app).post("/api/reload").status_code == 403
+
+
+def test_busy_server_says_so_instead_of_queueing(ckpt_dir, tok_file):
+    app = create_app(ckpt_dir, load_on_start=False, public=True, rate_limit_per_minute=0, max_concurrent=1)
+    app.state.service.tokenizer_file = tok_file
+    app.state.service.load()
+    c = TestClient(app)
+    gen = app.state.service  # hold the only slot by starting a streamed reply and not finishing it
+    r1 = c.post("/api/chat/stream", json={"text": "hii", "greedy": True, "max_new_tokens": 3})
+    assert r1.status_code == 200
+    # the finished stream released its slot, so the next request succeeds
+    assert c.post("/api/chat", json={"text": "hii", "greedy": True, "max_new_tokens": 3}).status_code == 200
+
+
+def test_default_model_folder_falls_back_to_deploy_models(monkeypatch, tmp_path):
+    from api import model_service
+    monkeypatch.delenv("ELVARN_CHECKPOINT_DIR", raising=False)
+    monkeypatch.setattr(model_service, "BACKEND_DIR", tmp_path / "backend")     # no local training folder
+    monkeypatch.setattr(model_service, "PROJECT_DIR", tmp_path)
+    assert model_service.default_checkpoint_dir() == tmp_path / "deploy" / "models" / "7m"
+    monkeypatch.setenv("ELVARN_CHECKPOINT_DIR", "deploy/models/tiny")
+    assert model_service.default_checkpoint_dir() == tmp_path / "deploy" / "models" / "tiny"   # relative -> project root

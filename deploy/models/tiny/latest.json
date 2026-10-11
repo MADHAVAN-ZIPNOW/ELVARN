@@ -1,0 +1,22 @@
+{
+  "checkpoint": "final.pt",
+  "status": "completed",
+  "weights_from_step": 3000,
+  "final_step": 3000,
+  "best_val_loss": 3.2971929523432366,
+  "tokenizer_sha256": "9d323e0d81731c06e8ac9c26788c6c6bafde3c543e8a2bd8db654d0f2efa5d44",
+  "vocab_size": 4096,
+  "config": {
+    "embedding_size": 128,
+    "hidden_size": 256,
+    "sequence_length": 128,
+    "num_layers": 2,
+    "num_heads": 4,
+    "dropout": 0.1,
+    "tie_weights": true
+  },
+  "smoke_run": false,
+  "completed_at": "2026-10-11 22:01:31",
+  "exported_at": "2026-10-12 00:48:11",
+  "weights_only": true
+}

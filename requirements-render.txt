@@ -1,0 +1,7 @@
+# Used by Render (Linux). CPU-only PyTorch is about 200 MB; the default Linux wheel pulls ~2 GB of GPU libraries.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1+cpu
+numpy
+tokenizers>=0.23
+fastapi>=0.110
+uvicorn>=0.30

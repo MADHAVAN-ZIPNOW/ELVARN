@@ -10,13 +10,31 @@ import torch
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-from model.generation import generate  # noqa: E402
+from model.generation import generate, generate_stream  # noqa: E402
 from model.transformer import build_model, count_parameters  # noqa: E402
 from tokenizer.bpe_tokenizer import BPETokenizer, TOKENIZER_FILE  # noqa: E402
 
-DEFAULT_CHECKPOINT_DIR = Path(
-    os.environ.get("ELVARN_CHECKPOINT_DIR") or BACKEND_DIR / "training" / "checkpoints_bpe"
-)
+PROJECT_DIR = BACKEND_DIR.parent
+
+
+def default_checkpoint_dir():
+    """Which model folder to serve.
+
+    1. ELVARN_CHECKPOINT_DIR (relative paths are relative to the project root),
+    2. a model you trained locally: backend/training/checkpoints_bpe,
+    3. the weights-only model committed for deployment: deploy/models/7m.
+    """
+    env = os.environ.get("ELVARN_CHECKPOINT_DIR")
+    if env:
+        path = Path(env)
+        return path if path.is_absolute() else PROJECT_DIR / path
+    local = BACKEND_DIR / "training" / "checkpoints_bpe"
+    if (local / "latest.json").is_file():
+        return local
+    return PROJECT_DIR / "deploy" / "models" / "7m"
+
+
+DEFAULT_CHECKPOINT_DIR = default_checkpoint_dir()
 
 
 class ModelNotReady(Exception):
@@ -24,12 +42,25 @@ class ModelNotReady(Exception):
 
 
 class ModelService:
-    def __init__(self, checkpoint_dir=None, tokenizer_file=TOKENIZER_FILE):
-        self.checkpoint_dir = Path(checkpoint_dir or DEFAULT_CHECKPOINT_DIR)
-        self.tokenizer_file = Path(tokenizer_file)
+    def __init__(self, checkpoint_dir=None, tokenizer_file=None):
+        self.checkpoint_dir = Path(checkpoint_dir or default_checkpoint_dir())
+        # An explicit file wins; otherwise use the copy saved with the run,
+        # and only then the project-wide default tokenizer.
+        self._tokenizer_override = Path(tokenizer_file) if tokenizer_file else None
         self._lock = threading.Lock()
         self._state = None       # dict with model, tokenizer, info
         self.last_error = None
+
+    @property
+    def tokenizer_file(self):
+        if self._tokenizer_override:
+            return self._tokenizer_override
+        saved = self.checkpoint_dir / "tokenizer.json"
+        return saved if saved.is_file() else TOKENIZER_FILE
+
+    @tokenizer_file.setter
+    def tokenizer_file(self, value):
+        self._tokenizer_override = Path(value) if value else None
 
     # ---------------------------------------------------------------- load
     def _load(self):
@@ -121,3 +152,22 @@ class ModelService:
         result["checkpoint"] = state["info"]["checkpoint"]
         result["weights_from_step"] = state["info"]["weights_from_step"]
         return result
+
+    def generate_stream(self, text, **kwargs):
+        """Yield generation events.
+
+        The model lock is deliberately NOT held across yields: if a client
+        disconnects mid-reply the generator is simply abandoned, and a held
+        lock would block every later request. Each token step only reads the
+        model, so concurrent replies are safe (they just share the CPU).
+        """
+        if not self._state:
+            raise ModelNotReady(
+                self.last_error or "Model is not loaded. Train ELVARN first."
+            )
+        state = self._state
+        for event in generate_stream(state["model"], state["tokenizer"], text, **kwargs):
+            if event["event"] == "done":
+                event["checkpoint"] = state["info"]["checkpoint"]
+                event["weights_from_step"] = state["info"]["weights_from_step"]
+            yield event

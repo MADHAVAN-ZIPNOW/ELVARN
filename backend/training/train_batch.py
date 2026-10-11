@@ -18,6 +18,7 @@ import json
 import math
 import os
 import random
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -29,7 +30,7 @@ import torch.nn.functional as F
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-from model.transformer import DEFAULT_CONFIG, build_model, count_parameters  # noqa: E402
+from model.transformer import PRESETS, build_model, count_parameters, preset_config  # noqa: E402
 from tokenizer.bpe_tokenizer import BPETokenizer  # noqa: E402
 
 PROCESSED_DIR = BACKEND_DIR / "data" / "processed"
@@ -48,6 +49,12 @@ def parse_args():
     p.add_argument("--resume", action="store_true")
     p.add_argument("--smoke", action="store_true",
                    help="tiny run (30 steps) written to a separate smoke directory")
+    p.add_argument("--size", choices=list(PRESETS), default="tiny",
+                   help="model size preset (tiny ~0.8M, 7m ~6.7M, 1b ~1.0 billion)")
+    p.add_argument("--ram-gb", type=float, default=16.0,
+                   help="RAM of this machine, used for the memory safety check")
+    p.add_argument("--force", action="store_true",
+                   help="start even if the memory check says the model will not fit")
     p.add_argument("--checkpoint-dir", type=Path, default=None)
     return p.parse_args()
 
@@ -119,8 +126,8 @@ def main():
     args = parse_args()
     if args.smoke:
         args.max_steps, args.eval_every, args.warmup_steps, args.batch_size = 30, 15, 5, 8
-    ckpt_dir = args.checkpoint_dir or (CHECKPOINT_DIR / ("smoke" if args.smoke else ""))
-    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    size_dir = "" if args.size == "tiny" else args.size
+    ckpt_dir = args.checkpoint_dir or (CHECKPOINT_DIR / ("smoke" if args.smoke else size_dir))
 
     torch.set_num_threads(args.threads)
     random.seed(args.seed)
@@ -136,7 +143,7 @@ def main():
         raise SystemExit("Processed data was built with a different tokenizer. Re-run build_dataset.py.")
 
     train_data, val_data = load_split("train"), load_split("val")
-    config = dict(DEFAULT_CONFIG)
+    config = preset_config(args.size)
     seq_len = config["sequence_length"]
     if len(train_data) <= seq_len + 1 or len(val_data) <= seq_len + 1:
         raise SystemExit("Dataset too small for the configured sequence length.")
@@ -144,6 +151,23 @@ def main():
         if int(data.max()) >= tok.vocab_size:
             raise SystemExit(f"{name}.bin contains token ids outside the vocabulary.")
 
+    # Memory check BEFORE allocating: weights + gradients + AdamW (2 states)
+    # is about 16 bytes per parameter, plus activations and the OS.
+    with torch.device("meta"):
+        n_params = count_parameters(build_model(tok.vocab_size, config))
+    need_gb = n_params * 16 / 1e9
+    if need_gb > args.ram_gb * 0.75 and not args.force:
+        raise SystemExit(
+            f"Model '{args.size}' has {n_params:,} parameters and needs about "
+            f"{need_gb:.1f} GB for training state, but only {args.ram_gb:.0f} GB RAM "
+            f"is available (limit {args.ram_gb * 0.75:.0f} GB). Not starting, to avoid "
+            "freezing the machine. Use a smaller --size, a bigger machine, "
+            "or --ram-gb / --force if you know better."
+        )
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    # Each run keeps its own copy of the tokenizer, so a checkpoint can never
+    # be loaded with a different vocabulary later.
+    shutil.copyfile(tok.path, ckpt_dir / "tokenizer.json")
     model = build_model(tok.vocab_size, config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=0.01)
 

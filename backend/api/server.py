@@ -4,13 +4,19 @@ Run from the project root:
     python -m uvicorn backend.api.server:app --port 8000
 then open http://127.0.0.1:8000
 """
+import json
+import os
 import sys
+import threading
+import time
+from collections import defaultdict, deque
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -38,8 +44,22 @@ class GenerateRequest(BaseModel):
     history: Optional[List[Turn]] = Field(default=None, max_length=6)
 
 
-def create_app(checkpoint_dir=None, load_on_start=True):
-    app = FastAPI(title="ELVARN", docs_url="/api/docs", redoc_url=None)
+GENERATION_PATHS = ("/api/chat", "/api/chat/stream", "/api/generate")
+
+
+def env_flag(name):
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None):
+    """public=True (or ELVARN_PUBLIC=1) is for a website anyone can reach: it turns on a per-visitor rate limit,
+    a cap on simultaneous generations, and disables the reload endpoint."""
+    public = env_flag("ELVARN_PUBLIC") if public is None else public
+    if rate_limit_per_minute is None:
+        rate_limit_per_minute = int(os.environ.get("ELVARN_RATE_LIMIT", "20" if public else "0"))
+    if max_concurrent is None:
+        max_concurrent = int(os.environ.get("ELVARN_MAX_CONCURRENT", "2" if public else "0"))
+    app = FastAPI(title="ELVARN", docs_url=None, redoc_url=None)
     # Lets the UI work when opened from another local server such as
     # VS Code Live Server (127.0.0.1:5500). Local origins only.
     app.add_middleware(
@@ -50,6 +70,39 @@ def create_app(checkpoint_dir=None, load_on_start=True):
     )
     service = ModelService(checkpoint_dir)
     app.state.service = service
+    app.state.public = public
+
+    # ---- per-visitor rate limit (in memory; one server process) ----
+    hits = defaultdict(deque)
+    hits_lock = threading.Lock()
+
+    @app.middleware("http")
+    async def rate_limit(request: Request, call_next):
+        if rate_limit_per_minute > 0 and request.method == "POST" and request.url.path in GENERATION_PATHS:
+            forwarded = request.headers.get("x-forwarded-for", "")
+            who = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+            now = time.monotonic()
+            with hits_lock:
+                q = hits[who]
+                while q and now - q[0] > 60:
+                    q.popleft()
+                if len(q) >= rate_limit_per_minute:
+                    wait = max(1, int(60 - (now - q[0])))
+                    return JSONResponse({"detail": f"Too many requests. Please wait {wait} seconds and try again."},
+                                        status_code=429, headers={"Retry-After": str(wait)})
+                q.append(now)
+        return await call_next(request)
+
+    # ---- cap on simultaneous generations (the CPU is small) ----
+    slots = threading.BoundedSemaphore(max_concurrent) if max_concurrent > 0 else None
+
+    def take_slot():
+        if slots is not None and not slots.acquire(blocking=False):
+            raise HTTPException(429, "ELVARN is busy answering other visitors. Please try again in a moment.")
+
+    def give_slot():
+        if slots is not None:
+            slots.release()
 
     if load_on_start:
         try:
@@ -63,6 +116,7 @@ def create_app(checkpoint_dir=None, load_on_start=True):
         if not req.text.strip():
             raise HTTPException(422, "text must not be blank")
         history = [(t.user, t.assistant) for t in req.history] if req.history else None
+        take_slot()
         try:
             return service.generate(
                 req.text, mode=req.mode, max_new_tokens=req.max_new_tokens,
@@ -71,6 +125,49 @@ def create_app(checkpoint_dir=None, load_on_start=True):
             )
         except ModelNotReady as exc:
             raise HTTPException(503, str(exc))
+        finally:
+            give_slot()
+
+    # the API docs page gets the ELVARN logo as its tab icon too
+    @app.get("/api/docs", include_in_schema=False)
+    def docs():
+        return get_swagger_ui_html(openapi_url="/openapi.json", title="ELVARN API", swagger_favicon_url="/favicon.png")
+
+    @app.get("/favicon.png", include_in_schema=False)
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon():
+        logo = FRONTEND_DIR / "logo.png"
+        if not logo.is_file():
+            raise HTTPException(404, "logo not found")
+        return FileResponse(logo, media_type="image/png")
+
+    @app.post("/api/chat/stream")
+    def chat_stream(req: GenerateRequest):
+        """Newline-delimited JSON events: start, token..., done (or error)."""
+        if req.mode not in MODES:
+            raise HTTPException(422, f"mode must be one of {list(MODES)}")
+        if not req.text.strip():
+            raise HTTPException(422, "text must not be blank")
+        if not service.ready:
+            raise HTTPException(503, service.last_error or "Model is not loaded. Train ELVARN first.")
+        history = [(t.user, t.assistant) for t in req.history] if req.history else None
+        take_slot()
+
+        def events():
+            try:
+                for event in service.generate_stream(
+                    req.text, mode=req.mode, max_new_tokens=req.max_new_tokens,
+                    temperature=req.temperature, top_k=req.top_k,
+                    greedy=req.greedy, history=history,
+                ):
+                    yield json.dumps(event) + "\n"
+            except Exception as exc:  # reported to the UI instead of a broken stream
+                yield json.dumps({"event": "error", "message": str(exc)}) + "\n"
+            finally:
+                give_slot()
+
+        return StreamingResponse(events(), media_type="application/x-ndjson",
+                                 headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
     @app.get("/api/health")
     def health():
@@ -93,6 +190,8 @@ def create_app(checkpoint_dir=None, load_on_start=True):
 
     @app.post("/api/reload")
     def reload_model():
+        if public:
+            raise HTTPException(403, "Reloading is disabled on the public site.")
         try:
             return {"reloaded": True, "model": service.load()}
         except ModelNotReady as exc:

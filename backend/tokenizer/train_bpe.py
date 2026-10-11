@@ -1,7 +1,7 @@
 """Train the fixed ELVARN BPE tokenizer on the TRAINING documents only.
 
 Usage (from the project root):
-    python backend/tokenizer/train_bpe.py [--vocab-size 4096]
+    python backend/tokenizer/train_bpe.py [--vocab-size 16384]
 
 Output: backend/tokenizer/bpe/tokenizer.json and tokenizer_meta.json.
 Trained on training documents only, so the validation set stays unseen.
@@ -43,7 +43,7 @@ def train(texts, vocab_size, out_file=TOKENIZER_FILE):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--vocab-size", type=int, default=4096)
+    parser.add_argument("--vocab-size", type=int, default=16384)
     args = parser.parse_args()
 
     documents = corpus.load_documents()

@@ -1,6 +1,6 @@
 {
-  "vocab_size": 4096,
-  "requested_vocab_size": 4096,
+  "vocab_size": 13738,
+  "requested_vocab_size": 16384,
   "special_tokens": {
     "<PAD>": 0,
     "<UNK>": 1,
@@ -11,7 +11,7 @@
     "<CASUAL_CONVERSATION>": 6,
     "<HUMOUR>": 7
   },
-  "sha256": "9d323e0d81731c06e8ac9c26788c6c6bafde3c543e8a2bd8db654d0f2efa5d44",
+  "sha256": "24bdbe40de54eda7258eccfef5b8fc173da56c50df43b371d6da1f762e95d5ba",
   "trained_on_documents": 1658,
   "split_stats": {
     "documents_total": 1747,

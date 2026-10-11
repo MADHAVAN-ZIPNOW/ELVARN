@@ -20,3 +20,6 @@ backend/data/processed/
 backend/training/*.log
 
 backend/training/checkpoints_bpe/
+
+# deployment: weights-only models are committed on purpose
+!deploy/models/**/*.pt
