@@ -1,659 +1,236 @@
+"""Train ELVARN (BPE tokenizer, document-level validation split).
+
+Usage (from the project root):
+    python backend/training/train_batch.py                 # full run
+    python backend/training/train_batch.py --smoke         # tiny test run
+    python backend/training/train_batch.py --resume        # continue last.pt
+
+The run is one job: it trains for --max-steps optimizer steps, evaluates on
+the validation split every --eval-every steps, and keeps three files in
+backend/training/checkpoints_bpe/:
+    last.pt   newest state, used for --resume (status: in_progress)
+    best.pt   lowest validation loss so far
+    final.pt  written only when the run completes (best-validation weights)
+    latest.json  points to final.pt; the chat server loads this file.
+"""
+import argparse
+import json
+import math
+import os
+import random
 import sys
+import time
 from pathlib import Path
 
-import torch ,os
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-
-torch.set_num_threads(min(4, os.cpu_count() or 1))
-torch.set_num_interop_threads(2)
-# =========================================================
-# PATH SETUP
-# ==========================================+++++===============
+import numpy as np
+import torch
+import torch.nn.functional as F
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
-
 sys.path.insert(0, str(BACKEND_DIR))
 
-from tokenizer.tokenizer import encode, vocab
-from model.transformer import TransformerModel
+from model.transformer import DEFAULT_CONFIG, build_model, count_parameters  # noqa: E402
+from tokenizer.bpe_tokenizer import BPETokenizer  # noqa: E402
+
+PROCESSED_DIR = BACKEND_DIR / "data" / "processed"
+CHECKPOINT_DIR = BACKEND_DIR / "training" / "checkpoints_bpe"
 
 
-# =========================================================
-# CONFIGURATION
-# =========================================================
-
-DATA_FILE = BACKEND_DIR / "data" / "train.txt"
-
-CHECKPOINT_DIR = (
-    BACKEND_DIR
-    / "training"
-    / "checkpoints"
-)
-
-CHECKPOINT_DIR.mkdir(
-    parents=True,
-    exist_ok=True
-)
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument("--max-steps", type=int, default=3000)
+    p.add_argument("--batch-size", type=int, default=32)
+    p.add_argument("--learning-rate", type=float, default=1e-3)
+    p.add_argument("--warmup-steps", type=int, default=100)
+    p.add_argument("--eval-every", type=int, default=250)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--threads", type=int, default=min(8, os.cpu_count() or 1))
+    p.add_argument("--resume", action="store_true")
+    p.add_argument("--smoke", action="store_true",
+                   help="tiny run (30 steps) written to a separate smoke directory")
+    p.add_argument("--checkpoint-dir", type=Path, default=None)
+    return p.parse_args()
 
 
-# =========================================================
-# MODEL CONFIGURATION
-# =========================================================
-
-VOCAB_SIZE = len(vocab)
-
-EMBEDDING_SIZE = 128
-HIDDEN_SIZE = 256
-NUM_LAYERS = 2
+def load_split(name):
+    path = PROCESSED_DIR / f"{name}.bin"
+    if not path.is_file():
+        raise SystemExit(f"Missing {path}. Run build_dataset.py first.")
+    return np.memmap(path, dtype=np.uint16, mode="r")  # not loaded into RAM
 
 
-# =========================================================
-# TRAINING CONFIGURATION
-# =========================================================
-
-SEQUENCE_LENGTH = 64
-BATCH_SIZE = 4
-
-LEARNING_RATE = 0.0003
-NUM_EPOCHS = 5
-
-TRAIN_RATIO = 0.90
-RANDOM_SEED = 42
-# =========================================================
-# DEVICE
-# =========================================================
-
-device = torch.device("cpu")
+def get_batch(data, batch_size, seq_len, rng):
+    starts = rng.integers(0, len(data) - seq_len - 1, size=batch_size)
+    x = np.stack([data[s:s + seq_len] for s in starts]).astype(np.int64)
+    y = np.stack([data[s + 1:s + seq_len + 1] for s in starts]).astype(np.int64)
+    return torch.from_numpy(x), torch.from_numpy(y)
 
 
-print("===================================")
-print("TRAIN / VALIDATION TRAINING")
-print("===================================")
-
-print("\nDevice:")
-print(device)
-
-print("\nVocabulary size:")
-print(VOCAB_SIZE)
-
-
-# =========================================================
-# LOAD CORPUS
-# =========================================================
-
-with open(
-    DATA_FILE,
-    "r",
-    encoding="utf-8"
-) as file:
-
-    text = file.read()
-
-
-print("\nTraining file:")
-print(DATA_FILE)
-
-print("\nTraining text characters:")
-print(len(text))
-
-
-# =========================================================
-# TOKENIZATION
-# =========================================================
-
-token_ids = encode(text)
-
-print("\nTotal tokens:")
-print(len(token_ids))
-
-
-# =========================================================
-# SAFETY CHECK
-# =========================================================
-
-max_token_id = max(token_ids)
-
-print("\nMaximum token ID:")
-print(max_token_id)
-
-print("\nVocabulary maximum ID:")
-print(VOCAB_SIZE - 1)
-
-
-if max_token_id >= VOCAB_SIZE:
-
-    raise ValueError(
-        "\nERROR: Token ID is outside vocabulary range.\n"
-        f"Maximum token ID: {max_token_id}\n"
-        f"Vocabulary size: {VOCAB_SIZE}\n"
-        f"Valid IDs: 0 to {VOCAB_SIZE - 1}"
+def lm_loss(logits, targets, pad_id):
+    # Each position predicts the next token; PAD targets are ignored.
+    return F.cross_entropy(
+        logits.reshape(-1, logits.size(-1)), targets.reshape(-1), ignore_index=pad_id
     )
 
 
-print("\nToken ID range check:")
-print("PASSED")
-
-
-# =========================================================
-# CREATE SEQUENCES
-# =========================================================
-
-all_inputs = []
-all_targets = []
-
-
-for i in range(
-    len(token_ids) - SEQUENCE_LENGTH
-):
-
-    input_sequence = token_ids[
-        i:i + SEQUENCE_LENGTH
-    ]
-
-    target_sequence = token_ids[
-        i + 1:i + SEQUENCE_LENGTH + 1
-    ]
-
-    all_inputs.append(
-        torch.tensor(
-            input_sequence,
-            dtype=torch.long
-        )
-    )
-
-    all_targets.append(
-        torch.tensor(
-            target_sequence,
-            dtype=torch.long
-        )
-    )
-
-
-print("\nTotal sequences:")
-print(len(all_inputs))
-
-
-# =========================================================
-# TRAIN / VALIDATION SPLIT
-# =========================================================
-
-total_sequences = len(all_inputs)
-
-train_size = int(
-    total_sequences * TRAIN_RATIO
-)
-
-validation_size = (
-    total_sequences - train_size
-)
-
-
-# =========================================================
-# REPRODUCIBLE SHUFFLE
-# =========================================================
-
-generator = torch.Generator()
-
-generator.manual_seed(
-    RANDOM_SEED
-)
-
-indices = torch.randperm(
-    total_sequences,
-    generator=generator
-).tolist()
-
-
-train_indices = indices[
-    :train_size
-]
-
-validation_indices = indices[
-    train_size:
-]
-
-
-train_inputs = [
-    all_inputs[i]
-    for i in train_indices
-]
-
-train_targets = [
-    all_targets[i]
-    for i in train_indices
-]
-
-validation_inputs = [
-    all_inputs[i]
-    for i in validation_indices
-]
-
-validation_targets = [
-    all_targets[i]
-    for i in validation_indices
-]
-
-
-print("\n===================================")
-print("DATA SPLIT")
-print("===================================")
-
-print("\nTraining sequences:")
-print(len(train_inputs))
-
-print("\nValidation sequences:")
-print(len(validation_inputs))
-
-
-# =========================================================
-# DATASET CLASS
-# =========================================================
-
-class LanguageModelDataset(Dataset):
-
-    def __init__(
-        self,
-        inputs,
-        targets
-    ):
-
-        self.inputs = inputs
-        self.targets = targets
-
-    def __len__(self):
-
-        return len(self.inputs)
-
-    def __getitem__(self, index):
-
-        return (
-            self.inputs[index],
-            self.targets[index]
-        )
-
-
-# =========================================================
-# CREATE DATASETS
-# =========================================================
-
-train_dataset = LanguageModelDataset(
-    train_inputs,
-    train_targets
-)
-
-validation_dataset = LanguageModelDataset(
-    validation_inputs,
-    validation_targets
-)
-
-
-# =========================================================
-# DATA LOADERS
-# =========================================================
-
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True
-)
-
-validation_loader = DataLoader(
-    validation_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=False
-)
-
-
-print("\nTraining batches:")
-print(len(train_loader))
-
-print("\nValidation batches:")
-print(len(validation_loader))
-
-
-# =========================================================
-# CREATE MODEL
-# =========================================================
-
-model = TransformerModel(
-    vocab_size=VOCAB_SIZE,
-    embedding_size=EMBEDDING_SIZE,
-    hidden_size=HIDDEN_SIZE,
-    sequence_length=SEQUENCE_LENGTH,
-    num_layers=NUM_LAYERS
-)
-
-model = model.to(device)
-
-
-# =========================================================
-# PARAMETER COUNT
-# =========================================================
-
-total_parameters = sum(
-    parameter.numel()
-    for parameter in model.parameters()
-)
-
-print("\nModel parameters:")
-print(f"{total_parameters:,}")
-
-
-# =========================================================
-# LOSS FUNCTION
-# =========================================================
-
-loss_function = nn.CrossEntropyLoss()
-
-
-# =========================================================
-# OPTIMIZER
-# =========================================================
-
-optimizer = torch.optim.AdamW(
-    model.parameters(),
-    lr=LEARNING_RATE
-)
-
-
-# =========================================================
-# TRAINING LOOP
-# =========================================================
-
-print("\n===================================")
-print("STARTING TRAINING")
-print("===================================")
-
-
-for epoch in range(NUM_EPOCHS):
-
-    # =====================================================
-    # TRAINING MODE
-    # =====================================================
+@torch.no_grad()
+def evaluate(model, data, seq_len, batch_size, pad_id):
+    """Validation loss over the whole split, in non-overlapping windows."""
+    model.eval()
+    n_windows = (len(data) - 1) // seq_len
+    if n_windows < 1:
+        raise SystemExit("Validation split is shorter than one sequence.")
+    total, count = 0.0, 0
+    for i in range(0, n_windows, batch_size):
+        idx = range(i, min(i + batch_size, n_windows))
+        x = torch.from_numpy(np.stack([data[j * seq_len:j * seq_len + seq_len] for j in idx]).astype(np.int64))
+        y = torch.from_numpy(np.stack([data[j * seq_len + 1:j * seq_len + seq_len + 1] for j in idx]).astype(np.int64))
+        total += lm_loss(model(x), y, pad_id).item() * len(idx)
+        count += len(idx)
+    model.train()
+    return total / count
+
+
+def lr_at(step, args):
+    if step < args.warmup_steps:
+        return args.learning_rate * (step + 1) / args.warmup_steps
+    progress = (step - args.warmup_steps) / max(1, args.max_steps - args.warmup_steps)
+    return 0.1 * args.learning_rate + 0.9 * args.learning_rate * 0.5 * (1 + math.cos(math.pi * progress))
+
+
+def save_checkpoint(path, model, optimizer, step, best_val, config, tok, history, rng_state, status):
+    tmp = path.with_suffix(".tmp")
+    torch.save({
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "step": step,
+        "best_val_loss": best_val,
+        "config": config,
+        "vocab_size": tok.vocab_size,
+        "tokenizer_sha256": tok.sha256,
+        "history": history,
+        "rng_state": rng_state,
+        "status": status,
+    }, tmp)
+    os.replace(tmp, path)  # never leave a half-written checkpoint
+
+
+def main():
+    args = parse_args()
+    if args.smoke:
+        args.max_steps, args.eval_every, args.warmup_steps, args.batch_size = 30, 15, 5, 8
+    ckpt_dir = args.checkpoint_dir or (CHECKPOINT_DIR / ("smoke" if args.smoke else ""))
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+    torch.set_num_threads(args.threads)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    rng = np.random.default_rng(args.seed)
+    device = torch.device("cpu")
+
+    tok = BPETokenizer()
+    meta_path = PROCESSED_DIR / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.is_file() else {}
+    if meta.get("tokenizer_sha256") not in (None, tok.sha256):
+        raise SystemExit("Processed data was built with a different tokenizer. Re-run build_dataset.py.")
+
+    train_data, val_data = load_split("train"), load_split("val")
+    config = dict(DEFAULT_CONFIG)
+    seq_len = config["sequence_length"]
+    if len(train_data) <= seq_len + 1 or len(val_data) <= seq_len + 1:
+        raise SystemExit("Dataset too small for the configured sequence length.")
+    for name, data in (("train", train_data), ("val", val_data)):
+        if int(data.max()) >= tok.vocab_size:
+            raise SystemExit(f"{name}.bin contains token ids outside the vocabulary.")
+
+    model = build_model(tok.vocab_size, config).to(device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=0.01)
+
+    step, best_val, history = 0, float("inf"), []
+    last_path, best_path, final_path = ckpt_dir / "last.pt", ckpt_dir / "best.pt", ckpt_dir / "final.pt"
+    if args.resume:
+        if not last_path.is_file():
+            raise SystemExit(f"Nothing to resume: {last_path} not found.")
+        ck = torch.load(last_path, map_location=device, weights_only=False)
+        if ck["tokenizer_sha256"] != tok.sha256 or ck["vocab_size"] != tok.vocab_size:
+            raise SystemExit("Checkpoint was trained with a different tokenizer. Cannot resume.")
+        if ck["config"] != config:
+            raise SystemExit("Checkpoint model config differs from the current config. Cannot resume.")
+        model.load_state_dict(ck["model_state_dict"])
+        optimizer.load_state_dict(ck["optimizer_state_dict"])
+        step, best_val, history = ck["step"], ck["best_val_loss"], ck["history"]
+        rng.bit_generator.state = ck["rng_state"]
+        print(f"Resumed from step {step}")
+
+    print("=" * 60)
+    print("ELVARN TRAINING")
+    print("=" * 60)
+    print("Dataset files      :", meta.get("files"))
+    print("Train documents    :", meta.get("train", {}).get("documents"))
+    print("Val documents      :", meta.get("val", {}).get("documents"))
+    print("Train tokens       :", len(train_data))
+    print("Val tokens         :", len(val_data))
+    print("Unknown tokens     : train", meta.get("train", {}).get("unk_percent"), "% | val", meta.get("val", {}).get("unk_percent"), "%")
+    print("Vocabulary size    :", tok.vocab_size)
+    print("Sequence length    :", seq_len)
+    print("Model config       :", config)
+    print(f"Parameters         : {count_parameters(model):,}")
+    print("Batch size         :", args.batch_size)
+    print("Learning rate      :", args.learning_rate)
+    print("Max steps          :", args.max_steps)
+    print("Device             :", device)
+    print("Checkpoint dir     :", ckpt_dir)
+    print("=" * 60, flush=True)
 
     model.train()
-
-    total_train_loss = 0.0
-
-    train_batch_count = 0
-
-
-    print(
-        f"\nEpoch {epoch + 1}/{NUM_EPOCHS}"
-    )
-
-    print("-----------------------------------")
-
-
-    # =====================================================
-    # TRAINING BATCHES
-    # =====================================================
-
-    for batch_index, (
-        inputs,
-        targets
-    ) in enumerate(train_loader):
-
-        inputs = inputs.to(device)
-
-        targets = targets.to(device)
-
-
-        # -------------------------------------------------
-        # CLEAR GRADIENTS
-        # -------------------------------------------------
-
-        optimizer.zero_grad()
-
-
-        # -------------------------------------------------
-        # FORWARD PASS
-        # -------------------------------------------------
-
-        logits = model(inputs)
-
-
-        # -------------------------------------------------
-        # SAFETY CHECK
-        # -------------------------------------------------
-
-        if logits.size(-1) != VOCAB_SIZE:
-
-            raise ValueError(
-                "\nERROR: Model output vocabulary size "
-                "does not match vocabulary."
-                f"\nModel output: {logits.size(-1)}"
-                f"\nVocabulary: {VOCAB_SIZE}"
-            )
-
-
-        # -------------------------------------------------
-        # RESHAPE FOR LOSS
-        # -------------------------------------------------
-
-        logits_for_loss = logits.reshape(
-            -1,
-            VOCAB_SIZE
-        )
-
-        targets_for_loss = targets.reshape(
-            -1
-        )
-
-
-        # -------------------------------------------------
-        # LOSS
-        # -------------------------------------------------
-
-        loss = loss_function(
-            logits_for_loss,
-            targets_for_loss
-        )
-
-
-        # -------------------------------------------------
-        # BACKPROPAGATION
-        # -------------------------------------------------
-
+    started = time.time()
+    while step < args.max_steps:
+        for group in optimizer.param_groups:
+            group["lr"] = lr_at(step, args)
+        x, y = get_batch(train_data, args.batch_size, seq_len, rng)
+        loss = lm_loss(model(x.to(device)), y.to(device), tok.pad_id)
+        if not torch.isfinite(loss):
+            raise SystemExit(f"Loss became {loss.item()} at step {step}. Stopping.")
+        optimizer.zero_grad(set_to_none=True)
         loss.backward()
-
-
-        # -------------------------------------------------
-        # UPDATE WEIGHTS
-        # -------------------------------------------------
-
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
-
-
-        # -------------------------------------------------
-        # TRACK LOSS
-        # -------------------------------------------------
-
-        total_train_loss += loss.item()
-
-        train_batch_count += 1
-
-
-        # -------------------------------------------------
-        # FIRST BATCH
-        # -------------------------------------------------
-
-        if batch_index == 0:
-
-            print(
-                f"First training batch loss: "
-                f"{loss.item():.6f}"
-            )
-
-
-    # =====================================================
-    # AVERAGE TRAINING LOSS
-    # =====================================================
-
-    average_train_loss = (
-        total_train_loss
-        / train_batch_count
-    )
-
-
-    # =====================================================
-    # VALIDATION
-    # =====================================================
-
-    model.eval()
-
-    total_validation_loss = 0.0
-
-    validation_batch_count = 0
-
-
-    with torch.no_grad():
-
-        for (
-            inputs,
-            targets
-        ) in validation_loader:
-
-            inputs = inputs.to(device)
-
-            targets = targets.to(device)
-
-
-            # ---------------------------------------------
-            # FORWARD PASS
-            # ---------------------------------------------
-
-            logits = model(inputs)
-
-
-            # ---------------------------------------------
-            # RESHAPE
-            # ---------------------------------------------
-
-            logits_for_loss = logits.reshape(
-                -1,
-                VOCAB_SIZE
-            )
-
-            targets_for_loss = targets.reshape(
-                -1
-            )
-
-
-            # ---------------------------------------------
-            # VALIDATION LOSS
-            # ---------------------------------------------
-
-            loss = loss_function(
-                logits_for_loss,
-                targets_for_loss
-            )
-
-
-            total_validation_loss += (
-                loss.item()
-            )
-
-            validation_batch_count += 1
-
-
-    # =====================================================
-    # AVERAGE VALIDATION LOSS
-    # =====================================================
-
-    average_validation_loss = (
-        total_validation_loss
-        / validation_batch_count
-    )
-
-
-    # =====================================================
-    # PRINT RESULTS
-    # =====================================================
-
-    print(
-        f"Average training loss: "
-        f"{average_train_loss:.6f}"
-    )
-
-    print(
-        f"Average validation loss: "
-        f"{average_validation_loss:.6f}"
-    )
-
-
-    # =====================================================
-    # SAVE CHECKPOINT
-    # =====================================================
-
-    checkpoint_path = (
-        CHECKPOINT_DIR
-        / f"checkpoint_epoch_{epoch + 1}.pt"
-    )
-
-
-    torch.save(
-        {
-            "epoch": epoch + 1,
-
-            "model_state_dict":
-                model.state_dict(),
-
-            "optimizer_state_dict":
-                optimizer.state_dict(),
-
-            "train_loss":
-                average_train_loss,
-
-            "validation_loss":
-                average_validation_loss,
-
-            "vocab_size":
-                VOCAB_SIZE,
-
-            "embedding_size":
-                EMBEDDING_SIZE,
-
-            "hidden_size":
-                HIDDEN_SIZE,
-
-            "num_layers":
-                NUM_LAYERS,
-
-            "sequence_length":
-                SEQUENCE_LENGTH
-        },
-        checkpoint_path
-    )
-
-
-    print(
-        f"Checkpoint saved: "
-        f"{checkpoint_path.name}"
-    )
-
-
-# =========================================================
-# COMPLETE
-# =========================================================
-
-print("\n===================================")
-print("TRAINING COMPLETE")
-print("===================================")
-
-print("\nFinal training loss:")
-print(
-    f"{average_train_loss:.6f}"
-)
-
-print("\nFinal validation loss:")
-print(
-    f"{average_validation_loss:.6f}"
-)
-
-print("\nFinal vocabulary size:")
-print(VOCAB_SIZE)
-
-print("\nCheckpoint directory:")
-print(CHECKPOINT_DIR)
+        step += 1
+
+        if step % args.eval_every == 0 or step == args.max_steps:
+            val_loss = evaluate(model, val_data, seq_len, args.batch_size, tok.pad_id)
+            history.append({"step": step, "train_loss": loss.item(), "val_loss": val_loss})
+            print(f"step {step:5d} | train {loss.item():.4f} | val {val_loss:.4f} | {time.time() - started:.0f}s", flush=True)
+            if val_loss < best_val:
+                best_val = val_loss
+                save_checkpoint(best_path, model, optimizer, step, best_val, config, tok, history, rng.bit_generator.state, "best")
+            save_checkpoint(last_path, model, optimizer, step, best_val, config, tok, history, rng.bit_generator.state, "in_progress")
+
+    # Completed: final.pt holds the best-validation weights.
+    best = torch.load(best_path, map_location=device, weights_only=False)
+    best["status"] = "completed"
+    best["history"] = history
+    best["final_step"] = step
+    tmp = final_path.with_suffix(".tmp")
+    torch.save(best, tmp)
+    os.replace(tmp, final_path)
+    save_checkpoint(last_path, model, optimizer, step, best_val, config, tok, history, rng.bit_generator.state, "completed")
+
+    (ckpt_dir / "latest.json").write_text(json.dumps({
+        "checkpoint": final_path.name,
+        "status": "completed",
+        "weights_from_step": best["step"],
+        "final_step": step,
+        "best_val_loss": best_val,
+        "tokenizer_sha256": tok.sha256,
+        "vocab_size": tok.vocab_size,
+        "config": config,
+        "smoke_run": bool(args.smoke),
+        "completed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }, indent=2), encoding="utf-8")
+    print(f"TRAINING COMPLETE. Final weights (step {best['step']}, val {best_val:.4f}) -> {final_path}")
+
+
+if __name__ == "__main__":
+    main()

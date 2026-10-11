@@ -15,3 +15,8 @@ backend/data/train.txt
 *.zip
 elvarn_upload/
 zip_test/
+
+backend/data/processed/
+backend/training/*.log
+
+backend/training/checkpoints_bpe/

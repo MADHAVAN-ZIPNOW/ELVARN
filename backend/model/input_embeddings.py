@@ -24,7 +24,7 @@ from tokenizer.tokenizer import encode
 # MODEL SETTINGS
 # =========================================================
 
-vocab_size = 5299
+vocab_size = 9,974
 embedding_size = 128
 sequence_length = 4
 

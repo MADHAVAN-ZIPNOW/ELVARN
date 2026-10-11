@@ -1,0 +1,24 @@
+{
+  "vocab_size": 4096,
+  "requested_vocab_size": 4096,
+  "special_tokens": {
+    "<PAD>": 0,
+    "<UNK>": 1,
+    "<BOS>": 2,
+    "<EOS>": 3,
+    "<DOMAIN_KNOWLEDGE>": 4,
+    "<GENERAL_ENGLISH>": 5,
+    "<CASUAL_CONVERSATION>": 6,
+    "<HUMOUR>": 7
+  },
+  "sha256": "9d323e0d81731c06e8ac9c26788c6c6bafde3c543e8a2bd8db654d0f2efa5d44",
+  "trained_on_documents": 1658,
+  "split_stats": {
+    "documents_total": 1747,
+    "exact_duplicates_removed": 6,
+    "near_duplicates_removed_from_train": 1,
+    "train_documents": 1658,
+    "val_documents": 82
+  },
+  "library": "tokenizers (byte-level BPE)"
+}
