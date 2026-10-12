@@ -56,6 +56,7 @@ class RouteDecision:
     search: bool
     reason: str
     query: str = ""
+    core: str = ""        # the user's own words (without the added legal context): used to judge whether a result is relevant
 
 
 def _has_named_entity(text):
@@ -110,6 +111,7 @@ def decide(text, history=None, mode="chat"):
     query = build_query(text, history)
     if len(re.findall(r"[A-Za-z0-9]{3,}", query)) == 0:
         return RouteDecision(False, "no searchable words")
+    core = query
     if mode == "domain" and not re.search(r"\bindia", query, re.I):
         # The India Law mode: "What is Article 21?" must not find Article 21 of other countries or random pages.
         # Search engines answer natural phrases much better than bare keywords (tested: 9 of 10 good results with these endings).
@@ -118,7 +120,7 @@ def decide(text, history=None, mode="chat"):
         else:
             query = f"{query} under Indian law"
         query = query[:MAX_QUERY_CHARS]
-    return RouteDecision(True, reason, query)
+    return RouteDecision(True, reason, query, core)
 
 
 def keywords(text):

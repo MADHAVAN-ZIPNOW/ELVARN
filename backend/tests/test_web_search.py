@@ -763,3 +763,22 @@ def test_india_law_mode_searches_concept_questions_but_other_modes_do_not():
     assert not router.decide("hello how are you", None, "domain").search                      # greetings are never searched
     assert not router.decide("Write a poem about justice", None, "domain").search             # creative requests are never searched
     assert not router.decide("What did I ask you before?", None, "domain").search             # questions about the chat itself are not searched
+
+
+# ------------------------------------------------------------------ the added legal context must not make results look relevant
+def test_added_legal_context_does_not_count_as_a_match():
+    """'Law Reform | Indian Law Resource Center' (about Native American nations) matched only because we added 'under Indian law'."""
+    plan = plan_search("What is a writ petition?", None, "domain", "auto")
+    assert plan.query == "What is a writ petition under Indian law" and plan.core == "What is a writ petition"
+    results = [RawResult("Law Reform | Indian Law Resource Center", "https://indianlaw.example/lr", "Our Law Reform project supports the sovereign rights of Indian and Alaska Native nations"),
+               RawResult("Understanding Writ Petitions in the Supreme Court", "https://aor.example/w", "A writ petition is filed under Article 32 or 226 of the Constitution of India")]
+    out = SearchService(FakeProvider(results)).search(plan.query, core=plan.core)
+    assert [s.url for s in out.sources] == ["https://aor.example/w"]
+    # without the user's own words as the yardstick, the wrong page would have been kept
+    assert len(SearchService(FakeProvider(results)).search(plan.query).sources) == 2
+
+
+def test_model_text_stops_before_an_invented_source_line():
+    from model import generation
+    for line in ("\nSource: https://www.indiacode.nic.in", "\nSources: x", "\nVerification status: Unverified - pending source check"):
+        assert any(stop in "an answer." + line for stop in generation.STOP_STRINGS)

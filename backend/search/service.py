@@ -100,15 +100,15 @@ class SearchService:
     def available(self):
         return self.provider is not None and self.provider.is_configured()
 
-    def search(self, query):
+    def search(self, query, core=None):
         started = time.perf_counter()
-        status, sources = self._run(query)
+        status, sources = self._run(query, core)
         ms = int((time.perf_counter() - started) * 1000)
         # minimal metadata only: never the query text, results or any key
         log.info("web_search status=%s results=%d ms=%d", status, len(sources), ms)
         return SearchOutcome(status, sources, MESSAGES[status], ms)
 
-    def _run(self, query):
+    def _run(self, query, core=None):
         query = (query or "").strip()[:MAX_QUERY_CHARS]
         if not query:
             return SKIPPED, []
@@ -127,7 +127,8 @@ class SearchService:
             return ERROR, []
         except Exception:  # a provider bug must never break chat
             return ERROR, []
-        wanted = keywords(query)
+        base = (core or query)                  # judge relevance by the user's own words, not by context we added ("under Indian law")
+        wanted = keywords(base)
         sources, seen, per_domain = [], set(), {}
         for item in list(raw or [])[: self.max_results * 2]:
             checked = clean_url(getattr(item, "url", ""))
@@ -135,7 +136,7 @@ class SearchService:
             snippet = clean_text(getattr(item, "snippet", ""), self.max_snippet)
             if not checked or not (title or snippet) or checked[0] in seen or per_domain.get(checked[1], 0) >= 2:
                 continue  # unsafe URL, empty, duplicate, or a third hit from one site (spam)
-            if wanted and not _relevant(query, wanted, f"{title} {snippet} {checked[1]}"):
+            if wanted and not _relevant(base, wanted, f"{title} {snippet} {checked[1]}"):
                 continue  # too little in common with the question (or a number from the question is missing): not relevant evidence
             seen.add(checked[0])
             per_domain[checked[1]] = per_domain.get(checked[1], 0) + 1

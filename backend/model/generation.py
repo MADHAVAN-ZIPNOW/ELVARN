@@ -17,7 +17,10 @@ MODES = {
 
 # Text that means the model has started a new turn / block; cut there.
 STOP_STRINGS = ["\nUser:", "\nQuestion:", "\nTopic:", "<DOMAIN_KNOWLEDGE>",
-                "<GENERAL_ENGLISH>", "<CASUAL_CONVERSATION>", "<HUMOUR>"]
+                "<GENERAL_ENGLISH>", "<CASUAL_CONVERSATION>", "<HUMOUR>",
+                # The training text has "Source: <url>" and "Verification status: ..." lines. The model copies the STYLE and invents
+                # a source that looks real, so generation stops before those lines (the real sources are shown by the app).
+                "\nSource:", "\nSources:", "\nVerification status:"]
 
 
 def build_prompt(text, mode, history=None):

@@ -17,6 +17,7 @@ class SearchPlan:
     """What to do before generating. `query` is set only when a search should run."""
     query: Optional[str] = None
     reason: str = ""
+    core: str = ""
 
 
 @dataclass
@@ -39,7 +40,7 @@ def plan_search(text, history, mode, web_search):
     if web_search != "auto":
         return SearchPlan()
     d = decide(text, history, mode)
-    return SearchPlan(d.query, d.reason) if d.search else SearchPlan(None, d.reason)
+    return SearchPlan(d.query, d.reason, d.core) if d.search else SearchPlan(None, d.reason)
 
 
 def run_search(plan, text, search: SearchService, model_service, max_new_tokens, allowed=True):
@@ -48,7 +49,7 @@ def run_search(plan, text, search: SearchService, model_service, max_new_tokens,
         return SearchResult()
     if search is None or not allowed:
         return SearchResult(status=UNAVAILABLE, message=MESSAGES[UNAVAILABLE])
-    outcome = search.search(plan.query)
+    outcome = search.search(plan.query, core=plan.core or None)
     res = SearchResult(status=outcome.status, searched=outcome.searched,
                        sources=[s.as_dict() for s in outcome.sources], message=outcome.message)
     if outcome.searched:
