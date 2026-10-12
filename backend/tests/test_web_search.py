@@ -720,3 +720,46 @@ def test_india_law_mode_adds_india_to_the_search_query():
     assert again.query.lower().count("india") == 1                              # not added twice
     plain = router.decide("What is Article 21?", None, "english")
     assert plain.search and "India" not in plain.query                          # other modes are unchanged
+
+
+# ------------------------------------------------------------------ one retry when the search returns nothing
+class _FlakyProvider(FakeProvider):
+    """Returns nothing on the first call and real results on the second (like search engines that answer sometimes)."""
+
+    def search(self, query, count, timeout):
+        self.calls.append((query, count, timeout))
+        return [] if len(self.calls) == 1 else self.results
+
+
+def test_an_empty_answer_is_retried_once():
+    p = _FlakyProvider(good_results())
+    out = SearchService(p, retry_delay=0).search("paris capital")
+    assert out.status == "used" and out.sources and len(p.calls) == 2
+
+
+def test_an_empty_answer_is_retried_only_once():
+    p = FakeProvider([])
+    out = SearchService(p, retry_delay=0).search("paris capital")
+    assert out.status == "no_results" and len(p.calls) == 2           # one try plus one retry, never a loop
+
+
+def test_a_good_answer_is_not_retried():
+    p = FakeProvider(good_results())
+    assert SearchService(p, retry_delay=0).search("paris capital").status == "used" and len(p.calls) == 1
+
+
+def test_render_settings_do_not_list_the_engines_that_always_fail_from_a_cloud_address():
+    import yaml
+    s = yaml.safe_load((pathlib.Path(__file__).resolve().parents[2] / "search_service" / "settings.yml").read_text(encoding="utf-8"))
+    keep = s["use_default_settings"]["engines"]["keep_only"]
+    assert "duckduckgo" not in keep and "brave" not in keep and "google cse" in keep and "bing" in keep
+
+
+def test_india_law_mode_searches_concept_questions_but_other_modes_do_not():
+    d = router.decide("What is a writ petition?", None, "domain")
+    assert d.search and d.query == "What is a writ petition under Indian law"
+    assert router.decide("Explain the basic structure doctrine", None, "domain").search
+    assert not router.decide("What is a writ petition?", None, "english").search               # unchanged elsewhere
+    assert not router.decide("hello how are you", None, "domain").search                      # greetings are never searched
+    assert not router.decide("Write a poem about justice", None, "domain").search             # creative requests are never searched
+    assert not router.decide("What did I ask you before?", None, "domain").search             # questions about the chat itself are not searched

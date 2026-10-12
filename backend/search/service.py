@@ -81,8 +81,9 @@ def _number(env, name, default, cast):
 
 
 class SearchService:
-    def __init__(self, provider: SearchProvider = None, max_results=5, timeout=5.0, max_snippet=220):
+    def __init__(self, provider: SearchProvider = None, max_results=5, timeout=5.0, max_snippet=220, retry_delay=0.8):
         self.provider = provider
+        self.retry_delay = max(0.0, min(float(retry_delay), 3.0))      # pause before the single retry when a search returns nothing
         self.max_results = max(1, min(int(max_results), 8))
         self.timeout = max(0.5, min(float(timeout), 15.0))
         self.max_snippet = max(40, min(int(max_snippet), 600))
@@ -115,6 +116,9 @@ class SearchService:
             return UNAVAILABLE, []
         try:
             raw = self.provider.search(query, self.max_results, self.timeout)
+            if not raw:                                  # the search engines behind SearXNG are flaky from cloud servers: try once more
+                time.sleep(self.retry_delay)
+                raw = self.provider.search(query, self.max_results, self.timeout)
         except SearchTimeout:
             return ERROR, []
         except (SearchRateLimited, SearchUnavailable):

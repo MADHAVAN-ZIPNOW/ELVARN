@@ -4,16 +4,15 @@ use_default_settings:
   engines:
     # Engines that need no API key. Several general engines are OFF by default in SearXNG, so they are switched on below.
     # (Search engines often block cloud-server addresses, so a wider set gives more chances that one of them answers.)
+    # duckduckgo and brave are NOT listed: from Render's address they time out / are rate limited, and SearXNG waits for them,
+    # which slowed every search and made results intermittent.
     keep_only:
-      - duckduckgo
       - google cse
       - bing
       - yahoo
       - mwmbl
-      - brave
       - wikipedia
       - wikidata
-      - duckduckgo news
       - bing news
       - google news
       - reuters

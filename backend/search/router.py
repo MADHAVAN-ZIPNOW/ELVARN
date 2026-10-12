@@ -43,7 +43,8 @@ _CREATIVE = re.compile(r"\b(write|compose|draft|poem|story|joke|riddle|song|lyri
                        r"pretend|roleplay|role-play|make up|tell me a (joke|story)|translate)\b", re.I)
 _ABOUT_CONVERSATION = re.compile(r"\b(what did i (say|ask)|our (chat|conversation)|summari[sz]e (this|our|the) |"
                                  r"repeat (that|it)|say that again|you just (said|told)|earlier)\b", re.I)
-_QUESTION_START = re.compile(r"^\s*(who|what|when|where|which|how (many|much|old|tall|far|long))\b", re.I)
+_DOMAIN_QUESTION = re.compile(r"^\s*(what|who|whom|when|where|which|why|how|define|explain|describe|tell me about|meaning of|is|are|can|does|do)\b", re.I)
+_QUESTION_START =re.compile(r"^\s*(who|what|when|where|which|how (many|much|old|tall|far|long))\b", re.I)
 _REFERENCE = re.compile(r"\b(it|its|that|this|they|them|their|he|him|his|she|her|there|those|these|the (company|"
                         r"person|team|country|city|product|game|movie|film))\b", re.I)
 _STOP = {"the", "and", "for", "are", "was", "who", "what", "when", "where", "which", "how", "does", "did",
@@ -96,6 +97,9 @@ def decide(text, history=None, mode="chat"):
     if mode == "raw" or len(text) < 4:
         return RouteDecision(False, "not a question")
     ok, reason = _worth_searching(text)
+    if not ok and mode == "domain" and _DOMAIN_QUESTION.match(text) and not _GREETING.match(text) \
+            and not _CREATIVE.search(text) and not _ABOUT_CONVERSATION.search(text):
+        ok, reason = True, "India Law mode: a legal or government question"      # concept questions ("What is a writ petition?") are looked up too
     if not ok and history and _REFERENCE.search(text) and len(text.split()) <= 12 and not _GREETING.match(text) \
             and not _CREATIVE.search(text) and not _ABOUT_CONVERSATION.search(text):
         prev_ok, _ = _worth_searching(history[-1][0] or "")
