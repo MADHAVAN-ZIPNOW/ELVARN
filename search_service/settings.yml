@@ -2,20 +2,33 @@
 # SearXNG listens on 127.0.0.1 only; the public door is the gatekeeper (proxy.py), which checks a token.
 use_default_settings:
   engines:
-    # A modest set that needs no API keys. Names that do not exist in the image are ignored.
+    # Engines that need no API key. Several general engines are OFF by default in SearXNG, so they are switched on below.
+    # (Search engines often block cloud-server addresses, so a wider set gives more chances that one of them answers.)
     keep_only:
       - duckduckgo
-      - google
+      - google cse
       - bing
+      - yahoo
+      - mwmbl
       - brave
-      - startpage
-      - mojeek
       - wikipedia
+      - wikidata
+      - duckduckgo news
       - bing news
       - google news
+      - reuters
+      - wikinews
       - arxiv
       - github
       - stackoverflow
+
+engines:
+  - name: bing
+    disabled: false
+  - name: yahoo
+    disabled: false
+  - name: mwmbl
+    disabled: false
 
 general:
   instance_name: "search"
@@ -42,5 +55,5 @@ ui:
   results_on_new_tab: false
 
 outgoing:
-  request_timeout: 3.5
-  max_request_timeout: 6.0
+  request_timeout: 5.0
+  max_request_timeout: 7.0
