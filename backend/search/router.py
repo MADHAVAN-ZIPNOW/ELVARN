@@ -106,6 +106,8 @@ def decide(text, history=None, mode="chat"):
     query = build_query(text, history)
     if len(re.findall(r"[A-Za-z0-9]{3,}", query)) == 0:
         return RouteDecision(False, "no searchable words")
+    if mode == "domain" and not re.search(r"\bindia", query, re.I):
+        query = f"{query} India"[:MAX_QUERY_CHARS]        # the India Law mode: "What is Article 21?" must not find Article 21 of other countries
     return RouteDecision(True, reason, query)
 
 

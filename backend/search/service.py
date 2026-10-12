@@ -1,6 +1,7 @@
 """The search service: calls a provider, cleans the results, never raises into the chat flow."""
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from typing import List
@@ -24,6 +25,28 @@ MESSAGES = {
 # Live results were found, but none fitted into the model's small context window: be honest that the text was NOT written from them.
 USED_NO_EVIDENCE_MESSAGE = ("Live web results were found (see the sources), but they did not fit into the small model's memory window, "
                             "so the answer text was NOT written from them. Read the sources instead.")
+
+
+def _stem(word):
+    """Very rough word stem so 'India' matches 'Indian' and 'article' matches 'articles'."""
+    return word[:5]
+
+
+def _relevant(query, wanted, result_text):
+    """A result is kept only if it shares enough words with the question AND contains every number in it.
+
+    Numbers matter most for legal questions ("Article 21", "Section 420"): a page about Article 246 is not an answer,
+    even though it shares the word "article". Words shorter than 3 letters are ignored by keywords(), so numbers are checked here.
+    """
+    numbers = re.findall(r"\b\d+\b", query)
+    if numbers:
+        have = set(re.findall(r"\b\d+\b", result_text))
+        if not all(n in have for n in numbers):
+            return False
+    want = {_stem(w) for w in wanted}
+    got = {_stem(w) for w in keywords(result_text)}
+    need = 1 if len(want) <= 2 else 2                        # one shared word is enough for a very short question; otherwise two
+    return len(want & got) >= need
 
 
 @dataclass
@@ -108,8 +131,8 @@ class SearchService:
             snippet = clean_text(getattr(item, "snippet", ""), self.max_snippet)
             if not checked or not (title or snippet) or checked[0] in seen or per_domain.get(checked[1], 0) >= 2:
                 continue  # unsafe URL, empty, duplicate, or a third hit from one site (spam)
-            if wanted and not (wanted & keywords(f"{title} {snippet} {checked[1]}")):
-                continue  # nothing in common with the question: not relevant evidence
+            if wanted and not _relevant(query, wanted, f"{title} {snippet} {checked[1]}"):
+                continue  # too little in common with the question (or a number from the question is missing): not relevant evidence
             seen.add(checked[0])
             per_domain[checked[1]] = per_domain.get(checked[1], 0) + 1
             sources.append(Source(title or checked[1], checked[0], checked[1], snippet))
