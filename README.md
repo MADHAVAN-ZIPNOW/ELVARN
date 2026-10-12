@@ -132,6 +132,68 @@ Colourful (cyan, indigo, rose) responsive chat for desktop and phone. While ELVA
 service. Settings (temperature, max tokens, top-k, greedy, voice, speed,
 listening language) are in the ⚙️ panel.
 
+## Web search with your own SearXNG (optional)
+
+The "Web search" switch in the settings panel asks a SearXNG server you run yourself for fresh results, shows them as citations and gives the model a few short snippets as notes. No API key and no paid search service. Without SearXNG the chat works as before and says the answer was not checked against live web results.
+
+```powershell
+# 1. In .env (copy from .env.example) set a secret and a pinned image version:
+#      SEARXNG_SECRET=<output of: openssl rand -hex 32>
+#      SEARXNG_IMAGE_TAG=<a dated tag from https://hub.docker.com/r/searxng/searxng/tags, never "latest">
+# 2. Start SearXNG (listens on 127.0.0.1:8080 only, so nobody else can reach it)
+docker compose -f docker-compose.searxng.yml --env-file .env up -d
+# 3. Start ELVARN as usual. It looks for SearXNG at SEARXNG_BASE_URL (default http://127.0.0.1:8080)
+# Stop it with: docker compose -f docker-compose.searxng.yml down
+```
+
+Settings: `SEARXNG_BASE_URL`, `SEARXNG_TIMEOUT_SECONDS`, `SEARCH_RESULT_LIMIT`, `MAX_SNIPPET_LENGTH` (see `.env.example`). SearXNG config: `infra/searxng/settings.yml`. Only titles, links and snippets are used; pages are never opened. Results depend on the search engines SearXNG asks, which may rate-limit it.
+
+## File upload and format conversion
+
+Use the paperclip button (or drag a file onto the chat), then type something like "convert this to pdf" or press a "Convert to" button. You get a download card. The conversion is done by plain server code in `backend/files/`, **not by the language model**: the 17M model never reads or rewrites your file, and the reply ("Converted notes.txt to PDF (12 KB).") is a fixed template. Asking to summarise, translate or rewrite gets an honest "I only change formats" answer. Any other message goes through the normal chat unchanged.
+
+| From (upload) | To |
+|---|---|
+| txt | md, html, csv (one row per line), json, docx, pdf |
+| md | txt, html, json, docx, pdf |
+| csv | txt, md, html, json (list of objects), docx, pdf |
+| json | txt, md, html, csv (only a list of records or rows), docx, pdf |
+| html | txt, md, json, csv (first table only), docx, pdf |
+| docx | txt, md, html, json, csv (first table only), pdf |
+
+What is kept: text, headings, bullet items, code blocks and tables. **Not kept:** layout, fonts, colours, images, page structure. PDF is output only (reading PDFs safely needs a heavy library). The PDF writer uses built-in fonts, so only English / Western European characters are drawn; other scripts become `?` and the reply says how many. "Any file type" is not supported on purpose: each type needs its own safe reader, and programs, archives, macro files (`.exe .js .zip .docm .xlsm .svg` ...) are always refused.
+
+Endpoints: `POST /api/files` (the raw file as the body, name in the `X-File-Name` header, percent-encoded) returns `{file_id, name, size, detected_type, supported_targets}`; `POST /api/files/{id}/convert` with `{"target": "pdf"}` returns `{download_id, name, size, format}`; `GET /api/files/{download_id}/download` returns the file as an attachment; `DELETE /api/files/{id}` removes an upload. `/api/chat` and `/api/chat/stream` accept an optional `file_ids` list; a conversion turn returns `files` and `file_action` (streaming adds a `file` event before `done`).
+
+Viewing and copying: click a file card in the chat (or the file chip inside the input box) to open a right-side panel that shows the file's text, with Copy, Download and Close buttons (Esc also closes it). The "+" button at the left of the input box attaches a file; the chip, its remove button and the small "Convert to" buttons sit inside the input box. The panel is fed by `GET /api/files/{id}/preview` (works for upload ids and download ids) which returns `{name, format, size, text, truncated, preview_note, kind, label}`: text only, at most 200,000 characters (`truncated` is set when longer), `Cache-Control: no-store`, same expiry, 404 and per-visitor rate limit as downloads, and nothing is logged. TXT/MD/HTML/CSV/JSON files are returned as their own text (HTML is shown as source, never rendered); for DOCX and PDF the preview is the extracted text only (the PDF itself is never parsed). The browser shows it with `textContent`, never as HTML.
+
+Limits and storage (env vars in `.env.example`): 5 MB per upload (`ELVARN_MAX_UPLOAD_MB`), 20 MB in the store (`ELVARN_MAX_STORE_MB`), 20 files per visitor (`ELVARN_MAX_FILES_PER_VISITOR`), files deleted after 1 hour (`ELVARN_FILE_TTL_SECONDS`), folder `ELVARN_FILE_STORE` (default `backend/file_store/`, git-ignored, emptied at start-up). Files are temporary: nothing is kept long term. In public mode uploads, conversions and downloads share the per-visitor rate limit.
+
+Security: size is limited while reading; type is decided by extension AND content (they must agree); names are cleaned and never used as paths (files are stored under random names with random 192-bit ids); docx zip bombs, macros and XML entities are refused (any DTD/entity makes the file be rejected, so no XML expansion attack is possible); HTML input is reduced to plain text (scripts, styles, frames, forms and every attribute are dropped) and HTML output is escaped, carries a strict CSP, and is only ever sent as an attachment; CSV cells starting with `= + - @` get a leading `'`; downloads send `nosniff`, `no-store`, a fixed content type and a sandbox CSP; conversions run in a worker thread with a timeout and size caps; logs hold only type, size and timing. The UI was not tested in a real browser by the automated tests.
+
+## Planned: answering from web notes (512 context + RAG fine-tune)
+
+Goal: make the model good at answering FROM the "Web notes" that live web search puts in the prompt. Steps (run later, after the
+current training has finished; every step writes to a NEW folder and never overwrites):
+
+```powershell
+# 1. Longer context: 128 -> 512 (copies every weight; short inputs give exactly the same logits)
+.venv/Scripts/python.exe backend/training/extend_context.py --init-from <final checkpoint>.pt --out-dir backend/training/checkpoints_bpe/ext512 --sequence-length 512
+
+# 2. Training data in the live prompt format (already built once into backend/data/rag_v1; to rebuild use a new --out-dir)
+.venv/Scripts/python.exe backend/data_tools/build_rag_dataset.py --out-dir backend/data/rag_v2 --seed 1
+
+# 3. Fine-tune (slow on CPU: roughly 1 hour per epoch, estimate)
+.venv/Scripts/python.exe backend/training/continue_train.py --init-from backend/training/checkpoints_bpe/ext512/extended.pt --data-dir backend/data/rag_v1 --out-dir backend/training/checkpoints_bpe/rag_ft --epochs 3 --batch-size 8 --optimizer fresh --learning-rate 5e-5 --warmup-steps 50 --patience 2 --seed 42 --threads 8
+
+# 4. Evaluate before and after on the fixed hold-out (backend/eval/rag_eval.json; results go to backend/eval/results/)
+.venv/Scripts/python.exe backend/eval/run_rag_eval.py backend/training/checkpoints_bpe/ext512 backend/training/checkpoints_bpe/rag_ft
+```
+
+Compare the two rows: key-fact coverage and correct refusals should go up; invented numbers/names and repetition should go down.
+At answer time the server turns on `repetition_penalty` (1.15) and `no_repeat_ngram_size` (4) only when web evidence is in the prompt;
+clients can set both in the request (`repetition_penalty` 1.0-2.0, `no_repeat_ngram_size` 0-10; 1.0 / 0 = off).
+
 ## Deploying on Render
 
 The repo is ready for a Render **Blueprint** (`render.yaml`).

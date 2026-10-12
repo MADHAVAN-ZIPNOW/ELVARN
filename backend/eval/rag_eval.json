@@ -1,0 +1,1336 @@
+{
+  "description": "ELVARN RAG hold-out: notes + question; passages come only from validation topics.",
+  "cases": [
+    {
+      "id": 1,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Human rights issues related to the COVID-19 pandemic",
+      "notes": [
+        "The document included recommendations to the OSCE participating States were included on how the governmental responses to COVID-19 could ensure inclusiveness and be sensitive to social diversity.",
+        "On 17 April 2020, OSCE High Commissioner on National Minorities issued a document called \"Streamlining diversity: COVID-19 measures that support social cohesion\"."
+      ],
+      "question": "Give me a short overview of Human rights issues related to the COVID-19 pandemic.",
+      "answerable": true,
+      "groups": [
+        [
+          "2020"
+        ],
+        [
+          "Commissioner"
+        ],
+        [
+          "Streamlining"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: The document included recommendations to the OSCE participating States were included on how the governmental responses to COVID-19 could ensure inclusiveness and be sensitive to social diversity. On 17 April 2020, OSCE High Commissioner on National Minorities issued a document called \"Streamlining diversity: COVID-19 measures that support social cohesion\"."
+    },
+    {
+      "id": 2,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "Mohan Kumaramangalam",
+      "notes": [
+        "In 1941, Kumaramangalam was arrested along with P. Ramamurthi, C. S. Subramaniam and R. Umanath for distributing seditious pamphlets in what came to be known as the Madras Conspiracy Case.",
+        "All climate models balance, or very nearly balance, incoming energy as short wave (including visible) electromagnetic radiation to the Earth with outgoing energy as long wave (infrared) electromagnetic radiation from the Earth."
+      ],
+      "question": "What is mentioned about 1941 in connection with Mohan Kumaramangalam?",
+      "answerable": true,
+      "groups": [
+        [
+          "Subramaniam"
+        ],
+        [
+          "Conspiracy"
+        ],
+        [
+          "Ramamurthi"
+        ]
+      ],
+      "reference_answer": "In 1941, Kumaramangalam was arrested along with P. Ramamurthi, C. S. Subramaniam and R. Umanath for distributing seditious pamphlets in what came to be known as the Madras Conspiracy Case."
+    },
+    {
+      "id": 3,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "List of European Union directives",
+      "notes": [
+        "Audit directive 2006/43/EC of the European Parliament and of the Council of 17 May 2006 on statutory audits of annual accounts and consolidated accounts, amending Council Directives 78/660/EEC and 83/349/EEC and repealing Council Directive 84/253/EEC.",
+        "Some of the variability does not appear to be caused systematically and occurs at random times."
+      ],
+      "question": "Tell me about List of European Union directives in 2006.",
+      "answerable": true,
+      "groups": [
+        [
+          "253"
+        ],
+        [
+          "349"
+        ],
+        [
+          "660"
+        ]
+      ],
+      "reference_answer": "From the notes: Audit directive 2006/43/EC of the European Parliament and of the Council of 17 May 2006 on statutory audits of annual accounts and consolidated accounts, amending Council Directives 78/660/EEC and 83/349/EEC and repealing Council Directive 84/253/EEC. [1]"
+    },
+    {
+      "id": 4,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Singapore math",
+      "notes": [
+        "The development of Singapore math began in the 1980s when Singapore's Ministry of Education developed its own mathematics textbooks that focused on problem solving and developing thinking skills.",
+        "During Uribe's presidency, his first project was staging a national referendum that focused on establishing a unicameral congress.",
+        "Outside Singapore, these textbooks were adopted by several schools in the United States and in other countries such as Canada, Israel, the Netherlands, Indonesia, Chile, Jordan, India, Pakistan, Thailand, Malaysia, Japan, South Korea, the Philippines and the United Kingdom."
+      ],
+      "question": "What should I know about Singapore math?",
+      "answerable": true,
+      "groups": [
+        [
+          "1980s"
+        ],
+        [
+          "Netherlands"
+        ],
+        [
+          "Philippines"
+        ]
+      ],
+      "reference_answer": "The development of Singapore math began in the 1980s when Singapore's Ministry of Education developed its own mathematics textbooks that focused on problem solving and developing thinking skills. Outside Singapore, these textbooks were adopted by several schools in the United States and in other countries such as Canada, Israel, the Netherlands, Indonesia, Chile, Jordan, India, Pakistan, Thailand, Malaysia, Japan, South Korea, the Philippines and the United Kingdom."
+    },
+    {
+      "id": 5,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "S. S. Nijjar",
+      "notes": [
+        "The department has three wings: social welfare, social defence and integrated child welfare services.",
+        "All the tankers were owned by AIADMK party person N. Vaidyanathan."
+      ],
+      "question": "What does the text say about S. S. Nijjar in 1989?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "Not mentioned in the notes."
+    },
+    {
+      "id": 6,
+      "type": "double",
+      "mode": "english",
+      "topic": "Mithila (proposed state)",
+      "notes": [
+        "The proposed state will also include Angika and Bajjika-speaking districts, which are considered to be dialects of Maithili.",
+        "The Maithili language has its own traditional script, known as Mithilakshar."
+      ],
+      "question": "Share a couple of facts about Mithila (proposed state).",
+      "answerable": true,
+      "groups": [
+        [
+          "Bajjika-speaking"
+        ],
+        [
+          "Mithilakshar"
+        ],
+        [
+          "Maithili"
+        ]
+      ],
+      "reference_answer": "The proposed state will also include Angika and Bajjika-speaking districts, which are considered to be dialects of Maithili. The Maithili language has its own traditional script, known as Mithilakshar."
+    },
+    {
+      "id": 7,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "Defence of India Act, 1915",
+      "notes": [
+        "In crocodilians, all of the cervical vertebrae, including the atlas and axis, bear ribs.",
+        "After the bifurcation, Tirunelveli district had a population of 1,636,438.",
+        "The 1905 partition of Bengal and the 1906 Punjab Land Colonization Act fed growing discontent."
+      ],
+      "question": "Tell me about Defence of India Act, 1915 in 1905.",
+      "answerable": true,
+      "groups": [
+        [
+          "1906"
+        ],
+        [
+          "Colonization"
+        ],
+        [
+          "Bengal"
+        ]
+      ],
+      "reference_answer": "The 1905 partition of Bengal and the 1906 Punjab Land Colonization Act fed growing discontent."
+    },
+    {
+      "id": 8,
+      "type": "double",
+      "mode": "english",
+      "topic": "Cash out refinancing",
+      "notes": [
+        "The total amount of equity that can be withdrawn with a cash-out refinance is dependent on the mortgage lender, the cash-out refinance program, and other relative factors, such as the value of the home.",
+        "Roads with traffic density less than 10,000 PCUs but more than 5,000 PCUs are designated as Major District Roads (MDR).",
+        "The difference between cashout refinancing and a home equity loan are as follows: A home equity loan is a separate loan on top of a first mortgage."
+      ],
+      "question": "Give me a short overview of Cash out refinancing.",
+      "answerable": true,
+      "groups": [
+        [
+          "difference"
+        ],
+        [
+          "dependent"
+        ],
+        [
+          "refinance"
+        ]
+      ],
+      "reference_answer": "The total amount of equity that can be withdrawn with a cash-out refinance is dependent on the mortgage lender, the cash-out refinance program, and other relative factors, such as the value of the home. The difference between cashout refinancing and a home equity loan are as follows: A home equity loan is a separate loan on top of a first mortgage."
+    },
+    {
+      "id": 9,
+      "type": "double",
+      "mode": "english",
+      "topic": "Politics of Tamil Nadu",
+      "notes": [
+        "Still caste based political parties are part of both the ruling and opposition alliances in all the successive elections.",
+        "In 2001, the sitting DMK government came up with a huge alliance with caste parties and was defeated in 2001 assembly election."
+      ],
+      "question": "Give me two facts about Politics of Tamil Nadu.",
+      "answerable": true,
+      "groups": [
+        [
+          "2001"
+        ],
+        [
+          "DMK"
+        ],
+        [
+          "government"
+        ]
+      ],
+      "reference_answer": "Still caste based political parties are part of both the ruling and opposition alliances in all the successive elections. [1] In 2001, the sitting DMK government came up with a huge alliance with caste parties and was defeated in 2001 assembly election. [2]"
+    },
+    {
+      "id": 10,
+      "type": "negative",
+      "mode": "english",
+      "topic": "Perunchani Dam",
+      "notes": [
+        "He is alleged to have the backing of several officials who could change policies for his benefit.",
+        "An archaeological survey team under Archaeologist Amarnath Ramakrishna was first conducted in 2013 in the vicinity of the Vaigai river from Theni district to Ramanathapuram district where the river meets the sea.",
+        "The Prime Minister's Office forwarded the letter to the Department of Economic Affairs, before it was leaked to the media in August 2011."
+      ],
+      "question": "What figures are mentioned about Perunchani Dam?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 11,
+      "type": "double",
+      "mode": "english",
+      "topic": "Modified Scheme of Elementary Education 1953",
+      "notes": [
+        "This poor student-teacher ratio was putting a strain on the teachers and led to students being made to stay in school for longer hours.",
+        "While many scientific investigations make use of data, statistics is generally concerned with the use of data in the context of uncertainty and decision-making in the face of uncertainty.",
+        "There were 4,108 single-teacher schools and more than 60% of the schools with five standards had less than four teachers."
+      ],
+      "question": "Share a couple of facts about Modified Scheme of Elementary Education 1953.",
+      "answerable": true,
+      "groups": [
+        [
+          "108"
+        ],
+        [
+          "student-teacher"
+        ],
+        [
+          "single-teacher"
+        ]
+      ],
+      "reference_answer": "This poor student-teacher ratio was putting a strain on the teachers and led to students being made to stay in school for longer hours. [1] There were 4,108 single-teacher schools and more than 60% of the schools with five standards had less than four teachers. [3]"
+    },
+    {
+      "id": 12,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Margham",
+      "notes": [
+        "Production at Margham commenced in 1984, with three major gas-bearing formations located up to 10,000 feet below sea level.",
+        "Condensate production ran at some 25,000 barrels per day in 2010."
+      ],
+      "question": "Give me a short overview of Margham.",
+      "answerable": true,
+      "groups": [
+        [
+          "1984"
+        ],
+        [
+          "2010"
+        ],
+        [
+          "000"
+        ]
+      ],
+      "reference_answer": "Production at Margham commenced in 1984, with three major gas-bearing formations located up to 10,000 feet below sea level. [1] Condensate production ran at some 25,000 barrels per day in 2010. [2]"
+    },
+    {
+      "id": 13,
+      "type": "double",
+      "mode": "english",
+      "topic": "K. M. Nanavati v. State of Maharashtra",
+      "notes": [
+        "Nanavati dropped his family at the Metro Cinema, for the film Tom Thumb he had promised to take them to, but excused himself and headed straight to confront Prem Ahuja.",
+        "Sylvia, who now doubted Prem's intention to marry her, confessed the affair to her husband."
+      ],
+      "question": "Tell me more about K. M. Nanavati v. State of Maharashtra.",
+      "answerable": true,
+      "groups": [
+        [
+          "Cinema"
+        ],
+        [
+          "Prem's"
+        ],
+        [
+          "Ahuja"
+        ]
+      ],
+      "reference_answer": "Nanavati dropped his family at the Metro Cinema, for the film Tom Thumb he had promised to take them to, but excused himself and headed straight to confront Prem Ahuja. [1] Sylvia, who now doubted Prem's intention to marry her, confessed the affair to her husband. [2]"
+    },
+    {
+      "id": 14,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Atong language (Sino-Tibetan)",
+      "notes": [
+        "Also, it works as the junction for the agro products which are produced in nearby areas.",
+        "Earlier, in 2009, a book of stories in Atong and an initial Atong–English dictionary were published and sold at the Tura Book Room in Tura, Meghalaya."
+      ],
+      "question": "Tell me about Atong language (Sino-Tibetan) in 2009.",
+      "answerable": true,
+      "groups": [
+        [
+          "Meghalaya"
+        ],
+        [
+          "English"
+        ],
+        [
+          "Book"
+        ]
+      ],
+      "reference_answer": "According to [2]: Earlier, in 2009, a book of stories in Atong and an initial Atong–English dictionary were published and sold at the Tura Book Room in Tura, Meghalaya."
+    },
+    {
+      "id": 15,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Structured settlement",
+      "notes": [
+        "Thus, the distinction between rural and urban has meant an economic and social degradation for the rural inhabitant.",
+        "The Ministry's tweet advised: \"To combat Covid-19, the guideline is not to wait.",
+        "Kasauli is a town and cantonment located in Solan district of the Indian state of Himachal Pradesh."
+      ],
+      "question": "Which numbers are given for Structured settlement?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "Not mentioned in the notes."
+    },
+    {
+      "id": 16,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Koorai silk sari",
+      "notes": [
+        "The Koorai silk weaving industry has faced significant challenges, with the number of weavers dropping from thousands to an estimated 20–30 by the 2020s.",
+        "Some reports suggest only five weavers remain in local cooperatives."
+      ],
+      "question": "Give me a short overview of Koorai silk sari.",
+      "answerable": true,
+      "groups": [
+        [
+          "2020s"
+        ],
+        [
+          "cooperatives"
+        ],
+        [
+          "significant"
+        ]
+      ],
+      "reference_answer": "The Koorai silk weaving industry has faced significant challenges, with the number of weavers dropping from thousands to an estimated 20–30 by the 2020s. [1] Some reports suggest only five weavers remain in local cooperatives. [2]"
+    },
+    {
+      "id": 17,
+      "type": "single",
+      "mode": "english",
+      "topic": "Aavin scam",
+      "notes": [
+        "It can also be noted that in 2014, he has filed a detailed affidavit in the Madras High Court Madurai branch detailing the multi crore sachet tender."
+      ],
+      "question": "What happened in 2014 regarding Aavin scam?",
+      "answerable": true,
+      "groups": [
+        [
+          "Madurai"
+        ],
+        [
+          "Madras"
+        ],
+        [
+          "Court"
+        ]
+      ],
+      "reference_answer": "It can also be noted that in 2014, he has filed a detailed affidavit in the Madras High Court Madurai branch detailing the multi crore sachet tender. [1]"
+    },
+    {
+      "id": 18,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Kochi City Police",
+      "notes": [
+        "A Deputy Commissioner of Police (DCP) oversees the administration and special units of the city police.",
+        "The DCP (Admin & Crimes) serves as the staff officer to the Commissioner of Police and is responsible for the day-to-day operations of the City Police Office."
+      ],
+      "question": "Give me a short overview of Kochi City Police.",
+      "answerable": true,
+      "groups": [
+        [
+          "Commissioner"
+        ],
+        [
+          "Crimes"
+        ],
+        [
+          "Deputy"
+        ]
+      ],
+      "reference_answer": "A Deputy Commissioner of Police (DCP) oversees the administration and special units of the city police. [1] The DCP (Admin & Crimes) serves as the staff officer to the Commissioner of Police and is responsible for the day-to-day operations of the City Police Office. [2]"
+    },
+    {
+      "id": 19,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Financial inclusion",
+      "notes": [
+        "Similarly, in Japan, DMUs such as the KiHa series were widely deployed on non-electrified regional lines, offering reliable and efficient service where electrification was not economically viable.",
+        "Among Filipino adults, 24.5% never saved and only 31.3% (up from 26.6%) have an account at a formal financial institution.",
+        "The lack of enough money was cited as the main reason for not having a bank account."
+      ],
+      "question": "Give me two facts about Financial inclusion.",
+      "answerable": true,
+      "groups": [
+        [
+          "Filipino"
+        ],
+        [
+          "institution"
+        ],
+        [
+          "account"
+        ]
+      ],
+      "reference_answer": "Among Filipino adults, 24.5% never saved and only 31.3% (up from 26.6%) have an account at a formal financial institution. [2] The lack of enough money was cited as the main reason for not having a bank account. [3]"
+    },
+    {
+      "id": 20,
+      "type": "negative",
+      "mode": "english",
+      "topic": "Living mulch",
+      "notes": [
+        "In 1949, the Banking Regulation Act was enacted, which empowered the Reserve Bank of India (RBI) to regulate, control, and inspect the banks in India."
+      ],
+      "question": "Tell me about Living mulch in 1986.",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "I cannot find that in the notes."
+    },
+    {
+      "id": 21,
+      "type": "double",
+      "mode": "english",
+      "topic": "Celtic language decline in England",
+      "notes": [
+        "There is little direct evidence for the linguistic situation in Britain for the next few centuries.",
+        "Biogeochemistry is the field of study focusing on the effect of life on the chemistry of the Earth.",
+        "The language that emerged from the dialects they brought to Britain is today known as Old English."
+      ],
+      "question": "Tell me more about Celtic language decline in England.",
+      "answerable": true,
+      "groups": [
+        [
+          "Britain"
+        ],
+        [
+          "English"
+        ],
+        [
+          "Old"
+        ]
+      ],
+      "reference_answer": "There is little direct evidence for the linguistic situation in Britain for the next few centuries. [1] The language that emerged from the dialects they brought to Britain is today known as Old English. [3]"
+    },
+    {
+      "id": 22,
+      "type": "double",
+      "mode": "english",
+      "topic": "Abiotic stress",
+      "notes": [
+        "Although these effects may be either beneficial or detrimental, the location of the area is crucial in determining the extent of the impact that abiotic stress will have.",
+        "Abiotic stress, as a natural part of every ecosystem, will affect organisms in a variety of ways."
+      ],
+      "question": "Share a couple of facts about Abiotic stress.",
+      "answerable": true,
+      "groups": [
+        [
+          "determining"
+        ],
+        [
+          "detrimental"
+        ],
+        [
+          "beneficial"
+        ]
+      ],
+      "reference_answer": "Although these effects may be either beneficial or detrimental, the location of the area is crucial in determining the extent of the impact that abiotic stress will have. Abiotic stress, as a natural part of every ecosystem, will affect organisms in a variety of ways."
+    },
+    {
+      "id": 23,
+      "type": "double",
+      "mode": "english",
+      "topic": "Gujarat Control of Terrorism and Organised Crime Act, 2015",
+      "notes": [
+        "In July 2009, the bill was re-introduced in the state legislature without the changes suggested by the President, but it failed to pass.",
+        "Furthermore, assets acquired through organised crime could be auctioned and the transfer of assets could be cancelled."
+      ],
+      "question": "Give me a short overview of Gujarat Control of Terrorism and Organised Crime Act, 2015.",
+      "answerable": true,
+      "groups": [
+        [
+          "2009"
+        ],
+        [
+          "President"
+        ],
+        [
+          "July"
+        ]
+      ],
+      "reference_answer": "In July 2009, the bill was re-introduced in the state legislature without the changes suggested by the President, but it failed to pass. [1] Furthermore, assets acquired through organised crime could be auctioned and the transfer of assets could be cancelled. [2]"
+    },
+    {
+      "id": 24,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Langnyu",
+      "notes": [
+        "The Langnyu is a fish habitat for approximately 80 km and supports diverse aquatic species.",
+        "The northernmost extent of the Indian Ocean (including marginal seas) is approximately 30°N in the Persian Gulf."
+      ],
+      "question": "What figures are mentioned about Langnyu?",
+      "answerable": true,
+      "groups": [
+        [
+          "approximately"
+        ],
+        [
+          "supports"
+        ],
+        [
+          "aquatic"
+        ]
+      ],
+      "reference_answer": "According to [1]: The Langnyu is a fish habitat for approximately 80 km and supports diverse aquatic species."
+    },
+    {
+      "id": 25,
+      "type": "negative",
+      "mode": "english",
+      "topic": "Environment, health and safety",
+      "notes": [
+        "A method to obtain particles from a continuous thin film is thermal dewetting."
+      ],
+      "question": "Where is Environment, health and safety located?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 26,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Indian Ocean",
+      "notes": [
+        "It hosts a significant portion of the world's tuna catch and is home to endangered marine species.",
+        "The Indian Ocean is ecologically diverse, with important ecosystems such as coral reefs, mangroves, and seagrass beds."
+      ],
+      "question": "Share a couple of facts about Indian Ocean.",
+      "answerable": true,
+      "groups": [
+        [
+          "ecologically"
+        ],
+        [
+          "significant"
+        ],
+        [
+          "ecosystems"
+        ]
+      ],
+      "reference_answer": "It hosts a significant portion of the world's tuna catch and is home to endangered marine species. [1] The Indian Ocean is ecologically diverse, with important ecosystems such as coral reefs, mangroves, and seagrass beds. [2]"
+    },
+    {
+      "id": 27,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Gyan Sudha Misra",
+      "notes": [
+        "She became government advocate for the state of Bihar in 1982.",
+        "The British thought that once the revenue demands of the state were permanently set, there would be a regular flow of tax income."
+      ],
+      "question": "Tell me about Gyan Sudha Misra in 1982.",
+      "answerable": true,
+      "groups": [
+        [
+          "Bihar"
+        ],
+        [
+          "government"
+        ],
+        [
+          "advocate"
+        ]
+      ],
+      "reference_answer": "From the notes: She became government advocate for the state of Bihar in 1982. [1]"
+    },
+    {
+      "id": 28,
+      "type": "double",
+      "mode": "english",
+      "topic": "Deccani literature",
+      "notes": [
+        "Ibrahim Adil Shah II of the Bijapur Sultanate produced Kitab-e-Navras (Book of the Nine Rasas), a work of musical poetry written entirely in Deccani.",
+        "In 18the century a collection of Urdu Ghazal poetry, named Gulzar-e-Mahlaqa, authored by Mah Laqa Bai—the first female Urdu poet to produce a Diwan—was published in Hyderabad."
+      ],
+      "question": "Share a couple of facts about Deccani literature.",
+      "answerable": true,
+      "groups": [
+        [
+          "18the"
+        ],
+        [
+          "Gulzar-e-Mahlaqa"
+        ],
+        [
+          "Kitab-e-Navras"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: Ibrahim Adil Shah II of the Bijapur Sultanate produced Kitab-e-Navras (Book of the Nine Rasas), a work of musical poetry written entirely in Deccani. In 18the century a collection of Urdu Ghazal poetry, named Gulzar-e-Mahlaqa, authored by Mah Laqa Bai—the first female Urdu poet to produce a Diwan—was published in Hyderabad."
+    },
+    {
+      "id": 29,
+      "type": "double",
+      "mode": "english",
+      "topic": "Anatomical terms of muscle",
+      "notes": [
+        "Antagonism is not an intrinsic property of a particular muscle or muscle group; it is a role that a muscle plays depending on which muscle is currently the agonist.",
+        "The opposing torque can slow movement down - especially in the case of a ballistic movement."
+      ],
+      "question": "Tell me more about Anatomical terms of muscle.",
+      "answerable": true,
+      "groups": [
+        [
+          "Antagonism"
+        ],
+        [
+          "especially"
+        ],
+        [
+          "particular"
+        ]
+      ],
+      "reference_answer": "Antagonism is not an intrinsic property of a particular muscle or muscle group; it is a role that a muscle plays depending on which muscle is currently the agonist. [1] The opposing torque can slow movement down - especially in the case of a ballistic movement. [2]"
+    },
+    {
+      "id": 30,
+      "type": "negative",
+      "mode": "english",
+      "topic": "New Tax Regime",
+      "notes": [
+        "In some situations, the allelopathic properties of living mulches can be used to control weeds.",
+        "The middle ear of tetrapods is analogous with the spiracle of fishes, an opening from the pharynx to the side of the head in front of the main gill slits."
+      ],
+      "question": "What numbers does the text give about New Tax Regime?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "Not mentioned in the notes."
+    },
+    {
+      "id": 31,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "A. K. Gopalan v. State of Madras",
+      "notes": [
+        "Communist leader A.K Gopalan had been under detention since December 1947, since his sentencing under ordinary criminal law.",
+        "Average LPG consumption of PMUY consumers has increased by 20 percent from 3.01 refills in 2019–20 to 3.68 in 2021–22."
+      ],
+      "question": "What does the text say about A. K. Gopalan v. State of Madras in 1947?",
+      "answerable": true,
+      "groups": [
+        [
+          "December"
+        ],
+        [
+          "sentencing"
+        ],
+        [
+          "Communist"
+        ]
+      ],
+      "reference_answer": "Communist leader A.K Gopalan had been under detention since December 1947, since his sentencing under ordinary criminal law."
+    },
+    {
+      "id": 32,
+      "type": "double",
+      "mode": "english",
+      "topic": "Dimethyl sulfide",
+      "notes": [
+        "Reasons include limited resources, reliance on stock exchanges for market data, a lack of a comprehensive legal framework with stringent penalties, slow response times, and a lack of coordination with other regulatory bodies.",
+        "The Swern oxidation produces dimethyl sulfide by reduction of dimethylsulfoxide.",
+        "It usually results in the formation of sulfate particles in the troposphere."
+      ],
+      "question": "Give me two facts about Dimethyl sulfide.",
+      "answerable": true,
+      "groups": [
+        [
+          "Swern"
+        ],
+        [
+          "dimethylsulfoxide"
+        ],
+        [
+          "troposphere"
+        ]
+      ],
+      "reference_answer": "The Swern oxidation produces dimethyl sulfide by reduction of dimethylsulfoxide. [2] It usually results in the formation of sulfate particles in the troposphere. [3]"
+    },
+    {
+      "id": 33,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Ajmal Kasab",
+      "notes": [
+        "Mumbai Joint Police Commissioner of Crime Rakesh Maria said Kasab was from the Faridkot village in the Okara District of Pakistan's Punjab province and was the son of Mohammed Amir Kasab.",
+        "His parents left town on the night of 3 December 2008."
+      ],
+      "question": "Share a couple of facts about Ajmal Kasab.",
+      "answerable": true,
+      "groups": [
+        [
+          "2008"
+        ],
+        [
+          "Commissioner"
+        ],
+        [
+          "Pakistan's"
+        ]
+      ],
+      "reference_answer": "Mumbai Joint Police Commissioner of Crime Rakesh Maria said Kasab was from the Faridkot village in the Okara District of Pakistan's Punjab province and was the son of Mohammed Amir Kasab. His parents left town on the night of 3 December 2008."
+    },
+    {
+      "id": 34,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Securities and Exchange Board of India",
+      "notes": [
+        "Aves and a sister group, the order Crocodilia, contain the only living representatives of the reptile clade Archosauria.",
+        "SEBI has also been instrumental in taking quick and effective steps in light of the global meltdown and the Satyam fiasco.",
+        "In October 2011, it increased the extent and quantity of disclosures to be made by Indian corporate promoters."
+      ],
+      "question": "Give me two facts about Securities and Exchange Board of India.",
+      "answerable": true,
+      "groups": [
+        [
+          "2011"
+        ],
+        [
+          "October"
+        ],
+        [
+          "Indian"
+        ]
+      ],
+      "reference_answer": "SEBI has also been instrumental in taking quick and effective steps in light of the global meltdown and the Satyam fiasco. In October 2011, it increased the extent and quantity of disclosures to be made by Indian corporate promoters."
+    },
+    {
+      "id": 35,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Gondwana (India)",
+      "notes": [
+        "The notable exceptions were the Cornish language persisting into the 18th century, and a form of Welsh remaining in common usage in the English counties along the Welsh border into the late 19th century.",
+        "General semantics has also inspired Babel-17 by Samuel R. Delany."
+      ],
+      "question": "What does the text say about Gondwana (India) in 2014?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 36,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Air pollution in Armenia",
+      "notes": [
+        "The police used metal detectors to find gold jewellery, which they stole along with cash and valuables.",
+        "In the cities of Ararat, Gyumri, Hrazdan, Tsaghkadzor, and Alaverdi, there are a lower concentrations of NO2.",
+        "Yerevan has the highest concentration of NO2 of 0.110 g/m3."
+      ],
+      "question": "Give me a short overview of Air pollution in Armenia.",
+      "answerable": true,
+      "groups": [
+        [
+          "110"
+        ],
+        [
+          "Tsaghkadzor"
+        ],
+        [
+          "Alaverdi"
+        ]
+      ],
+      "reference_answer": "According to [2] and [3]: In the cities of Ararat, Gyumri, Hrazdan, Tsaghkadzor, and Alaverdi, there are a lower concentrations of NO2. Yerevan has the highest concentration of NO2 of 0.110 g/m3."
+    },
+    {
+      "id": 37,
+      "type": "double",
+      "mode": "english",
+      "topic": "Societies Registration Act, 1860",
+      "notes": [
+        "The success of this new wave is yet to be seen.",
+        "It provides for the registration of literary, scientific and charitable societies.",
+        "The memorandum of association has to be filed with the Registrar of Societies."
+      ],
+      "question": "Tell me more about Societies Registration Act, 1860.",
+      "answerable": true,
+      "groups": [
+        [
+          "Registrar"
+        ],
+        [
+          "association"
+        ],
+        [
+          "charitable"
+        ]
+      ],
+      "reference_answer": "It provides for the registration of literary, scientific and charitable societies. [2] The memorandum of association has to be filed with the Registrar of Societies. [3]"
+    },
+    {
+      "id": 38,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Ocean optics",
+      "notes": [
+        "Closure includes measurement closure, model closure, model-data closure, and scale closure.",
+        "The portion of the electromagnetic spectrum usually involved in ocean optics is ultraviolet through infrared, about 300 nm to less than 2000 nm wavelengths."
+      ],
+      "question": "Share a couple of facts about Ocean optics.",
+      "answerable": true,
+      "groups": [
+        [
+          "2000"
+        ],
+        [
+          "300"
+        ],
+        [
+          "electromagnetic"
+        ]
+      ],
+      "reference_answer": "Closure includes measurement closure, model closure, model-data closure, and scale closure. [1] The portion of the electromagnetic spectrum usually involved in ocean optics is ultraviolet through infrared, about 300 nm to less than 2000 nm wavelengths. [2]"
+    },
+    {
+      "id": 39,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "Electronic voting in India",
+      "notes": [
+        "The machines are powered by a 7.5 volt battery inserted into the control unit.",
+        "Over the course of his tenure on the Supreme Court, Bose authored 124 judgments and sat on 364 benches."
+      ],
+      "question": "What numbers does the text give about Electronic voting in India?",
+      "answerable": true,
+      "groups": [
+        [
+          "inserted"
+        ],
+        [
+          "machines"
+        ],
+        [
+          "battery"
+        ]
+      ],
+      "reference_answer": "According to [1]: The machines are powered by a 7.5 volt battery inserted into the control unit."
+    },
+    {
+      "id": 40,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Madras Presidency",
+      "notes": [
+        "Students then transition to the pictorial step by drawing diagrams called \"bar-models\" to represent specific quantities of an object.",
+        "Canada's prairies are grassland, and she has five great lakes in Ontario."
+      ],
+      "question": "What is mentioned about 1930 in connection with Madras Presidency?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "Not mentioned in the notes."
+    },
+    {
+      "id": 41,
+      "type": "single",
+      "mode": "domain",
+      "topic": "Climate finance in Democratic Republic of the Congo",
+      "notes": [
+        "In 2015 the government of the Democratic Republic of Congo signed a grant agreement with the Green Climate Fund, which provided the sum of US$300,000 for capacity building in the African State."
+      ],
+      "question": "Which numbers are given for Climate finance in Democratic Republic of the Congo?",
+      "answerable": true,
+      "groups": [
+        [
+          "2015"
+        ],
+        [
+          "000"
+        ],
+        [
+          "300"
+        ]
+      ],
+      "reference_answer": "In 2015 the government of the Democratic Republic of Congo signed a grant agreement with the Green Climate Fund, which provided the sum of US$300,000 for capacity building in the African State."
+    },
+    {
+      "id": 42,
+      "type": "double",
+      "mode": "english",
+      "topic": "Kasauli",
+      "notes": [
+        "The CRI works as a World Health Organization 'Collaborating Centre', and as an immuno-biological laboratory producing vaccines for measles and polio, and the DTP group of vaccines.",
+        "It also provides a Master of Science programme in Microbiology."
+      ],
+      "question": "Give me two facts about Kasauli.",
+      "answerable": true,
+      "groups": [
+        [
+          "Collaborating"
+        ],
+        [
+          "Microbiology"
+        ],
+        [
+          "Organization"
+        ]
+      ],
+      "reference_answer": "The CRI works as a World Health Organization 'Collaborating Centre', and as an immuno-biological laboratory producing vaccines for measles and polio, and the DTP group of vaccines. It also provides a Master of Science programme in Microbiology."
+    },
+    {
+      "id": 43,
+      "type": "double",
+      "mode": "english",
+      "topic": "Statistics",
+      "notes": [
+        "Rejecting or disproving the null hypothesis is done using statistical tests that quantify the sense in which the null can be proven false, given the data that are used in the test.",
+        "A standard statistical procedure involves the collection of data leading to a test of the relationship between two statistical data sets, or a data set and synthetic data drawn from an idealized model."
+      ],
+      "question": "What should I know about Statistics?",
+      "answerable": true,
+      "groups": [
+        [
+          "relationship"
+        ],
+        [
+          "statistical"
+        ],
+        [
+          "collection"
+        ]
+      ],
+      "reference_answer": "Rejecting or disproving the null hypothesis is done using statistical tests that quantify the sense in which the null can be proven false, given the data that are used in the test. [1] A standard statistical procedure involves the collection of data leading to a test of the relationship between two statistical data sets, or a data set and synthetic data drawn from an idealized model. [2]"
+    },
+    {
+      "id": 44,
+      "type": "double",
+      "mode": "english",
+      "topic": "Pattali Makkal Katchi",
+      "notes": [
+        "Ramadoss and his son were released after 12 days in prison.",
+        "PMK continued its alliance with AIADMK and BJP in the 2019 Indian general election in Tamil Nadu and contested 7 seats but the party failed to win any seats."
+      ],
+      "question": "Give me two facts about Pattali Makkal Katchi.",
+      "answerable": true,
+      "groups": [
+        [
+          "2019"
+        ],
+        [
+          "AIADMK"
+        ],
+        [
+          "Indian"
+        ]
+      ],
+      "reference_answer": "Ramadoss and his son were released after 12 days in prison. [1] PMK continued its alliance with AIADMK and BJP in the 2019 Indian general election in Tamil Nadu and contested 7 seats but the party failed to win any seats. [2]"
+    },
+    {
+      "id": 45,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Coimbatore Central Prison",
+      "notes": [
+        "Both parties are populist with a generally social democratic orientation.",
+        "For instance, an individual with an annual income of ₹9 lakh will only be required to pay ₹45,000, which amounts to a mere 5% of their income.",
+        "The population of Vellore Corporation based on that GO as of 2001 was 423,425."
+      ],
+      "question": "What figures are mentioned about Coimbatore Central Prison?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not contain this information."
+    },
+    {
+      "id": 46,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "Annual percentage rate",
+      "notes": [
+        "The Kochi City DHQ is under command of a Commandant, and assisted by deputy/assistant commandants.",
+        "If the $10 fee were considered, the monthly interest increases by 10% ($10/$100), and the effective APR becomes approximately 435% (1.1512 = 5.3503, which equals a 435% increase)."
+      ],
+      "question": "What figures are mentioned about Annual percentage rate?",
+      "answerable": true,
+      "groups": [
+        [
+          "1512"
+        ],
+        [
+          "3503"
+        ],
+        [
+          "100"
+        ]
+      ],
+      "reference_answer": "According to [2]: If the $10 fee were considered, the monthly interest increases by 10% ($10/$100), and the effective APR becomes approximately 435% (1.1512 = 5.3503, which equals a 435% increase)."
+    },
+    {
+      "id": 47,
+      "type": "double",
+      "mode": "english",
+      "topic": "Loop Mobile",
+      "notes": [
+        "Loop Mobile's licence to operate mobile services in Mumbai expired on 29 November 2014, bringing an end to its operations.",
+        "However, Airtel had no plans to acquire Loop Mobile's 550 employees."
+      ],
+      "question": "What should I know about Loop Mobile?",
+      "answerable": true,
+      "groups": [
+        [
+          "2014"
+        ],
+        [
+          "550"
+        ],
+        [
+          "Mobile's"
+        ]
+      ],
+      "reference_answer": "Loop Mobile's licence to operate mobile services in Mumbai expired on 29 November 2014, bringing an end to its operations. [1] However, Airtel had no plans to acquire Loop Mobile's 550 employees. [2]"
+    },
+    {
+      "id": 48,
+      "type": "double",
+      "mode": "english",
+      "topic": "Thanjavur painting",
+      "notes": [
+        "And it is also in the same context that one understands the iconic style of Thanjavur paintings in contrast to say, the Pahari miniatures or even Surpur paintings.",
+        "It is also pertinent to remember that Thanjavur art was functional, in that it was made for a specific purpose on a specific demand from a customer.",
+        "The nationalization of banks, which occurred from the mid-1950s to the late 1960s, culminating in 1969 with the nationalization of 14 commercial banks by Prime Minister Indira Gandhi, brought banking facilities to previously unreached areas of the country."
+      ],
+      "question": "Give me a short overview of Thanjavur painting.",
+      "answerable": true,
+      "groups": [
+        [
+          "Pahari"
+        ],
+        [
+          "Surpur"
+        ],
+        [
+          "understands"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: And it is also in the same context that one understands the iconic style of Thanjavur paintings in contrast to say, the Pahari miniatures or even Surpur paintings. It is also pertinent to remember that Thanjavur art was functional, in that it was made for a specific purpose on a specific demand from a customer."
+    },
+    {
+      "id": 49,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Indian National Army",
+      "notes": [
+        "In Bengal, he was repeatedly accused by Raj officials of working with the revolutionary movement.",
+        "He defeated Gandhi's favoured candidate, Bhogaraju Pattabhi Sitaramayya, in the popular vote, but the entire working committee resigned and refused to work with Bose."
+      ],
+      "question": "Tell me more about Indian National Army.",
+      "answerable": true,
+      "groups": [
+        [
+          "Sitaramayya"
+        ],
+        [
+          "Bhogaraju"
+        ],
+        [
+          "Gandhi's"
+        ]
+      ],
+      "reference_answer": "In Bengal, he was repeatedly accused by Raj officials of working with the revolutionary movement. [1] He defeated Gandhi's favoured candidate, Bhogaraju Pattabhi Sitaramayya, in the popular vote, but the entire working committee resigned and refused to work with Bose. [2]"
+    },
+    {
+      "id": 50,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Amateur chemistry",
+      "notes": [
+        "Kumaramangalam was called to the bar by the Inner Temple.",
+        "An EVM consists of two units, a control unit, and the ballot unit which are connected by a cable.",
+        "Out of 67 cities, 30 had achieved the 90% target for property tax collection, 20 had achieved full operation and maintenance cost recovery for water supply and sanitation, but only 8 had achieved cost recovery for solid waste."
+      ],
+      "question": "What figures are mentioned about Amateur chemistry?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not say."
+    },
+    {
+      "id": 51,
+      "type": "single",
+      "mode": "english",
+      "topic": "Pallavan Express",
+      "notes": [
+        "On 25 April 2018, Front wheels of WDP4D numbered 40405 which hauled 12606 UP Karaikkudi - Chennai Pallavan Superfast Express derailed while entering Tiruchchirappalli Junction railway station at 6:27 am."
+      ],
+      "question": "What happened in 2018 regarding Pallavan Express?",
+      "answerable": true,
+      "groups": [
+        [
+          "12606"
+        ],
+        [
+          "40405"
+        ],
+        [
+          "Tiruchchirappalli"
+        ]
+      ],
+      "reference_answer": "On 25 April 2018, Front wheels of WDP4D numbered 40405 which hauled 12606 UP Karaikkudi - Chennai Pallavan Superfast Express derailed while entering Tiruchchirappalli Junction railway station at 6:27 am."
+    },
+    {
+      "id": 52,
+      "type": "double",
+      "mode": "english",
+      "topic": "Negative inversion",
+      "notes": [
+        "In other words, the adjunct does not negate the predicate, but instead asserts a separate negation.",
+        "The examples therefore demonstrate that negative inversion is sensitive to how the fronted expression functions within the clause as a whole."
+      ],
+      "question": "Tell me more about Negative inversion.",
+      "answerable": true,
+      "groups": [
+        [
+          "demonstrate"
+        ],
+        [
+          "expression"
+        ],
+        [
+          "functions"
+        ]
+      ],
+      "reference_answer": "In other words, the adjunct does not negate the predicate, but instead asserts a separate negation. [1] The examples therefore demonstrate that negative inversion is sensitive to how the fronted expression functions within the clause as a whole. [2]"
+    },
+    {
+      "id": 53,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Bilaspur–Chennai Central Superfast Express",
+      "notes": [
+        "It can also be used for an exact sub-exponential algorithm to find a maximum independent set, as well as several related covering problems, in geometric graphs.",
+        "It is currently being operated with 12851/12852 train numbers on a weekly basis.",
+        "One of the renowned symbols of the PRI is the dedazo (termed from the word dedo - finger)."
+      ],
+      "question": "Which numbers are given for Bilaspur–Chennai Central Superfast Express?",
+      "answerable": true,
+      "groups": [
+        [
+          "12851"
+        ],
+        [
+          "12852"
+        ],
+        [
+          "currently"
+        ]
+      ],
+      "reference_answer": "It is currently being operated with 12851/12852 train numbers on a weekly basis."
+    },
+    {
+      "id": 54,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Satish Shetty",
+      "notes": [
+        "On 5 June, the Equality and Human Rights Commission (EHRC) announced to launch a statutory inquiry into racial inequalities, which have been exposed amidst a surge of COVID-19 cases in the UK.",
+        "In January 2013, CBI obtained permission to conduct polygraph tests on Mhaiskar, his attorney Kulkarni, and eight others, leading to a 15% drop in the company's share price."
+      ],
+      "question": "What figures are mentioned about Satish Shetty?",
+      "answerable": true,
+      "groups": [
+        [
+          "2013"
+        ],
+        [
+          "Kulkarni"
+        ],
+        [
+          "Mhaiskar"
+        ]
+      ],
+      "reference_answer": "In January 2013, CBI obtained permission to conduct polygraph tests on Mhaiskar, his attorney Kulkarni, and eight others, leading to a 15% drop in the company's share price. [2]"
+    },
+    {
+      "id": 55,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Motor Vehicle Insurance (India)",
+      "notes": [
+        "It is an integrated bus station serving for City bus service and Minibus services."
+      ],
+      "question": "What numbers does the text give about Motor Vehicle Insurance (India)?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 56,
+      "type": "double",
+      "mode": "domain",
+      "topic": "National Social Assistance Scheme",
+      "notes": [
+        "The table below shows monthly pension amounts in various states: Recent studies of NSAP show that the social pension schemes are performing 'reasonably well' and 'levels of leakage are low and tractable'.",
+        "The Government of India has urged State Governments to make matching contributions with the aim of doubling the monthly pension amounts."
+      ],
+      "question": "What should I know about National Social Assistance Scheme?",
+      "answerable": true,
+      "groups": [
+        [
+          "Governments"
+        ],
+        [
+          "Government"
+        ],
+        [
+          "Recent"
+        ]
+      ],
+      "reference_answer": "The table below shows monthly pension amounts in various states: Recent studies of NSAP show that the social pension schemes are performing 'reasonably well' and 'levels of leakage are low and tractable'. [1] The Government of India has urged State Governments to make matching contributions with the aim of doubling the monthly pension amounts. [2]"
+    },
+    {
+      "id": 57,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Social democracy",
+      "notes": [
+        "Social Democrat continued to be used in this context until the Bolshevik Revolution of October 1917, when Communist came into vogue for individuals and organizations espousing a revolutionary road to socialism.",
+        "In the 19th century, social democrat was a broad catch-all for international socialists owing their primary ideological allegiance to Lassalle or Marx, in contrast to those advocating various forms of utopian socialism.",
+        "No person shall be issued a learner's licence to drive a transport vehicle unless he has held a licence to drive a light motor vehicle for at least one year."
+      ],
+      "question": "Share a couple of facts about Social democracy.",
+      "answerable": true,
+      "groups": [
+        [
+          "1917"
+        ],
+        [
+          "19th"
+        ],
+        [
+          "Revolution"
+        ]
+      ],
+      "reference_answer": "Social Democrat continued to be used in this context until the Bolshevik Revolution of October 1917, when Communist came into vogue for individuals and organizations espousing a revolutionary road to socialism. [1] In the 19th century, social democrat was a broad catch-all for international socialists owing their primary ideological allegiance to Lassalle or Marx, in contrast to those advocating various forms of utopian socialism. [2]"
+    },
+    {
+      "id": 58,
+      "type": "single",
+      "mode": "english",
+      "topic": "Nachiarkoil lamp",
+      "notes": [
+        "Since they could not pursue their livelihood in Nagerkoil with this craft, five families of Pathers migrated initially to Kumbakonam and then to Nachiarkoil in 1857."
+      ],
+      "question": "What is mentioned about 1857 in connection with Nachiarkoil lamp?",
+      "answerable": true,
+      "groups": [
+        [
+          "Kumbakonam"
+        ],
+        [
+          "Nagerkoil"
+        ],
+        [
+          "Pathers"
+        ]
+      ],
+      "reference_answer": "From the notes: Since they could not pursue their livelihood in Nagerkoil with this craft, five families of Pathers migrated initially to Kumbakonam and then to Nachiarkoil in 1857. [1]"
+    },
+    {
+      "id": 59,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Puratchi Bharatham Katchi",
+      "notes": [
+        "The police officers at the roadblock ordered Khan and Kasab to exit and surrender, but instead they turned on the windshield wipers and high-beam headlights to prevent any visuals.",
+        "After Poovai Moorthy's death in 2002, his brother M. Jagan Moorthy became the party leader.",
+        "He had asked for new clothes on Eid al-Fitr, but his father could not provide them, which made him angry."
+      ],
+      "question": "Tell me about Puratchi Bharatham Katchi in 2002.",
+      "answerable": true,
+      "groups": [
+        [
+          "Moorthy's"
+        ],
+        [
+          "Moorthy"
+        ],
+        [
+          "Poovai"
+        ]
+      ],
+      "reference_answer": "After Poovai Moorthy's death in 2002, his brother M. Jagan Moorthy became the party leader."
+    },
+    {
+      "id": 60,
+      "type": "negative",
+      "mode": "english",
+      "topic": "Arakonam–Jolarpettai Express",
+      "notes": [
+        "Ngodup Dongchung announced his candidacy on 9 September, and Tashi Topgyal on 10 September.",
+        "Pons demonstrated cortical reorganization in monkeys after the amputation of a finger."
+      ],
+      "question": "What numbers does the text give about Arakonam–Jolarpettai Express?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not answer this question."
+    }
+  ]
+}

@@ -144,6 +144,13 @@ class ModelService:
             "error": self.last_error,
         }
 
+    def prompt_budget(self):
+        """(count_tokens_function, context_limit) of the loaded model, used to fit web evidence into the prompt."""
+        if not self._state:
+            raise ModelNotReady(self.last_error or "Model is not loaded. Train ELVARN first.")
+        tok = self._state["tokenizer"]
+        return (lambda s: len(tok.encode(s))), self._state["model"].sequence_length
+
     # ------------------------------------------------------------- generate
     def generate(self, text, **kwargs):
         if not self._state:

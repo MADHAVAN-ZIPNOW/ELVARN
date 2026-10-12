@@ -56,11 +56,13 @@ def parse_args():
     p.add_argument("--force", action="store_true",
                    help="start even if the memory check says the model will not fit")
     p.add_argument("--checkpoint-dir", type=Path, default=None)
+    p.add_argument("--data-dir", type=Path, default=None, help="folder with train.bin / val.bin / meta.json (default: backend/data/processed)")
+    p.add_argument("--tokenizer-file", type=Path, default=None, help="tokenizer.json matching --data-dir (default: the project tokenizer)")
     return p.parse_args()
 
 
-def load_split(name):
-    path = PROCESSED_DIR / f"{name}.bin"
+def load_split(name, data_dir=None):
+    path = Path(data_dir or PROCESSED_DIR) / f"{name}.bin"
     if not path.is_file():
         raise SystemExit(f"Missing {path}. Run build_dataset.py first.")
     return np.memmap(path, dtype=np.uint16, mode="r")  # not loaded into RAM
@@ -136,13 +138,13 @@ def main():
     rng = np.random.default_rng(args.seed)
     device = torch.device("cpu")
 
-    tok = BPETokenizer()
-    meta_path = PROCESSED_DIR / "meta.json"
+    tok = BPETokenizer(args.tokenizer_file) if args.tokenizer_file else BPETokenizer()
+    meta_path = Path(args.data_dir or PROCESSED_DIR) / "meta.json"
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.is_file() else {}
     if meta.get("tokenizer_sha256") not in (None, tok.sha256):
         raise SystemExit("Processed data was built with a different tokenizer. Re-run build_dataset.py.")
 
-    train_data, val_data = load_split("train"), load_split("val")
+    train_data, val_data = load_split("train", args.data_dir), load_split("val", args.data_dir)
     config = preset_config(args.size)
     seq_len = config["sequence_length"]
     if len(train_data) <= seq_len + 1 or len(val_data) <= seq_len + 1:

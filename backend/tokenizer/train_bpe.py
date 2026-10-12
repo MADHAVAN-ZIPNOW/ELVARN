@@ -44,14 +44,17 @@ def train(texts, vocab_size, out_file=TOKENIZER_FILE):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--vocab-size", type=int, default=16384)
+    parser.add_argument("--raw-dir", type=Path, default=corpus.RAW_DATA_DIR, help="folder of raw text files")
+    parser.add_argument("--out-file", type=Path, default=TOKENIZER_FILE, help="where to save tokenizer.json")
+    parser.add_argument("--group-by-topic", action="store_true", help="keep all blocks of one Topic on the same side of the split")
     args = parser.parse_args()
 
-    documents = corpus.load_documents()
-    train_docs, val_docs, stats = corpus.split_documents(documents)
+    documents = corpus.load_documents(args.raw_dir)
+    train_docs, val_docs, stats = corpus.split_documents(documents, args.group_by_topic)
     if not train_docs:
         raise SystemExit("No training documents found in " + str(corpus.RAW_DATA_DIR))
 
-    out = train((d["text"] for d in train_docs), args.vocab_size)
+    out = train((d["text"] for d in train_docs), args.vocab_size, out_file=args.out_file)
     tokenizer = BPETokenizer(out)
 
     meta = {
@@ -63,7 +66,7 @@ def main():
         "split_stats": stats,
         "library": "tokenizers (byte-level BPE)",
     }
-    (BPE_DIR / "tokenizer_meta.json").write_text(
+    (Path(out).parent / "tokenizer_meta.json").write_text(
         json.dumps(meta, indent=2), encoding="utf-8"
     )
     print("Saved:", out)

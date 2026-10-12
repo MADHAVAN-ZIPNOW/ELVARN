@@ -1,0 +1,4 @@
+# SearXNG writes its own files into this folder when it runs; only our settings are committed.
+*
+!.gitignore
+!settings.yml

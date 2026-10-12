@@ -1,0 +1,31 @@
+# SearXNG settings for a PRIVATE, local instance used only by the ELVARN backend.
+# NOT TESTED: Docker was not run when this file was written.
+use_default_settings: true
+
+general:
+  instance_name: "ELVARN search"
+  debug: false
+
+search:
+  safe_search: 1            # 0 = off, 1 = moderate, 2 = strict
+  autocomplete: ""
+  default_lang: "en"
+  # json is required: ELVARN calls /search?q=...&format=json
+  formats:
+    - html
+    - json
+
+server:
+  bind_address: "0.0.0.0"   # inside the container; Docker publishes it on 127.0.0.1 only
+  port: 8080
+  # The secret key is NOT stored here. SearXNG reads the SEARXNG_SECRET environment variable
+  # and uses it instead (generate one with: openssl rand -hex 32).
+  limiter: false            # the bot limiter is for public instances; this one is private and loopback-only
+  public_instance: false
+  image_proxy: false
+  method: "GET"
+
+# No outgoing proxies are configured. SearXNG talks to the search engines directly.
+outgoing:
+  request_timeout: 3.0
+  max_request_timeout: 6.0

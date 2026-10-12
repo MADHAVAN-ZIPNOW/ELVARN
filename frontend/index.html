@@ -157,7 +157,20 @@ button.menu-btn{display:none}
 .tool svg.i{width:15px;height:15px}
 .tool:hover{color:var(--ink)}
 .tool:active{box-shadow:var(--inset)}
+.row.user .utools{margin-top:7px;justify-content:flex-end}
 .meta{font-size:11px;color:var(--ink3);margin-left:4px}
+/* web sources shown under an answer */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sources{margin:12px 0 0;max-width:640px;font-size:13px}
+.sources .snote{color:var(--ink3);font-size:12px;margin-bottom:8px}
+.sources ol{list-style:none;padding:0;display:grid;gap:8px}
+.sources li{padding:9px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--raise-sm)}
+.sources a{color:var(--ink);font-weight:700;text-decoration:none;overflow-wrap:anywhere;display:block}
+.sources a:hover,.sources a:focus-visible{text-decoration:underline}
+.sources a:focus-visible{outline:2px solid #2f7dff;outline-offset:3px;border-radius:6px}
+.sources .dom{color:var(--ink3);font-weight:500;font-size:12px}
+.sources .snip{color:var(--ink2);font-size:12.5px;margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
+.sources.warn .snote{color:var(--ink2);font-style:italic}
 
 /* thinking line + details: raised soft card, Google-style running colours */
 .proc{width:min(100%,580px);margin:0 0 14px;border-radius:20px;background:var(--bg);box-shadow:var(--raise-sm);overflow:hidden}
@@ -193,7 +206,7 @@ button.menu-btn{display:none}
 .notice{font-size:11px;color:var(--ink3);text-align:center;padding:4px 12px 8px}
 .composer{padding:6px clamp(14px,3vw,34px) max(16px,env(safe-area-inset-bottom))}
 @property --ang{syntax:"<angle>";initial-value:0deg;inherits:false}
-.box{max-width:800px;margin:0 auto;display:flex;align-items:flex-end;gap:12px;border:3px solid transparent;border-radius:30px;padding:6px 6px 6px 19px;
+.box{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:4px;border:3px solid transparent;border-radius:30px;padding:6px;
   background:linear-gradient(var(--bg),var(--bg)) padding-box, linear-gradient(var(--bg),var(--bg)) border-box;box-shadow:var(--inset);transition:box-shadow .25s}
 .box:focus-within{background:linear-gradient(var(--bg),var(--bg)) padding-box, conic-gradient(from var(--ang),#47a6ff,#2fbf55,#ffb62e,#ff5aa2,#2cc4d1,#47a6ff) border-box;
   animation:ring 3.2s linear infinite;box-shadow:var(--inset), 0 0 22px rgba(71,166,255,.38), 0 0 34px rgba(255,90,162,.24)}
@@ -210,6 +223,89 @@ textarea:focus-visible{outline:none}
 .mic.on{box-shadow:var(--inset), 0 0 0 3px var(--bad);animation:rec 1.2s infinite}
 @keyframes rec{0%{box-shadow:var(--inset),0 0 0 0 rgba(229,72,77,.55)}100%{box-shadow:var(--inset),0 0 0 14px rgba(229,72,77,0)}}
 .send svg.i,.mic svg.i{width:24px;height:24px}
+/* creative upload button: a glossy sphere like the rocket Send button, with a page that shoots an arrow up and twinkling sparks (logo colours) */
+.attach{flex:none;width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;display:grid;place-items:center;position:relative;
+  background:radial-gradient(circle at 32% 26%,#fff 0 6%,#f4f7ff 12%,#dfe8fb 62%,#c3d1ee 100%);
+  box-shadow:0 8px 16px rgba(60,80,150,.25), inset 0 -4px 8px rgba(70,90,160,.25), inset 0 3px 5px rgba(255,255,255,.9), 0 0 0 2px rgba(122,47,208,.22);
+  transition:transform .15s, box-shadow .2s}
+.attach:hover{transform:translateY(-3px);box-shadow:0 12px 20px rgba(122,47,208,.32), 0 0 14px rgba(208,51,143,.4), inset 0 -4px 8px rgba(70,90,160,.25), inset 0 3px 5px rgba(255,255,255,.9), 0 0 0 2px rgba(208,51,143,.35)}
+.attach:active{box-shadow:var(--inset);transform:none}
+.attach svg.i .arrow{transition:transform .25s}
+.attach:hover svg.i .arrow{transform:translateY(-2.5px)}
+.attach svg.i .spark{opacity:.6;transform-box:fill-box;transform-origin:50% 50%}
+.attach:hover svg.i .spark{opacity:1;animation:twinkle .7s ease-in-out infinite alternate}
+.attach:hover svg.i .spark.s2{animation-delay:.25s}
+@keyframes twinkle{from{transform:scale(.6) rotate(0deg)}to{transform:scale(1.25) rotate(45deg)}}
+.attach.has{background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95) 0 5%,transparent 14%),linear-gradient(135deg,#1d15ab 0%,#065fc3 24%,#03b9dc 46%,#511c83 68%,#a52976 86%,#d27b47 100%);
+  box-shadow:0 10px 22px rgba(80,40,170,.5), 0 0 0 3px rgba(255,255,255,.55), inset 0 -5px 9px rgba(0,0,0,.28), inset 0 3px 5px rgba(255,255,255,.55);animation:readyfloat 2.4s ease-in-out infinite}
+.attach.has svg.i{stroke:#fff;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+@media (prefers-reduced-motion:reduce){.attach,.attach.has,.attach svg.i .spark{animation:none!important;transition:none}}
+.attach:focus-visible,.fchip button:focus-visible,.qchip:focus-visible,.dlbtn:focus-visible,.dlcard:focus-visible,.fpbtn:focus-visible,.fpname:focus-visible{outline:3px solid #47a6ff;outline-offset:3px}
+.attach svg.i{width:27px;height:27px;stroke-width:2;overflow:visible;transition:transform .25s}
+.attach:disabled{opacity:.5;cursor:default}
+.filebar{margin:0;padding:6px 6px 2px 8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.boxrow{display:flex;align-items:flex-end;gap:10px}
+.boxrow textarea{padding-left:4px}
+.fchip{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:3px 5px 3px 4px;border-radius:999px;background:var(--bg);box-shadow:var(--raise-sm);font-size:13px;color:var(--ink)}
+.fchip .fopen{display:inline-flex;align-items:center;gap:8px;min-width:0;border:none;background:transparent;color:inherit;font:inherit;padding:4px 6px 4px 8px;border-radius:999px}
+.fchip button.fopen{cursor:pointer}
+.fchip button.fopen:hover .fname{text-decoration:underline}
+.fchip .fopen svg.i{width:18px;height:18px;flex:none}
+.fchip .fname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(46vw,260px)}
+.fchip .fmeta{color:var(--ink3);font-size:12px;white-space:nowrap}
+.fchip>button:not(.fopen){border:none;background:transparent;color:var(--ink2);cursor:pointer;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;padding:0}
+.fchip svg.i{width:14px;height:14px}
+.fchip.busy .fmeta::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border:2px solid #47a6ff;border-top-color:transparent;border-radius:50%;animation:spin .9s linear infinite;vertical-align:-1px}
+.fchip.err{box-shadow:var(--raise-sm), 0 0 0 2px var(--bad)}
+.qchip{border:none;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink2);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.qchip:hover{color:var(--ink)}
+.qchip:active{box-shadow:var(--inset)}
+.qlabel{font-size:12px;color:var(--ink3)}
+.row.user .fchip{margin-bottom:6px;box-shadow:none;background:rgba(255,255,255,.55);color:#17305f;font-weight:700}
+.dlcard{margin:12px 0 0;max-width:420px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:var(--bg);box-shadow:var(--raise-sm)}
+.dlcard .dlmain{min-width:0;flex:1}
+.dlcard .dlname{font-weight:700;font-size:14px;overflow-wrap:anywhere}
+.dlcard .dlmeta{color:var(--ink3);font-size:12px;margin-top:2px}
+.dlcard .badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--lo);color:var(--ink);font-weight:700;font-size:11px;margin-right:6px}
+.dlcard .dlnote{color:var(--ink3);font-size:11.5px;margin-top:4px}
+.dlbtn{flex:none;border:none;border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;color:#fff;background:linear-gradient(180deg,#47a6ff,#1456e0);box-shadow:var(--raise-sm)}
+.dlbtn:disabled{background:var(--lo);color:var(--ink3);cursor:default}
+.dlcard.expired .dlname{text-decoration:line-through;opacity:.7}
+.dlcard{max-width:480px;cursor:pointer;transition:transform .12s}
+.dlcard:hover{transform:translateY(-1px)}
+.dlcard .dlicon{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;box-shadow:var(--inset)}
+.dlcard .dlicon svg.i{width:22px;height:22px}
+.dlbtns{display:flex;flex:none;gap:8px;flex-wrap:wrap}
+.dlbtn{display:inline-flex;align-items:center;gap:6px}
+.dlbtn.alt{background:var(--bg);color:var(--ink);box-shadow:var(--raise-sm)}
+.dlbtn.alt:disabled{box-shadow:var(--inset);color:var(--ink3)}
+.dlbtn svg.i{width:16px;height:16px}
+/* ---------- right-side file viewer ---------- */
+.fpanel{flex:none;width:clamp(360px,40%,560px);height:100dvh;display:flex;flex-direction:column;min-width:0;background:var(--bg);color:var(--ink);box-shadow:-8px 0 26px var(--lo);animation:fpIn .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes fpIn{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
+.fphead{padding:14px 14px 8px;padding-top:max(14px,env(safe-area-inset-top))}
+.fprow{display:flex;align-items:center;gap:10px}
+.fpicon{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:14px;box-shadow:var(--inset)}
+.fpicon svg.i{width:22px;height:22px}
+.fptitle{min-width:0;flex:1}
+.fpname{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:6px}
+.fpmeta{font-size:12px;color:var(--ink3);margin-top:3px}
+.fpmeta .badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--lo);color:var(--ink);font-weight:700;font-size:11px;margin-right:6px}
+.fpacts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.fpbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 14px;border:none;border-radius:14px;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.fpbtn.round{padding:0;width:40px}
+.fpbtn:active{box-shadow:var(--inset)}
+.fpbtn:disabled{opacity:.5;cursor:default}
+.fpbtn svg.i{width:18px;height:18px}
+.fpnote{margin:6px 14px 0;font-size:12px;color:var(--ink3)}
+.fpbody{flex:1;min-height:0;overflow:auto;margin:10px 14px 14px;padding:14px;border-radius:18px;box-shadow:var(--inset)}
+.fptext{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.55 ui-monospace,Consolas,"Courier New",monospace;color:var(--ink)}
+.fptext.msg{font-family:inherit;color:var(--ink2)}
+.fptext.err{font-family:inherit;color:var(--bad);font-weight:700}
+@media (max-width:1100px){.fpanel{position:fixed;top:0;right:0;z-index:30;width:min(480px,100%)}}
+@media (max-width:700px){.fpanel{width:100%}}
+.main.dragover .composer .box{box-shadow:var(--inset), 0 0 0 3px #47a6ff}
+@media (max-width:600px){.dlcard{flex-wrap:wrap}.attach{width:44px;height:44px}}
 
 
 
@@ -467,7 +563,8 @@ select option{color:#1f2a44}
   .panel.show{transform:none}
   .cards{grid-template-columns:1fr 1fr;gap:14px}
   .card{flex-direction:column;align-items:flex-start;gap:10px}
-  .box{gap:10px;padding:5px 5px 5px 15px}
+  .box{padding:5px}
+  .boxrow{gap:8px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
@@ -532,18 +629,40 @@ select option{color:#1f2a44}
       <div class="slist" id="sessList"></div>
     </section>
 
+    <div class="sr-only" id="srStatus" role="status" aria-live="polite"></div>
     <main class="chat" id="chat" aria-live="polite"><div class="thread" id="thread"></div></main>
 
-    <div class="notice">ELVARN is a small model trained on a limited dataset. Replies are generated text and can be wrong or incomplete — they are not verified facts.</div>
+    <div class="notice">ELVARN is a small model trained on a limited dataset. Replies are generated text and can be wrong or incomplete — they are not verified facts, even when web sources are shown.</div>
     <div class="composer">
       <div class="livecap" id="liveCap" hidden aria-live="polite"><span class="wave"><i></i><i></i><i></i><i></i></span><span id="liveText">Listening… start speaking</span></div>
+      <input type="file" id="fileInput" hidden tabindex="-1" aria-label="Choose a file to upload" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,.docx">
       <div class="box">
-        <textarea id="input" rows="1" placeholder="Type, or tap the mic and speak…" aria-label="Message"></textarea>
-        <button class="mic" id="micBtn" title="Speak your message" aria-label="Start voice input"><span data-i="mic"></span></button>
-        <button class="send" id="sendBtn" title="Send" aria-label="Send"><span data-i="rocket"></span></button>
+        <div class="filebar" id="fileBar" hidden></div>
+        <div class="boxrow">
+          <button class="attach" id="attachBtn" type="button" title="Attach a file (txt, md, csv, json, html, docx)" aria-label="Attach a file"><span data-i="upload"></span></button>
+          <textarea id="input" rows="1" placeholder="Type, or tap the mic and speak…" aria-label="Message"></textarea>
+          <button class="mic" id="micBtn" title="Speak your message" aria-label="Start voice input"><span data-i="mic"></span></button>
+          <button class="send" id="sendBtn" title="Send" aria-label="Send"><span data-i="rocket"></span></button>
+        </div>
       </div>
     </div>
   </div>
+  <aside class="fpanel" id="filePanel" role="complementary" aria-label="File viewer" hidden>
+    <div class="fphead">
+      <div class="fprow">
+        <span class="fpicon"><span data-i="file"></span></span>
+        <div class="fptitle"><div class="fpname" id="fpName" tabindex="-1"></div><div class="fpmeta"><span class="badge" id="fpBadge"></span><span id="fpSize"></span></div></div>
+        <button class="fpbtn round" id="fpClose" type="button" aria-label="Close file viewer" title="Close"><span data-i="x"></span></button>
+      </div>
+      <div class="fpacts">
+        <button class="fpbtn" id="fpCopy" type="button" aria-label="Copy the file text" title="Copy the text"><span data-i="copy"></span><span class="lbl">Copy</span></button>
+        <button class="fpbtn" id="fpDownload" type="button" aria-label="Download the file" title="Download" hidden><span data-i="download"></span><span class="lbl">Download</span></button>
+      </div>
+    </div>
+    <div class="fpnote" id="fpNote" hidden></div>
+    <div class="fpbody" id="fpBody" tabindex="0" aria-label="File contents"><pre class="fptext" id="fpText"></pre></div>
+    <div class="sr-only" id="fpStatus" role="status" aria-live="polite"></div>
+  </aside>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -555,6 +674,9 @@ select option{color:#1f2a44}
   <div class="field"><label>Temperature <output id="tempOut">0.8</output></label><input type="range" id="temp" min="0.1" max="1.6" step="0.05" value="0.8"></div>
   <div class="field"><label>Max new tokens <output id="maxOut">80</output></label><input type="range" id="maxTok" min="10" max="200" step="5" value="80"></div>
   <div class="field"><label>Top-k <output id="topkOut">40</output></label><input type="range" id="topk" min="0" max="200" step="5" value="40"></div>
+
+  <h4>Web search</h4>
+  <div class="switch"><span>Search the web when needed<div class="note">Off = answers come from the model only</div></span><input type="checkbox" id="webSearch" aria-label="Search the web when a question needs it"></div>
 
   <h4>Voice</h4>
   <div class="switch"><span>Read replies aloud</span><input type="checkbox" id="autoSpeak"></div>
@@ -591,17 +713,21 @@ const API_BASE = params.get("api") || (DEV_STATIC ? "http://127.0.0.1:8000" : ""
 
 /* ---------- icons (vector, follow the text colour) ---------- */
 const P = {
-  plus:'<path d="M12 5v14M5 12h14"/>', menu:'<path d="M4 7h16M4 12h16M4 17h16"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', plusb:'<path d="M12 5v14M5 12h14"/>', menu:'<path d="M4 7h16M4 12h16M4 17h16"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
   trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/>',
   sliders:'<circle cx="12" cy="12" r="3"/><path d="M10.4 3.5h3.2l.5 2.3 1.4.8 2.2-.8 1.6 2.8-1.7 1.6v1.6l1.7 1.6-1.6 2.8-2.2-.8-1.4.8-.5 2.3h-3.2l-.5-2.3-1.4-.8-2.2.8-1.6-2.8 1.7-1.6v-1.6L4.7 8.3l1.6-2.8 2.2.8 1.4-.8z"/>',
   theme:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 010 16z" fill="currentColor"/>',
+  upload:'<path d="M6.4 10.8h6.4l3.8 3.8v5.7a1.4 1.4 0 01-1.4 1.4H6.4A1.4 1.4 0 015 20.3V12.2a1.4 1.4 0 011.4-1.4z"/><path d="M12.8 10.8v3.8h3.8"/><path class="arrow" d="M10.7 17.2V4.6M10.7 4.6L8 7.3M10.7 4.6l2.7 2.7"/><path class="spark" d="M18.8 3.2v3M17.3 4.7h3"/><path class="spark s2" d="M4.5 3.6v2.2M3.4 4.7h2.2"/>',
+  clip:'<path d="M20 11.5l-8 8a5 5 0 01-7-7l8.6-8.6a3.4 3.4 0 014.8 4.8l-8.6 8.6a1.8 1.8 0 01-2.6-2.6l7.6-7.6"/>',
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21M8.5 21h7"/>',
   send:'<path d="M7.5 5v14l11.5-7z"/>',
   speaker:'<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/>',
   stop:'<rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/>',
   copy:'<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5v-2a2 2 0 00-2-2h-7a2 2 0 00-2 2v7a2 2 0 002 2h2"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  file:'<path d="M7 3.5h6.5L18 8v11.5a1 1 0 01-1 1H7a1 1 0 01-1-1v-15a1 1 0 011-1z"/><path d="M13.5 3.5V8H18M9 13h6M9 16.5h6"/>',
+  download:'<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>',
   info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.01"/>',
   chat:'<path d="M5 5h14a2 2 0 012 2v8a2 2 0 01-2 2h-7l-4.5 3.5V17H5a2 2 0 01-2-2V7a2 2 0 012-2z"/>',
   bank:'<path d="M3 9.5L12 4l9 5.5M5 10v7M9.5 10v7M14.5 10v7M19 10v7M3.5 20h17"/>',
@@ -614,7 +740,7 @@ const P = {
   rocket:'<path d="M12 2.4c3.1 2 4.6 5.6 4.6 9.6l-1.9 3.6H9.3L7.4 12c0-4 1.5-7.6 4.6-9.6z"/><circle cx="12" cy="9.2" r="1.7"/><path d="M7.5 12.2L4.4 14.9l1 3.2 3.2-1.6M16.5 12.2l3.1 2.7-1 3.2-3.2-1.6"/><path class="flame" d="M10.4 18.6c.4 1.7.9 2.9 1.6 3.9.7-1 1.2-2.2 1.6-3.9"/>',
   hand:'<path d="M8 12V6.5a1.5 1.5 0 013 0V11M11 10V4.5a1.5 1.5 0 013 0V11M14 10V6a1.5 1.5 0 013 0v7a6 6 0 01-6 6h-.5a5 5 0 01-4.2-2.3L4.5 13.5a1.5 1.5 0 012.5-1.7L8 13"/>',
 };
-const COLOR={rocket:"blue",menu:"blue",plus:"white",x:"pink",search:"blue",trash:"pink",sliders:"orange",theme:"blue",mic:"logo",send:"cyan",speaker:"blue",stop:"orange",copy:"blue",info:"blue",check:"white"};
+const COLOR={upload:"logo",plusb:"blue",file:"blue",download:"blue",rocket:"blue",menu:"blue",plus:"white",x:"pink",search:"blue",trash:"pink",sliders:"orange",theme:"blue",mic:"logo",clip:"blue",send:"cyan",speaker:"blue",stop:"orange",copy:"blue",info:"blue",check:"white"};
 const FILLED=new Set(["send","stop"]);
 function icon(name){ const s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("viewBox","0 0 24 24"); s.setAttribute("class","i g-"+(COLOR[name]||"white")+(FILLED.has(name)?" fill":"")); s.setAttribute("aria-hidden","true"); s.innerHTML=P[name]||""; return s; }
 function hydrateIcons(root){ (root||document).querySelectorAll("[data-i]").forEach(n=>{ if(!n.firstChild) n.appendChild(icon(n.dataset.i)); n.style.display="inline-grid"; }); }
@@ -886,32 +1012,72 @@ function fitSpacer(row){
 }
 function pinToTop(row){ fitSpacer(row); $("chat").scrollTo({top:row.offsetTop-10, behavior:"smooth"}); }
 
-function drawUser(text){
-  const row=el("div","row user"), wrap=el("div","msg"), bub=el("div","bubble",text); tilt(bub,8,14); wrap.appendChild(bub); row.appendChild(wrap); return place(row);
+/* Copy button: works over http too (falls back to a hidden textarea) and tells the user whether it worked */
+function copyBtn(text){
+  const cp=btnWith("tool","copy","Copy"); cp.type="button"; cp.setAttribute("aria-label","Copy the text");
+  cp.onclick=async()=>{
+    const ok=await copyPlain(text);
+    cp.textContent=""; cp.append(icon(ok?"check":"copy"),document.createTextNode(ok?"Copied":"Copy failed"));
+    setTimeout(()=>{ cp.textContent=""; cp.append(icon("copy"),document.createTextNode("Copy")); },1400);
+  };
+  return cp;
+}
+function drawUser(text,file){
+  const row=el("div","row user"), wrap=el("div","msg"), bub=el("div","bubble"); if(file) bub.appendChild(fileChip(file,null)); bub.appendChild(document.createTextNode(text)); tilt(bub,8,14); wrap.appendChild(bub);
+  const utools=el("div","tools utools"); utools.appendChild(copyBtn(text)); wrap.appendChild(utools);   /* copy option under the question */
+  row.appendChild(wrap); return place(row);
 }
 function buildBot(){
   const row=el("div","row bot"), wrap=el("div","msg");
-  const procHolder=el("div"), bubble=el("div","bubble"), toolsHolder=el("div");
-  wrap.append(procHolder,bubble,toolsHolder); row.appendChild(wrap); place(row);
-  return {row,procHolder,bubble,toolsHolder};
+  const procHolder=el("div"), bubble=el("div","bubble"), fileHolder=el("div"), srcHolder=el("div"), toolsHolder=el("div");
+  wrap.append(procHolder,bubble,fileHolder,srcHolder,toolsHolder); row.appendChild(wrap); place(row);
+  return {row,procHolder,bubble,fileHolder,srcHolder,toolsHolder};
 }
 function addTools(b, text, meta){
   b.toolsHolder.textContent="";
   const tools=el("div","tools");
   const sp=btnWith("tool","speaker","Listen"); sp.onclick=()=>speak(text,b.bubble,sp);
-  const cp=btnWith("tool","copy","Copy"); cp.onclick=()=>{ if(!navigator.clipboard) return; navigator.clipboard.writeText(text).then(()=>{ cp.textContent=""; cp.append(icon("check"),document.createTextNode("Copied")); setTimeout(()=>{ cp.textContent=""; cp.append(icon("copy"),document.createTextNode("Copy")); },1200); }); };
+  const cp=copyBtn(text);
   const inf=btnWith("tool","info","Details"); inf.onclick=()=>{ showLast(meta||{}); openLab(); };
   tools.append(sp,cp,inf);
   if(meta && meta.generated_tokens!=null) tools.append(el("span","meta",`${meta.generated_tokens} tokens · ${meta.seconds}s`));
   b.toolsHolder.appendChild(tools);
 }
+function safeHttpUrl(u){ try{ const x=new URL(String(u)); return (x.protocol==="https:"||x.protocol==="http:")?x.href:null; }catch(e){ return null; } }
+/* citations: only text via textContent, links only for http/https, opened in a new tab */
+function renderSources(holder, info){
+  holder.textContent="";
+  if(!info || !info.status || info.status==="skipped") return;
+  const box=el("section","sources"); box.setAttribute("aria-label","Web sources");
+  const list=(info.sources||[]).map(s=>({s,href:safeHttpUrl(s.url)})).filter(x=>x.href);
+  if(info.searched && list.length){
+    box.appendChild(el("div","snote","Sources from a web search. The small model's text above can still be wrong, so check the sources."));
+    const ol=el("ol");
+    list.forEach((x,i)=>{
+      const li=el("li"), a=el("a",null,String(x.s.title||x.s.domain||x.href).slice(0,160));
+      a.href=x.href; a.target="_blank"; a.rel="noopener noreferrer";
+      a.setAttribute("aria-label","Source "+(i+1)+": "+(x.s.title||x.s.domain)+" ("+x.s.domain+"), opens in a new tab");
+      a.appendChild(el("span","dom"," · "+String(x.s.domain||"").slice(0,80)));
+      li.appendChild(a); if(x.s.snippet) li.appendChild(el("div","snip",String(x.s.snippet).slice(0,260)));
+      ol.appendChild(li);
+    });
+    box.appendChild(ol);
+  }else{
+    box.classList.add("warn");
+    box.appendChild(el("div","snote",info.message||"This answer was not checked against the web."));
+  }
+  holder.appendChild(box);
+}
+const searchInfo=e=>e&&e.search_status?{status:e.search_status,searched:!!e.searched,message:e.search_message||"",sources:e.sources||[]}:null;
 function drawMessage(m){
   removeWelcome();
-  if(m.role==="user") return drawUser(m.text);
+  if(m.role==="user") return drawUser(m.text,m.file);
   const b=buildBot();
   if(m.error){ b.row.classList.add("err"); b.bubble.textContent=m.text; return b; }
+  if(m.meta && m.meta.file_action){ b.bubble.textContent=m.text; renderDownloads(b.fileHolder,m.meta.files); return b; }
   if(m.text) b.bubble.textContent=m.text; else b.bubble.appendChild(el("span","empty-out","(the model produced no text)"));
   if(m.meta && m.meta.proc) renderProc(b.procHolder, m.meta.proc, false);
+  if(m.meta) renderSources(b.srcHolder, m.meta.search);
   addTools(b, m.text, m.meta);
   return b;
 }
@@ -932,7 +1098,7 @@ function renderProc(holder,p,live){
   if(live){
     const run=el("span","runner"); for(let i=0;i<4;i++) run.appendChild(el("i")); sm.appendChild(run);
     // the word is the real stage: waiting for the model -> tokenized -> generating
-    const word=!S?"Reading your message":(!L?"Tokenizing":`Generating · ${L.index} tokens`);
+    const word=(!S&&p.searching)?"Searching the web":!S?"Reading your message":(!L?"Tokenizing":`Generating · ${L.index} tokens`);
     sm.appendChild(el("span","shimmer",word+"…"));
   }else{
     sm.appendChild(el("span",null,"How this reply was made"));
@@ -955,7 +1121,8 @@ function renderProc(holder,p,live){
   stepRow(steps,dn?"ok":(S?"run":"pending"),"Generating, one token at a time",gen);
   stepRow(steps,dn?"ok":"pending","Finished",dn?`${WHY[dn.stop_reason]||dn.stop_reason} · average confidence ${pct(dn.mean_token_probability)}`:"");
   d.appendChild(steps);
-  d.appendChild(el("div","honest","Real steps and measurements from your local model. It does not search or research: it predicts text one token at a time. Confidence = the probability it gave the piece it picked."));
+  const ws=p.search&&p.search.searched;
+  d.appendChild(el("div","honest",(ws?"The server searched the web and showed the model a few short snippets as notes. The model itself does not browse or check facts: it predicts text one token at a time. ":"No web search was used. The model does not search or research: it predicts text one token at a time. ")+"Confidence = the probability it gave the piece it picked."));
 }
 
 /* ---------- API ---------- */
@@ -1033,10 +1200,13 @@ async function send(textArg){
   let c=cur(); if(!c) c=newConv();
   c.mode=state.mode; c.updated=Date.now();
   launchRocket(); state.busy=true; setSendMode(true); input.value=""; autoGrow();
-  const userMsg={role:"user",text}; c.messages.push(userMsg);
+  const attached=state.pending&&state.pending.file_id?state.pending:null;
+  if(attached){ c.files=(c.files||[]).concat([{file_id:attached.file_id,name:attached.name}]).slice(-5); clearPending(true); }
+  const userMsg={role:"user",text}; if(attached) userMsg.file={name:attached.name,size:attached.size,type:attached.detected_type};
+  c.messages.push(userMsg);
   if(c.title==="New chat") c.title=text.length>42?text.slice(0,42)+"…":text;
   updateHeading(); removeWelcome();
-  const urow=drawUser(text); renderHistory();
+  const urow=drawUser(text,userMsg.file); renderHistory();
   const b=buildBot();
   const proc={sentAt:Date.now(),start:null,tokens:0,last:null,done:null};
   renderProc(b.procHolder,proc,true); pinToTop(urow);
@@ -1045,25 +1215,37 @@ async function send(textArg){
 
   // last two finished exchanges of this chat, for chat-style modes
   const hist=[]; const ms=c.messages.slice(0,-1);
-  for(let i=ms.length-2;i>=0 && hist.length<2;i--){ if(ms[i].role==="user" && ms[i+1] && ms[i+1].role==="bot" && !ms[i+1].error && ms[i+1].mode===state.mode) hist.unshift({user:ms[i].text,assistant:ms[i+1].text}); }
+  for(let i=ms.length-2;i>=0 && hist.length<2;i--){ if(ms[i].role==="user" && ms[i+1] && ms[i+1].role==="bot" && !ms[i+1].error && !(ms[i+1].meta&&ms[i+1].meta.file_action) && ms[i+1].mode===state.mode) hist.unshift({user:ms[i].text,assistant:ms[i+1].text}); }
   const body={text, mode:state.mode, max_new_tokens:+state.s.maxTok, temperature:+state.s.temp, top_k:+state.s.topk,
-    greedy:state.s.greedy, history:(state.mode==="chat"||state.mode==="humour")&&hist.length?hist:null};
+    greedy:state.s.greedy, history:(state.mode==="chat"||state.mode==="humour")&&hist.length?hist:null,
+    web_search:state.s.webSearch!==false?"auto":"off"};
+  if(c.files&&c.files.length) body.file_ids=c.files.map(f=>f.file_id);
 
   let finalEv=null, errorMsg=null, aborted=false;
   try{
     await streamChat(body, ev=>{
-      if(ev.event==="start") proc.start=ev;
+      if(ev.event==="status"&&ev.status==="searching"){ proc.searching=true; $("srStatus").textContent="Searching the web"; }
+      else if(ev.event==="sources"){ proc.searching=false; proc.search=searchInfo(ev); $("srStatus").textContent=ev.searched?"Web search finished, "+(ev.sources||[]).length+" sources found":"Web search finished without usable results"; }
+      else if(ev.event==="start") proc.start=ev;
       else if(ev.event==="token"){ proc.tokens=ev.index; proc.last=ev; if(ev.text) b.bubble.textContent+=ev.text; }
-      else if(ev.event==="done"){ finalEv=ev; proc.done=ev; }
+      else if(ev.event==="done"){ finalEv=ev; proc.done=ev; if(ev.search_status&&ev.search_status!=="skipped") proc.search=searchInfo(ev); }
       else if(ev.event==="error") errorMsg=ev.message;
       renderProc(b.procHolder,proc,!proc.done); fitSpacer(urow);
     }, state.abort.signal);
   }catch(e){ if(e.name==="AbortError") aborted=true; else errorMsg=e.message; }
-  clearInterval(tick);
+  clearInterval(tick); proc.searching=false;
 
   if(errorMsg){
     b.procHolder.textContent=""; b.row.classList.add("err"); b.bubble.textContent="Could not get a reply: "+errorMsg;
     c.messages.push({role:"bot",text:b.bubble.textContent,error:true}); refreshStatus();
+  }else if(finalEv&&finalEv.file_action){
+    // a file request answered by plain server code (the model was not used)
+    b.procHolder.textContent=""; b.bubble.textContent=finalEv.text;
+    const files=stampFiles(finalEv.files);
+    renderDownloads(b.fileHolder,files);
+    const meta={file_action:finalEv.file_action,files};
+    c.messages.push({role:"bot",text:finalEv.text,mode:state.mode,meta});
+    $("srStatus").textContent=files.length?"File converted. A download button is available.":"File request finished.";
   }else{
     let replyText, meta;
     if(finalEv){ replyText=finalEv.text; meta=compact(finalEv); proc.done=finalEv; }
@@ -1074,12 +1256,210 @@ async function send(textArg){
     }
     b.bubble.textContent=""; if(replyText) b.bubble.textContent=replyText; else b.bubble.appendChild(el("span","empty-out","(the model produced no text)"));
     renderProc(b.procHolder,proc,false);
-    meta.proc={start:proc.start,done:compact(proc.done)};
+    meta.proc={start:proc.start,done:compact(proc.done),search:proc.search||null}; meta.search=proc.search||null;
+    renderSources(b.srcHolder, meta.search);
     addTools(b,replyText,meta); showLast(meta);
     c.messages.push({role:"bot",text:replyText,mode:state.mode,meta});
     if(state.s.autoSpeak && replyText && !aborted) speak(replyText,b.bubble);
   }
   c.updated=Date.now(); fitSpacer(urow); save(); renderHistory(); state.busy=false; state.abort=null; setSendMode(false); input.focus();
+}
+
+/* ---------- file upload + conversion ---------- */
+const FILE_EXT=["txt","text","md","markdown","csv","json","html","htm","docx"];
+const FILE_LABEL={txt:"TXT",md:"Markdown",html:"HTML",csv:"CSV",json:"JSON",docx:"Word",pdf:"PDF"};
+let maxUploadBytes=5*1024*1024, upXhr=null;
+function fmtSize(n){ return n<1024?n+" B":n<1048576?(n/1024).toFixed(n<10240?1:0)+" KB":(n/1048576).toFixed(1)+" MB"; }
+function fileChip(f,onRemove,onOpen){
+  const chip=el("span","fchip");
+  const body=onOpen?el("button","fopen"):el("span","fopen");
+  if(onOpen){ body.type="button"; body.setAttribute("aria-label","View contents of "+(f.name||"file")); body.title="Click to view the file"; body.onclick=()=>onOpen(body); }
+  body.appendChild(icon("file")); body.appendChild(el("span","fname",f.name||"file")); body.appendChild(el("span","fmeta",fmtSize(f.size||0)+(f.type?" · "+String(f.type).toUpperCase():"")));
+  chip.appendChild(body);
+  if(onRemove){ const x=el("button"); x.type="button"; x.setAttribute("aria-label","Remove attached file "+(f.name||"")); x.appendChild(icon("x")); x.onclick=onRemove; chip.appendChild(x); }
+  return chip;
+}
+/* ---------- right-side file viewer: shows the text of an uploaded or converted file ----------
+   Everything from the server is put in with textContent (never as HTML markup), so file content can never run as HTML. */
+const PREVIEW_CACHE=new Map();
+const fpState={info:null,opener:null,token:0};
+function announce(msg){ const s=$("srStatus"); s.textContent=""; setTimeout(()=>{ s.textContent=msg; },40); }
+function getPreview(id){
+  if(PREVIEW_CACHE.has(id)) return Promise.resolve(PREVIEW_CACHE.get(id));
+  return fetch(API_BASE+"/api/files/"+encodeURIComponent(id)+"/preview",{cache:"no-store"}).then(async r=>{
+    let d=null; try{ d=await r.json(); }catch(e){}
+    if(!r.ok){ const err=new Error(d&&typeof d.detail==="string"?d.detail:"The file could not be loaded ("+r.status+")."); err.status=r.status; throw err; }
+    if(PREVIEW_CACHE.size>=12) PREVIEW_CACHE.delete(PREVIEW_CACHE.keys().next().value);
+    PREVIEW_CACHE.set(id,d); return d;
+  });
+}
+async function copyPlain(text){
+  try{ if(navigator.clipboard&&window.isSecureContext){ await navigator.clipboard.writeText(text); return true; } }catch(e){}
+  const ta=document.createElement("textarea"); ta.value=text; ta.setAttribute("readonly",""); ta.setAttribute("aria-hidden","true");
+  ta.style.cssText="position:fixed;left:-9999px;top:0;opacity:0"; document.body.appendChild(ta); ta.select();
+  let ok=false; try{ ok=document.execCommand("copy"); }catch(e){} ta.remove(); return ok;
+}
+/* copies the text of a stored file; btn holds an icon and a .lbl label that shows "Copied" for a moment */
+function copyPreview(id,btn,onGone){
+  const lbl=btn.querySelector(".lbl"); if(!lbl.dataset.idle) lbl.dataset.idle=lbl.textContent;
+  btn.disabled=true; let msg="";
+  getPreview(id).then(d=>copyPlain(d.text).then(ok=>{
+    lbl.textContent=ok?"Copied":"Copy failed";
+    msg=ok?(d.truncated?"Copied the first part of the text. The file is longer than the preview limit.":"Copied the text to the clipboard."):"Copy failed. Select the text and copy it by hand.";
+  })).catch(e=>{
+    lbl.textContent="Unavailable";
+    if(e&&e.status===404){ msg="This file has expired. Upload it again."; if(onGone) onGone(); } else msg="The text could not be loaded. Try again.";
+  }).then(()=>{
+    announce(msg); $("fpStatus").textContent=msg;
+    setTimeout(()=>{ lbl.textContent=lbl.dataset.idle; if(!btn.dataset.gone) btn.disabled=false; },1800);
+  });
+}
+function setFpText(text,cls){ const t=$("fpText"); t.textContent=text; t.className="fptext"+(cls?" "+cls:""); }
+function openFilePanel(info,opener){
+  const tok=++fpState.token; fpState.info=info; fpState.opener=opener||null;
+  $("fpName").textContent=info.name||"file"; $("fpName").title=info.name||"";
+  $("fpBadge").textContent=info.label||""; $("fpBadge").hidden=!info.label; $("fpSize").textContent=fmtSize(info.size||0);
+  $("fpDownload").hidden=!info.downloadId; $("fpDownload").disabled=false;
+  const cp=$("fpCopy"); cp.disabled=true; const lbl=cp.querySelector(".lbl"); if(lbl.dataset.idle) lbl.textContent=lbl.dataset.idle;
+  $("fpNote").hidden=true; $("fpNote").textContent="";
+  setFpText("Loading…","msg"); $("fpBody").scrollTop=0;
+  $("filePanel").hidden=false; document.body.classList.add("fp-open");
+  $("fpName").focus();
+  getPreview(info.id).then(d=>{
+    if(tok!==fpState.token) return;
+    setFpText(d.text||"(This file has no text.)",d.text?"":"msg"); cp.disabled=!d.text;
+    if(d.label&&!info.label){ $("fpBadge").textContent=d.label; $("fpBadge").hidden=false; }
+    const notes=[]; if(d.preview_note) notes.push(d.preview_note);
+    if(d.truncated) notes.push("Showing the first "+(d.text||"").length.toLocaleString()+" characters only. The file is longer. Copy copies this part.");
+    if(notes.length){ $("fpNote").textContent=notes.join(" "); $("fpNote").hidden=false; }
+  }).catch(e=>{
+    if(tok!==fpState.token) return;
+    setFpText(e&&e.status===404?"This file has expired. Upload it again.":(e&&e.message)||"The file could not be loaded.","err");
+    $("fpDownload").disabled=!!(e&&e.status===404);
+  });
+}
+function closeFilePanel(){
+  if($("filePanel").hidden) return;
+  fpState.token++; $("filePanel").hidden=true; document.body.classList.remove("fp-open");
+  const o=fpState.opener; fpState.opener=null; fpState.info=null;
+  if(o&&document.contains(o)&&typeof o.focus==="function") o.focus(); else $("input").focus();
+}
+async function runDownload(id,name){
+  const r=await fetch(API_BASE+"/api/files/"+encodeURIComponent(id)+"/download");
+  if(!r.ok) return {ok:false,status:r.status};
+  const blob=await r.blob(), url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=name||"download"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+  return {ok:true};
+}
+async function panelDownload(){
+  const info=fpState.info; if(!info||!info.downloadId) return;
+  const b=$("fpDownload"); b.disabled=true;
+  try{
+    const r=await runDownload(info.downloadId,info.name);
+    if(!r.ok){ const m=r.status===404?"This file has expired. Upload it again.":"Download failed ("+r.status+"). Try again."; $("fpStatus").textContent=m; announce(m); b.disabled=r.status===404; return; }
+    announce("Downloading "+info.name);
+  }catch(e){ $("fpStatus").textContent="Download failed. Check your connection."; }
+  if(fpState.info===info) b.disabled=false;
+}
+function renderFileBar(){
+  const bar=$("fileBar"), p=state.pending; bar.textContent="";
+  const ab=$("attachBtn"); if(ab) ab.classList.toggle("has",!!(p&&!p.uploading));      /* the upload button glows when a file is attached */
+  if(!p){ bar.hidden=true; return; }
+  bar.hidden=false;
+  if(p.uploading){
+    const chip=el("span","fchip busy"); chip.appendChild(el("span","fname",p.name)); chip.appendChild(el("span","fmeta","Uploading "+(p.pct||0)+"%"));
+    const x=el("button"); x.type="button"; x.setAttribute("aria-label","Cancel upload"); x.appendChild(icon("x")); x.onclick=()=>{ if(upXhr) upXhr.abort(); }; chip.appendChild(x); bar.appendChild(chip); return;
+  }
+  bar.appendChild(fileChip({name:p.name,size:p.size,type:p.detected_type},()=>removePending(),opener=>openFilePanel({id:p.file_id,name:p.name,label:FILE_LABEL[p.detected_type]||String(p.detected_type||"").toUpperCase(),size:p.size,downloadId:null},opener)));
+  const t=(p.supported_targets||[]);
+  if(t.length){
+    bar.appendChild(el("span","qlabel","Convert to:"));
+    t.forEach(k=>{ const q=el("button","qchip",FILE_LABEL[k]||k); q.type="button"; q.setAttribute("aria-label","Convert "+p.name+" to "+(FILE_LABEL[k]||k));
+      q.onclick=()=>send("Convert this to "+k); bar.appendChild(q); });
+  }
+}
+function clearPending(keepOnServer){ state.pending=null; renderFileBar(); $("input").placeholder="Type, or tap the mic and speak…"; }
+function removePending(){
+  const p=state.pending; clearPending();
+  if(p&&p.file_id){ PREVIEW_CACHE.delete(p.file_id); fetch(API_BASE+"/api/files/"+encodeURIComponent(p.file_id),{method:"DELETE"}).catch(()=>{}); }
+  $("srStatus").textContent="Attachment removed.";
+}
+function uploadFile(file){
+  if(!file||state.busy) return;
+  banner("");
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  if(!FILE_EXT.includes(ext)){ banner("That file type is not supported. Allowed: txt, md, csv, json, html, docx. (Programs, archives and macro files are never accepted.)"); return; }
+  if(file.size>maxUploadBytes){ banner("That file is too large. The limit is "+fmtSize(maxUploadBytes)+"."); return; }
+  if(file.size===0){ banner("That file is empty."); return; }
+  if(state.pending&&state.pending.file_id) removePending();
+  state.pending={name:file.name,size:file.size,uploading:true,pct:0}; renderFileBar(); $("srStatus").textContent="Uploading "+file.name;
+  const xhr=new XMLHttpRequest(); upXhr=xhr;
+  xhr.open("POST",API_BASE+"/api/files"); xhr.setRequestHeader("X-File-Name",encodeURIComponent(file.name)); xhr.setRequestHeader("Content-Type","application/octet-stream");
+  xhr.upload.onprogress=e=>{ if(e.lengthComputable&&state.pending&&state.pending.uploading){ state.pending.pct=Math.round(100*e.loaded/e.total); renderFileBar(); } };
+  const fail=msg=>{ upXhr=null; state.pending=null; renderFileBar(); banner(msg); $("srStatus").textContent="Upload failed. "+msg; };
+  xhr.onerror=()=>fail("Upload failed. Check that the ELVARN server is running.");
+  xhr.onabort=()=>{ upXhr=null; state.pending=null; renderFileBar(); $("srStatus").textContent="Upload cancelled."; };
+  xhr.onload=()=>{
+    upXhr=null; let d=null; try{ d=JSON.parse(xhr.responseText); }catch(e){}
+    if(xhr.status<200||xhr.status>=300){ fail(d&&typeof d.detail==="string"?d.detail:"Upload failed ("+xhr.status+")."); return; }
+    state.pending={file_id:d.file_id,name:d.name,size:d.size,detected_type:d.detected_type,supported_targets:d.supported_targets};
+    renderFileBar(); $("input").placeholder="What should I do with it? e.g. convert to PDF";
+    $("srStatus").textContent=d.name+" is ready. Type a request such as convert to PDF, or press one of the Convert buttons.";
+    $("input").focus();
+  };
+  xhr.send(file);
+}
+function stampFiles(files){ return (files||[]).map(f=>({...f,expiresAt:Date.now()+(+f.expires_in||0)*1000})); }
+function renderDownloads(holder,files){
+  holder.textContent="";
+  (files||[]).forEach(f=>holder.appendChild(downloadCard(f)));
+}
+function downloadCard(f){
+  const card=el("div","dlcard"); card.setAttribute("role","group"); card.tabIndex=0;
+  card.setAttribute("aria-label","Converted file "+(f.name||"")+". Press Enter to view its contents.");
+  const ico=el("span","dlicon"); ico.appendChild(icon("file"));
+  const main=el("div","dlmain"); main.appendChild(el("div","dlname",f.name||"file"));
+  const label=f.label||FILE_LABEL[f.format]||String(f.format||"").toUpperCase();
+  const meta=el("div","dlmeta"); meta.appendChild(el("span","badge",label)); meta.appendChild(document.createTextNode(fmtSize(f.size||0)));
+  main.appendChild(meta);
+  const note=el("div","dlnote"); main.appendChild(note);
+  const textOnly=f.format==="docx"||f.format==="pdf";
+  const hint=el("div","dlnote",(textOnly?"Preview and Copy show the text only. ":"")+"Click the card to view the contents."); main.appendChild(hint);
+  const acts=el("div","dlbtns");
+  const cp=el("button","dlbtn alt"); cp.type="button"; cp.setAttribute("aria-label","Copy the text of "+(f.name||"file")); cp.append(icon("copy"),el("span","lbl","Copy"));
+  const btn=el("button","dlbtn","Download"); btn.type="button"; btn.setAttribute("aria-label","Download "+(f.name||"file"));
+  acts.append(cp,btn);
+  const expire=()=>{ card.classList.add("expired"); btn.disabled=true; btn.textContent="Expired"; cp.disabled=true; cp.dataset.gone="1"; note.textContent="This link has expired. Upload the file again and ask for the conversion again."; };
+  const mins=f.expiresAt?Math.max(0,Math.round((f.expiresAt-Date.now())/60000)):null;
+  if(f.expiresAt&&Date.now()>=f.expiresAt) expire();
+  else note.textContent="Download link expires in about "+(mins==null?"an hour":Math.max(1,mins)+" min")+".";
+  const open=()=>openFilePanel({id:f.download_id,name:f.name,label,size:f.size,downloadId:f.download_id},card);
+  card.onclick=e=>{ if(e.target.closest("button")) return; open(); };
+  card.onkeydown=e=>{ if(e.target===card&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); open(); } };
+  cp.onclick=e=>{ e.stopPropagation(); copyPreview(f.download_id,cp,expire); };
+  btn.onclick=async e=>{
+    e.stopPropagation();
+    btn.disabled=true; $("srStatus").textContent="Downloading "+f.name;
+    try{
+      const r=await runDownload(f.download_id,f.name);
+      if(!r.ok){ if(r.status===404){ expire(); $("srStatus").textContent="That download has expired."; } else { btn.disabled=false; note.textContent="Download failed ("+r.status+"). Try again."; } return; }
+      btn.disabled=false;
+    }catch(err){ btn.disabled=false; note.textContent="Download failed. Check your connection and try again."; }
+  };
+  card.append(ico,main,acts); return card;
+}
+function setupFiles(){
+  const input=$("fileInput");
+  $("attachBtn").onclick=()=>input.click();
+  input.onchange=()=>{ const f=input.files&&input.files[0]; input.value=""; if(f) uploadFile(f); };
+  const main=document.querySelector(".main"); let depth=0;
+  const hasFiles=e=>e.dataTransfer&&Array.from(e.dataTransfer.types||[]).includes("Files");
+  main.addEventListener("dragenter",e=>{ if(hasFiles(e)){ e.preventDefault(); depth++; main.classList.add("dragover"); } });
+  main.addEventListener("dragover",e=>{ if(hasFiles(e)){ e.preventDefault(); e.dataTransfer.dropEffect="copy"; } });
+  main.addEventListener("dragleave",()=>{ depth=Math.max(0,depth-1); if(!depth) main.classList.remove("dragover"); });
+  main.addEventListener("drop",e=>{ if(!hasFiles(e)) return; e.preventDefault(); depth=0; main.classList.remove("dragover");
+    const f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) uploadFile(f); });
+  fetch(API_BASE+"/api/files/limits").then(r=>r.ok?r.json():null).then(d=>{ if(d&&d.max_upload_bytes) maxUploadBytes=d.max_upload_bytes; }).catch(()=>{});
 }
 
 /* ---------- speech: text to speech ---------- */
@@ -1181,16 +1561,19 @@ function init(){
   document.body.classList.toggle("side-collapsed",!!state.s.collapsed);
    $("modeBadge").onclick=()=>{ if(matchMedia("(max-width:860px)").matches) openSide(); }; $("labBtn").onclick=openLab; $("closeLab").onclick=closeAll; $("scrim").onclick=closeAll;
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeAll(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("filePanel").hidden) closeFilePanel(); });
+  $("fpClose").onclick=closeFilePanel; $("fpCopy").onclick=()=>{ if(fpState.info) copyPreview(fpState.info.id,$("fpCopy")); }; $("fpDownload").onclick=panelDownload;
 
   $("greedy").checked=state.s.greedy; $("greedy").onchange=e=>{ state.s.greedy=e.target.checked; save(); };
   $("autoSend").checked=!!state.s.autoSend; $("autoSend").onchange=e=>{ state.s.autoSend=e.target.checked; save(); };
+  $("webSearch").checked=state.s.webSearch!==false; $("webSearch").onchange=e=>{ state.s.webSearch=e.target.checked; save(); };
   $("autoSpeak").checked=state.s.autoSpeak; $("autoSpeak").onchange=e=>{ state.s.autoSpeak=e.target.checked; save(); };
   bindRange("temp","tempOut","temp",v=>(+v).toFixed(2)); bindRange("maxTok","maxOut","maxTok"); bindRange("topk","topkOut","topk");
   bindRange("rate","rateOut","rate",v=>(+v).toFixed(1));
   $("recLang").value=state.s.recLang; $("recLang").onchange=e=>{ state.s.recLang=e.target.value; save(); };
   $("voiceSel").onchange=e=>{ state.s.voice=e.target.value; save(); };
   if(synth){ loadVoices(); synth.onvoiceschanged=loadVoices; } else $("autoSpeak").disabled=true;
-  setupMic();
+  setupMic(); setupFiles();
   $("brandLogo").appendChild(logoNode()); $("hdrLogo").appendChild(logoNode()); $("sessLogo").appendChild(logoNode());
 
   $("rawBtn").onclick=()=>{ const o=$("rawOut"); o.style.display=o.style.display==="none"?"block":"none"; o.textContent=state.lastRaw||"(no reply yet)"; };

@@ -1,0 +1,46 @@
+# Self-hosted SearXNG for ELVARN web search (development).
+#
+#   1. Put SEARXNG_SECRET and SEARXNG_IMAGE_TAG in your .env (see .env.example).
+#   2. docker compose -f docker-compose.searxng.yml --env-file .env up -d
+#   3. Set SEARXNG_BASE_URL=http://127.0.0.1:8080 for the ELVARN backend (this is the default).
+#
+# Security notes
+#   * The port is published on 127.0.0.1 ONLY, so only this computer can reach SearXNG.
+#     Never change it to "8080:8080" or "0.0.0.0:8080:8080".
+#   * The image version is pinned by you through SEARXNG_IMAGE_TAG (no "latest").
+#   * The secret key is NOT in this repo: SearXNG reads SEARXNG_SECRET from the environment.
+#   * The network below is a dedicated bridge network used only by this service. It is NOT marked
+#     "internal: true" because SearXNG must reach the internet to ask search engines.
+#
+# NOT TESTED by the author of this file: Docker was not run when it was written.
+services:
+  searxng:
+    image: "searxng/searxng:${SEARXNG_IMAGE_TAG:?set SEARXNG_IMAGE_TAG in .env to a pinned version tag from Docker Hub (never latest)}"
+    container_name: elvarn-searxng
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SEARXNG_SECRET: "${SEARXNG_SECRET:?set SEARXNG_SECRET in .env (generate with: openssl rand -hex 32)}"
+      SEARXNG_BASE_URL: "http://127.0.0.1:8080/"
+    volumes:
+      - ./infra/searxng:/etc/searxng
+    networks:
+      - searxng_net
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+networks:
+  searxng_net:
+    driver: bridge

@@ -23,3 +23,14 @@ backend/training/checkpoints_bpe/
 
 # deployment: weights-only models are committed on purpose
 !deploy/models/**/*.pt
+
+backend/data/raw_v2/
+backend/data/cache_wikipedia/
+backend/data/v2/
+backend/data/cache_*/
+
+# the template of environment variable NAMES (no secrets) is committed on purpose
+!.env.example
+
+# temporary uploaded / converted files (deleted at expiry)
+backend/file_store/

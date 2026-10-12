@@ -5,3 +5,9 @@
 *.gif binary
 *.webp binary
 *.svg -text
+
+# search_service: shell scripts and the Dockerfile must keep LF line endings (they run in Linux)
+search_service/*.sh text eol=lf
+search_service/Dockerfile text eol=lf
+search_service/*.py text eol=lf
+search_service/*.yml text eol=lf

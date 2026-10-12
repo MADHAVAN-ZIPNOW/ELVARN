@@ -44,6 +44,42 @@ def sample_next(logits, temperature, top_k, greedy):
     return int(torch.multinomial(probs, 1).item())
 
 
+MAX_REPETITION_PENALTY = 2.0
+MAX_NO_REPEAT_NGRAM = 10
+
+
+def check_repetition_settings(repetition_penalty, no_repeat_ngram_size):
+    if not 1.0 <= repetition_penalty <= MAX_REPETITION_PENALTY:
+        raise ValueError(f"repetition_penalty must be between 1.0 (off) and {MAX_REPETITION_PENALTY}.")
+    if not isinstance(no_repeat_ngram_size, int) or not 0 <= no_repeat_ngram_size <= MAX_NO_REPEAT_NGRAM:
+        raise ValueError(f"no_repeat_ngram_size must be a whole number from 0 (off) to {MAX_NO_REPEAT_NGRAM}.")
+
+
+def apply_repetition_penalty(logits, token_ids, penalty):
+    """The standard (CTRL) penalty: for every token in `token_ids`, a positive logit is divided by `penalty` and a
+    negative one is multiplied by it, so the token always becomes less likely. penalty 1.0 = no change.
+    Returns a new tensor; `logits` is not modified."""
+    if penalty == 1.0 or not token_ids:
+        return logits
+    logits = logits.clone()
+    ids = torch.tensor(sorted(set(token_ids)), dtype=torch.long)
+    chosen = logits[ids]
+    logits[ids] = torch.where(chosen > 0, chosen / penalty, chosen * penalty)
+    return logits
+
+
+def banned_by_ngram(generated, n):
+    """Token ids that would complete an n-gram that already occurred in `generated` (n = 0 or too short: none)."""
+    if n <= 0 or len(generated) < n:
+        return set()
+    prefix = tuple(generated[len(generated) - (n - 1):]) if n > 1 else ()
+    banned = set()
+    for i in range(len(generated) - n + 1):
+        if tuple(generated[i:i + n - 1]) == prefix:
+            banned.add(generated[i + n - 1])
+    return banned
+
+
 def _holdback(text):
     """Characters at the end of `text` that could still become a stop string.
 
@@ -70,14 +106,22 @@ def _trim(text):
 
 @torch.inference_mode()
 def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
-                    temperature=0.8, top_k=40, greedy=False, history=None):
+                    temperature=0.8, top_k=40, greedy=False, history=None,
+                    repetition_penalty=1.0, no_repeat_ngram_size=0, penalize_prompt=False):
     """Generate a reply and yield real events while it happens.
+
+    Repetition controls (both OFF by default, so behaviour is unchanged unless asked for):
+      repetition_penalty    1.0 = off; 1.1-1.3 typical. Makes tokens that were already generated less likely.
+      no_repeat_ngram_size  0 = off; n > 0 forbids any n-token sequence from appearing twice in the reply.
+      penalize_prompt       also penalise tokens of the prompt (default False: an answer taken from web notes
+                            SHOULD copy words from the prompt, so only the model's own words are penalised).
 
     Events (dicts):
       start  - prompt was built and tokenized (real counts)
       token  - one generated token: its text, its probability, running speed
       done   - the final result (same fields generate() returns)
     """
+    check_repetition_settings(repetition_penalty, no_repeat_ngram_size)
     model.eval()
     prompt = build_prompt(text, mode, history)
     prompt_ids = tokenizer.encode(prompt, add_bos=True)
@@ -98,6 +142,7 @@ def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
         "context_limit": context_limit, "max_new_tokens": max_new_tokens,
         "temperature": temperature, "top_k": top_k, "greedy": greedy,
         "history_turns": len(history) if history else 0,
+        "repetition_penalty": repetition_penalty, "no_repeat_ngram_size": no_repeat_ngram_size,
     }
 
     shown = 0
@@ -106,6 +151,14 @@ def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
         next_logits = model(window)[0, -1, :]
         # Never emit padding / BOS / UNK as an answer token.
         next_logits[[tokenizer.pad_id, tokenizer.unk_id, tokenizer.bos_id]] = float("-inf")
+        if repetition_penalty != 1.0:
+            seen = generated + (ids if penalize_prompt else [])
+            next_logits = apply_repetition_penalty(next_logits, seen, repetition_penalty)
+        if no_repeat_ngram_size:
+            banned = banned_by_ngram(generated, no_repeat_ngram_size)
+            if banned:
+                next_logits = next_logits.clone()
+                next_logits[sorted(banned)] = float("-inf")
         next_id = sample_next(next_logits, temperature, top_k, greedy)
         if not 0 <= next_id < tokenizer.vocab_size:
             raise RuntimeError(f"Generated invalid token id {next_id}.")
@@ -143,6 +196,8 @@ def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
         "tokens_per_second": round(len(generated) / elapsed, 1) if elapsed else 0.0,
         "mean_token_probability": round(sum(probs_chosen) / len(probs_chosen), 4) if probs_chosen else None,
         "stop_reason": stop_reason,
+        "repetition_penalty": repetition_penalty,
+        "no_repeat_ngram_size": no_repeat_ngram_size,
     }
 
 

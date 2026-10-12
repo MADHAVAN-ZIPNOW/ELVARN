@@ -97,7 +97,23 @@ def load_documents(raw_dir=RAW_DATA_DIR):
     return documents
 
 
-def split_documents(documents):
+_TOPIC_RE = re.compile(r"^Topic: (.+)$", re.M)
+
+
+def group_key(doc):
+    """All passages of one Wikipedia article belong together (same side of the split).
+
+    Only blocks that carry a Wikipedia Source line are grouped. Every other document keeps the original rule
+    (split by the hash of its own text), so adding new data never moves an already-seen document from train
+    to validation: a model trained on the old data keeps an honest validation set.
+    """
+    if "Source: https://en.wikipedia.org/" not in doc["text"]:
+        return None
+    m = _TOPIC_RE.search(doc["text"])
+    return ("topic:" + _normalise(m.group(1))) if m else None
+
+
+def split_documents(documents, group_by_topic=False):
     """Deduplicate, split by document, then remove near-duplicate leakage."""
     seen, unique, exact_dups = set(), [], 0
     for doc in documents:
@@ -111,7 +127,8 @@ def split_documents(documents):
     threshold = int(VAL_FRACTION * 10_000)
     train, val = [], []
     for doc in unique:
-        (val if _bucket(doc["text"]) < threshold else train).append(doc)
+        key = (group_key(doc) if group_by_topic else None) or doc["text"]      # same topic -> same side of the split
+        (val if _bucket(key) < threshold else train).append(doc)
 
     # Near-duplicate filter: drop training docs too similar to a validation doc.
     index = {}

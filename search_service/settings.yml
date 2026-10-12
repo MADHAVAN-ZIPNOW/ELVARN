@@ -1,0 +1,46 @@
+# SearXNG settings for the PRODUCTION search service (runs inside the container, behind proxy.py).
+# SearXNG listens on 127.0.0.1 only; the public door is the gatekeeper (proxy.py), which checks a token.
+use_default_settings:
+  engines:
+    # A modest set that needs no API keys. Names that do not exist in the image are ignored.
+    keep_only:
+      - duckduckgo
+      - google
+      - bing
+      - brave
+      - startpage
+      - mojeek
+      - wikipedia
+      - bing news
+      - google news
+      - arxiv
+      - github
+      - stackoverflow
+
+general:
+  instance_name: "search"
+  debug: false
+
+search:
+  safe_search: 1            # 0 = off, 1 = moderate, 2 = strict
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json                  # required: the gatekeeper always asks for format=json
+
+server:
+  bind_address: "127.0.0.1"   # never reachable from outside the container
+  port: 8081
+  # secret_key is NOT stored here: SearXNG reads the SEARXNG_SECRET environment variable.
+  limiter: false              # the gatekeeper does the authentication and rate limiting
+  public_instance: false
+  image_proxy: false
+  method: "GET"
+
+ui:
+  results_on_new_tab: false
+
+outgoing:
+  request_timeout: 3.5
+  max_request_timeout: 6.0
