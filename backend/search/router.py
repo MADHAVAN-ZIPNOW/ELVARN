@@ -48,7 +48,9 @@ _QUESTION_START =re.compile(r"^\s*(who|what|when|where|which|how (many|much|old|
 _REFERENCE = re.compile(r"\b(it|its|that|this|they|them|their|he|him|his|she|her|there|those|these|the (company|"
                         r"person|team|country|city|product|game|movie|film))\b", re.I)
 _STOP = {"the", "and", "for", "are", "was", "who", "what", "when", "where", "which", "how", "does", "did",
-         "tell", "about", "please", "can", "you", "its", "with", "that", "this", "from", "have", "has"}
+         "tell", "about", "please", "can", "you", "its", "with", "that", "this", "from", "have", "has",
+         # question filler: "what is mean by arxiv" must not match a page about the mean, median and mode
+         "mean", "means", "meant", "meaning", "define", "definition", "explain", "describe", "difference", "between"}
 
 
 @dataclass

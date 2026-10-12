@@ -782,3 +782,11 @@ def test_model_text_stops_before_an_invented_source_line():
     from model import generation
     for line in ("\nSource: https://www.indiacode.nic.in", "\nSources: x", "\nVerification status: Unverified - pending source check"):
         assert any(stop in "an answer." + line for stop in generation.STOP_STRINGS)
+
+
+def test_question_filler_words_do_not_make_a_result_relevant():
+    """'what is mean by arxiv' returned a BBC page about the mean, median and mode."""
+    results = [RawResult("Mean, median, mode and range - BBC Bitesize", "https://bbc.example/m", "There are three types of average. To calculate the mean, add the values together"),
+               RawResult("arXiv - Wikipedia", "https://wiki.example/arxiv", "arXiv is an open-access repository of electronic preprints")]
+    out = SearchService(FakeProvider(results)).search("what is mean by arxiv")
+    assert [s.url for s in out.sources] == ["https://wiki.example/arxiv"]
