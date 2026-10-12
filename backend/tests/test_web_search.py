@@ -714,8 +714,8 @@ def test_similar_word_forms_match():
 
 def test_india_law_mode_adds_india_to_the_search_query():
     d = router.decide("What is Article 21?", None, "domain")
-    assert d.search and d.query.endswith("India") and "Article 21" in d.query
-    assert "India" in router.decide("Who is the latest chief justice?", None, "domain").query
+    assert d.search and d.query == "What is Article 21 of the Constitution of India"          # natural phrase, not bare keywords
+    assert router.decide("Who is the latest chief justice?", None, "domain").query.endswith("under Indian law")
     again = router.decide("What is Article 21 of the Constitution of India?", None, "domain")
     assert again.query.lower().count("india") == 1                              # not added twice
     plain = router.decide("What is Article 21?", None, "english")
