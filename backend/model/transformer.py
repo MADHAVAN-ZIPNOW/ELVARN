@@ -56,11 +56,18 @@ class DecoderBlock(nn.Module):
         self.fc2 = nn.Linear(hidden_size, embedding_size)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, H):
-        H = self.layer_norm1(H + self.dropout(self.attention(H)))
+    def forward(self, H, past=None, use_cache=False):
+        if past is None and not use_cache:
+            attn_out = self.attention(H)  # original training path, untouched
+            present = None
+        else:
+            attn_out, present = self.attention(H, past=past, use_cache=True)
+        H = self.layer_norm1(H + self.dropout(attn_out))
 
         mlp_output = self.fc2(F.gelu(self.fc1(H)))
         H = self.layer_norm2(H + self.dropout(mlp_output))
+        if use_cache:
+            return H, present
         return H
 
 
@@ -126,6 +133,39 @@ class TransformerModel(nn.Module):
 
         H = self.final_layer_norm(H)
         return self.lm_head(H)
+
+    def forward_cached(self, token_ids, past=None, last_only=False):
+        """Incremental decoding. Same function as forward(), but only the NEW tokens are computed.
+
+        token_ids: (batch, new_len) the new tokens only.
+        past:      None (start fresh) or the `presents` returned by the previous call (one (key, value)
+                   per layer). Positions of the new tokens start at past_len.
+        last_only: return logits for the last new position only (saves the big output projection).
+        Returns (logits, presents). Kept separate from forward() so training/eval calls never change.
+        """
+        new_len = token_ids.size(-1)
+        past_len = 0 if past is None else past[0][0].size(2)
+        if past is not None and len(past) != len(self.decoder_blocks):
+            raise ValueError(f"past has {len(past)} layers, the model has {len(self.decoder_blocks)}.")
+        if past_len + new_len > self.sequence_length:
+            raise ValueError(
+                f"Cached length {past_len} + new length {new_len} exceeds the "
+                f"configured sequence length {self.sequence_length}."
+            )
+
+        position_ids = torch.arange(past_len, past_len + new_len, device=token_ids.device)
+        H = self.token_embedding(token_ids) + self.position_embedding(position_ids)
+        H = self.embedding_dropout(H)
+
+        presents = []
+        for i, block in enumerate(self.decoder_blocks):
+            H, present = block(H, past=None if past is None else past[i], use_cache=True)
+            presents.append(present)
+
+        if last_only:
+            H = H[:, -1:, :]
+        H = self.final_layer_norm(H)
+        return self.lm_head(H), presents
 
 
 REQUIRED_CONFIG_KEYS = tuple(DEFAULT_CONFIG)

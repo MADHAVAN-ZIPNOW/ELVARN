@@ -1,4 +1,5 @@
 """Autoregressive text generation for ELVARN (shared by the CLI and the API)."""
+import os
 import time
 
 import torch
@@ -107,11 +108,18 @@ def _trim(text):
     return text
 
 
+def _cache_disabled_by_env():
+    return os.environ.get("ELVARN_NO_KV_CACHE", "").strip().lower() in ("1", "true", "yes")
+
+
 @torch.inference_mode()
 def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
                     temperature=0.8, top_k=40, greedy=False, history=None,
-                    repetition_penalty=1.0, no_repeat_ngram_size=0, penalize_prompt=False):
+                    repetition_penalty=1.0, no_repeat_ngram_size=0, penalize_prompt=False,
+                    use_cache=None):
     """Generate a reply and yield real events while it happens.
+
+    use_cache: None = use the key/value cache (default) unless env ELVARN_NO_KV_CACHE=1; True/False forces it.
 
     Repetition controls (both OFF by default, so behaviour is unchanged unless asked for):
       repetition_penalty    1.0 = off; 1.1-1.3 typical. Makes tokens that were already generated less likely.
@@ -148,10 +156,30 @@ def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
         "repetition_penalty": repetition_penalty, "no_repeat_ngram_size": no_repeat_ngram_size,
     }
 
+    # KV cache: the prompt is encoded once, then each step feeds only the newest token. Absolute position
+    # embeddings mean a cache is only valid while the text still fits the window (total <= context_limit).
+    # Once it is longer, the window slides and every token changes position, so from then on each step
+    # re-encodes the last `context_limit` tokens exactly like the old code (simple and identical output).
+    if use_cache is None:
+        use_cache = not _cache_disabled_by_env()
+    use_cache = bool(use_cache) and hasattr(model, "forward_cached")
+    past = None
+
     shown = 0
     for step in range(max_new_tokens):
-        window = torch.tensor([(ids + generated)[-context_limit:]], dtype=torch.long)
-        next_logits = model(window)[0, -1, :]
+        total = len(ids) + len(generated)
+        if use_cache and total <= context_limit:
+            if past is None:
+                new_ids = ids + generated  # first step: the whole prompt (generated is empty)
+            else:
+                new_ids = generated[-1:]
+            logits, past = model.forward_cached(
+                torch.tensor([new_ids], dtype=torch.long), past=past, last_only=True)
+            next_logits = logits[0, -1, :]
+        else:
+            past = None  # window slid (or cache off): full recompute of the last window
+            window = torch.tensor([(ids + generated)[-context_limit:]], dtype=torch.long)
+            next_logits = model(window)[0, -1, :]
         # Never emit padding / BOS / UNK as an answer token.
         next_logits[[tokenizer.pad_id, tokenizer.unk_id, tokenizer.bos_id]] = float("-inf")
         if repetition_penalty != 1.0:
