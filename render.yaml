@@ -12,7 +12,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: ELVARN_CHECKPOINT_DIR
-        value: deploy/models/7m      # or deploy/models/tiny (smaller, uses less memory)
+        value: deploy/models/7m_epoch2   # epoch-2 weights (val loss 3.5979). Fallbacks: deploy/models/7m (3.6358), deploy/models/tiny (smaller)
       - key: ELVARN_PUBLIC
         value: "1"                   # rate limit + concurrency cap + reload disabled
       - key: ELVARN_RATE_LIMIT

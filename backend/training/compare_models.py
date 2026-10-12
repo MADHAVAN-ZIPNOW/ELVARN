@@ -20,7 +20,7 @@ sys.path.insert(0, str(BACKEND_DIR))
 sys.path.insert(0, str(BACKEND_DIR / "training"))
 
 import corpus  # noqa: E402
-from model.transformer import build_model, count_parameters  # noqa: E402
+from model.transformer import count_parameters, model_from_checkpoint  # noqa: E402
 from tokenizer.bpe_tokenizer import BPETokenizer  # noqa: E402
 
 
@@ -31,8 +31,7 @@ def bits_per_char(ckpt_dir, val_docs):
     ck = torch.load(ckpt_dir / "final.pt", map_location="cpu", weights_only=False)
     if ck["tokenizer_sha256"] != tok.sha256:
         raise SystemExit(f"{ckpt_dir}: tokenizer does not match the checkpoint")
-    model = build_model(ck["vocab_size"], ck["config"])
-    model.load_state_dict(ck["model_state_dict"])
+    model, _ = model_from_checkpoint(ck)
     model.eval()
     T = model.sequence_length
 

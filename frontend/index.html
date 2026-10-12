@@ -986,7 +986,7 @@ async function refreshStatus(){
 function renderModelStats(m){
   const box=$("modelStats"); box.textContent="";
   [["Checkpoint",m.checkpoint],["Trained step",m.weights_from_step],["Val loss",m.best_val_loss!=null?Number(m.best_val_loss).toFixed(3):"—"],
-   ["Parameters",Number(m.parameters).toLocaleString()],["Vocabulary",m.vocab_size],["Context",m.sequence_length+" tokens"],
+   ["Parameters",Number(m.parameters).toLocaleString()],["Vocabulary",m.vocab_size],["Context",m.sequence_length+" tokens"],["Attention heads",m.num_heads!=null?`${m.num_heads} × ${m.head_size}`:"—"],
    ["Tokenizer",m.tokenizer_sha256],["Finished",m.completed_at||"—"]].forEach(([k,v])=>{
     const s=el("div","stat"); s.append(el("small",null,k),el("b",null,String(v))); box.appendChild(s);
   });

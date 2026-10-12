@@ -128,6 +128,46 @@ class TransformerModel(nn.Module):
         return self.lm_head(H)
 
 
+REQUIRED_CONFIG_KEYS = tuple(DEFAULT_CONFIG)
+
+
+def config_from_checkpoint(ck):
+    """The model config stored in a checkpoint, with NOTHING filled in silently.
+
+    The number of attention heads cannot be recovered from the weights (W_Q, W_K, W_V, W_O are
+    embedding_size x embedding_size for ANY head count), so loading a checkpoint with the wrong head
+    count would raise no shape error and just give different answers. Therefore the head count must be
+    written in the checkpoint.
+
+    * New checkpoints have a "config" dict: it must contain every key, including num_heads.
+    * Old word-level checkpoints (before heads existed) have the sizes at the top level and no "config":
+      those were trained with ONE head, untied embeddings and no dropout, and are loaded as such.
+    """
+    if "config" in ck:
+        cfg = dict(ck["config"])
+        missing = [k for k in REQUIRED_CONFIG_KEYS if k not in cfg]
+        if missing:
+            hint = (" The head count is NOT stored in the weights, so it cannot be guessed; "
+                    "re-save the checkpoint with num_heads in its config.") if "num_heads" in missing else ""
+            raise ValueError(f"Checkpoint config is missing {missing}.{hint}")
+        return cfg
+    legacy = ("embedding_size", "hidden_size", "num_layers", "sequence_length")
+    if all(k in ck for k in legacy):
+        return {"embedding_size": ck["embedding_size"], "hidden_size": ck["hidden_size"],
+                "sequence_length": ck["sequence_length"], "num_layers": ck["num_layers"],
+                "num_heads": 1, "dropout": 0.0, "tie_weights": False}
+    raise ValueError("This file does not look like an ELVARN checkpoint (no model config found).")
+
+
+def model_from_checkpoint(ck):
+    """Build the model a checkpoint describes and load its weights STRICTLY (no silently ignored or
+    mismatched tensors). Returns (model, config)."""
+    cfg = config_from_checkpoint(ck)
+    model = build_model(ck["vocab_size"], cfg)
+    model.load_state_dict(ck["model_state_dict"], strict=True)
+    return model, cfg
+
+
 def build_model(vocab_size, config=None):
     """Create a TransformerModel from a config dict (defaults + overrides)."""
     cfg = {**DEFAULT_CONFIG, **(config or {})}

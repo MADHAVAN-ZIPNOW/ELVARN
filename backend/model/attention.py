@@ -13,10 +13,13 @@ class CausalSelfAttention(nn.Module):
 
     def __init__(self, embedding_size, num_heads=1, dropout=0.0):
         super().__init__()
+        if not isinstance(num_heads, int) or isinstance(num_heads, bool) or num_heads < 1:
+            raise ValueError(f"num_heads must be a positive whole number, got {num_heads!r}.")
         if embedding_size % num_heads != 0:
             raise ValueError(
-                f"embedding_size ({embedding_size}) must be divisible "
-                f"by num_heads ({num_heads})."
+                f"embedding_size ({embedding_size}) must be divisible by num_heads ({num_heads}): "
+                f"each head gets embedding_size / num_heads dimensions. "
+                f"Pick a num_heads that divides {embedding_size} exactly."
             )
         self.embedding_size = embedding_size
         self.num_heads = num_heads

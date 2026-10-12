@@ -11,7 +11,7 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 from model.generation import generate, generate_stream  # noqa: E402
-from model.transformer import build_model, count_parameters  # noqa: E402
+from model.transformer import count_parameters, model_from_checkpoint  # noqa: E402
 from tokenizer.bpe_tokenizer import BPETokenizer, TOKENIZER_FILE  # noqa: E402
 
 PROJECT_DIR = BACKEND_DIR.parent
@@ -91,8 +91,10 @@ class ModelService:
         if ck.get("vocab_size") != tokenizer.vocab_size:
             raise ModelNotReady("Checkpoint vocabulary size does not match the tokenizer.")
 
-        model = build_model(tokenizer.vocab_size, ck["config"])
-        model.load_state_dict(ck["model_state_dict"])
+        try:
+            model, cfg = model_from_checkpoint(ck)
+        except (ValueError, RuntimeError, KeyError) as exc:
+            raise ModelNotReady(f"This checkpoint cannot be loaded safely: {exc}") from exc
         model.eval()
 
         info = {
@@ -107,6 +109,8 @@ class ModelService:
             "vocab_size": tokenizer.vocab_size,
             "parameters": count_parameters(model),
             "sequence_length": model.sequence_length,
+            "num_heads": cfg["num_heads"],
+            "head_size": cfg["embedding_size"] // cfg["num_heads"],
             "tokenizer_sha256": tokenizer.sha256[:12],
         }
         return {"model": model, "tokenizer": tokenizer, "info": info}

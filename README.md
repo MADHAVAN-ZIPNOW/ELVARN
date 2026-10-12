@@ -147,7 +147,7 @@ Settings (environment variables, already set in `render.yaml`):
 
 | Variable | Meaning |
 |---|---|
-| `ELVARN_CHECKPOINT_DIR` | Model folder: `deploy/models/7m` (6.7M parameters) or `deploy/models/tiny` (0.8M, uses less memory). |
+| `ELVARN_CHECKPOINT_DIR` | Model folder: `deploy/models/7m_epoch2` (6.7M parameters, best validation loss 3.5979, the default), `deploy/models/7m` (the earlier 6.7M weights, 3.6358) or `deploy/models/tiny` (0.8M, uses less memory). |
 | `ELVARN_PUBLIC` | `1` = public site: per-visitor rate limit, cap on simultaneous replies, `/api/reload` disabled. |
 | `ELVARN_RATE_LIMIT` | Chat requests per visitor per minute (default 20 when public). |
 | `ELVARN_MAX_CONCURRENT` | Replies generated at the same time (default 2 when public). |
