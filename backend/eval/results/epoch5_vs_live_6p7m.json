@@ -1,0 +1,846 @@
+{
+  "deploy\\models\\7m_epoch2": {
+    "info": {
+      "parameters": 6722986,
+      "vocab_size": 13738,
+      "weights_from_step": 1148,
+      "best_val_loss": 3.5979428900049086
+    },
+    "summary": {
+      "overall_score_pct": 8.75,
+      "passed": 2,
+      "total": 40,
+      "mean_repetition_pct": 55.224944375276685,
+      "domain_score_pct": 17.5,
+      "english_score_pct": 0.0,
+      "chat_score_pct": 0.0,
+      "seen_score_pct": 3.8461538461538463,
+      "unseen_score_pct": 11.11111111111111,
+      "n_seen": 13
+    },
+    "rows": [
+      {
+        "id": 1,
+        "section": "domain",
+        "q": "What is the capital of Tamil Nadu?",
+        "answer": "The Tamil Nadu is the Tamil Nadu has the Tamil Nadu has the Tamil Nadu government government government government government government government government government government government and the Tamil Nadu government government's application to the Tamil Nadu. The Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu government government",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6491228070175439,
+        "seen_in_training": true
+      },
+      {
+        "id": 2,
+        "section": "domain",
+        "q": "How many members does the Tamil Nadu Legislative Assembly have?",
+        "answer": "The Tamil Nadu has the Tamil Nadu Legislative Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly Assembly under the State of India, the State of India, the State of Mizoram and the Legislative Assembly of Mizoram is a State, in the State of Mizoram, in sub-paragraph (",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.40384615384615385,
+        "seen_in_training": true
+      },
+      {
+        "id": 3,
+        "section": "domain",
+        "q": "Who appoints the Chief Minister of a state?",
+        "answer": "The Chief Minister's Rule was formed in Tamil Nadu in Tamil Nadu. The Chief Minister of Tamil Nadu has been an application to the Tamil Nadu has been amended in Tamil Nadu. The Chief Minister has been a majority of the total number of the total number of the total number of the total number of seats",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.3392857142857143,
+        "seen_in_training": true
+      },
+      {
+        "id": 4,
+        "section": "domain",
+        "q": "What does the CAG do?",
+        "answer": "The Public Accounts Committee is a Public Accounts Committee of the Public Accounts Committee, and the Public Accounts Committee, and the Public Accounts Committee can be laid before Parliament or the Public Accounts Committee. The Public Accounts Committee can be laid before Parliament and the Public Accounts Committee.\nSource: https://cag.gov",
+        "score": 0.5,
+        "pass": false,
+        "repetition": 0.43999999999999995,
+        "seen_in_training": false
+      },
+      {
+        "id": 5,
+        "section": "domain",
+        "q": "Which article of the Indian Constitution protects life and personal liberty?",
+        "answer": "The Supreme Court is a court to be a court after the Supreme Court, and the Supreme Court, and the Supreme Court can be removed from the court after the court after the court. The Supreme Court can be removed from the Supreme Court under Article 32 and the Supreme Court can be removed from the Supreme",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.4545454545454546,
+        "seen_in_training": false
+      },
+      {
+        "id": 6,
+        "section": "domain",
+        "q": "What does RTI stand for?",
+        "answer": "The Right to Information Officer of the Right to Information Officer of the Public Accounts Committee. The Public Accounts Committee can be used to the Public Accounts Committee, and the Public Accounts Committee can be laid before Parliament or the Public Accounts Committee. The Public Accounts Committee can be laid before Parliament and the Public Accounts Committee",
+        "score": 1.0,
+        "pass": true,
+        "repetition": 0.49090909090909096,
+        "seen_in_training": false
+      },
+      {
+        "id": 7,
+        "section": "domain",
+        "q": "Which law gave citizens the right to information in India?",
+        "answer": "The Supreme Court is a court court court court court court court court, and the Supreme Court can be removed from the court after the court after the court. The Supreme Court can be removed from the court after the court after the court. The Supreme Court can appeal appeal appeal appeal appeal to the Supreme Court",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5272727272727273,
+        "seen_in_training": false
+      },
+      {
+        "id": 8,
+        "section": "domain",
+        "q": "What is an FIR?",
+        "answer": "A court court court court court court court court court court court court court court court court finds the court, the court, the court's appeal to the court. A court finds the court finds the court finds the court finds the court, the court finds the court or order is not an order. A",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5660377358490566,
+        "seen_in_training": true
+      },
+      {
+        "id": 9,
+        "section": "domain",
+        "q": "Which High Court has its main seat in Chennai?",
+        "answer": "The Supreme Court has been amended in the Supreme Court held that the Supreme Court has been an Act of the Supreme Court, after the Supreme Court has been amended in its own jurisdiction, and the Supreme Court. The Supreme Court has been struck down by the Supreme Court in the case of Supreme Court in the",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.3090909090909091,
+        "seen_in_training": false
+      },
+      {
+        "id": 10,
+        "section": "domain",
+        "q": "What is the full form of TNPSC?",
+        "answer": "The Tamil Nadu is the Tamil Nadu has the Tamil Nadu government government government government government government's own own own own own own own own own own own own own own own own own own own own own own own and the state's own own own own own own own own own own own own own own own",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6724137931034483,
+        "seen_in_training": false
+      },
+      {
+        "id": 11,
+        "section": "domain",
+        "q": "Who was Chief Minister of Tamil Nadu when the state was renamed in 1969?",
+        "answer": "The Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu government of Tamil Nadu government government government government government government government and the government government government's application. The Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu government government government",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6842105263157895,
+        "seen_in_training": false
+      },
+      {
+        "id": 12,
+        "section": "domain",
+        "q": "In which year was Madras State renamed Tamil Nadu?",
+        "answer": "The Tamil Nadu has been amended in Tamil Nadu has the Tamil Nadu has the Tamil Nadu government of Tamil Nadu government government government government government government government government government government government and the Tamil Nadu government government government government's application. The Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the Tamil Nadu has the",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6140350877192983,
+        "seen_in_training": false
+      },
+      {
+        "id": 13,
+        "section": "domain",
+        "q": "Which article lets a person go to the Supreme Court when a fundamental right is violated?",
+        "answer": "Yes. Article 19(2) is the Constitution that the Constitution, the Constitution, the Constitution can be an Act of the Constitution. It is a law made by Parliament, and the President, and the President may, by law, make rules for the purpose of procedure and the procedure and the procedure",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.10416666666666663,
+        "seen_in_training": false
+      },
+      {
+        "id": 14,
+        "section": "domain",
+        "q": "Who audits the accounts of the Union and the states in India?",
+        "answer": "The Comptroller and Auditor General is the Comptroller and Auditor General of India is the Comptroller and Auditor General of India. The Comptroller and Auditor General is appointed by the Comptroller and Auditor General of India. The Comptroller and Auditor General is appointed by the Comptroller and Auditor General of India. The Comptroller and Auditor General is",
+        "score": 1.0,
+        "pass": true,
+        "repetition": 0.7090909090909091,
+        "seen_in_training": false
+      },
+      {
+        "id": 15,
+        "section": "domain",
+        "q": "What does GST stand for?",
+        "answer": "The Tamil Nadu is the Tamil Nadu has the Tamil Nadu has the Tamil Nadu government government government government government government government government government and the Tamil Nadu government's own own own own own own own own own own own own own own own own own and the state's own own own own own own own own own",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6206896551724138,
+        "seen_in_training": false
+      },
+      {
+        "id": 16,
+        "section": "domain",
+        "q": "What is the lower house of the Indian Parliament called?",
+        "answer": "The capital of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State of Madras State in Madras State of Madras State of",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8620689655172413,
+        "seen_in_training": false
+      },
+      {
+        "id": 17,
+        "section": "domain",
+        "q": "What is the Prevention of Corruption Act about?",
+        "answer": "The Prevention of Corruption Act, 1976 (Tamil Nadu Act 23 of Corruption Act, 1976 (Tamil Nadu Act 14 of 1976). The Tamil Nadu Land Reforms (Fixation of Ceiling on Land) Act, 1972 (Tamil Nadu Act 20 of 1976).\n    38. The Tamil Nadu Land Reforms (Fixation of Ceiling",
+        "score": 0.5,
+        "pass": false,
+        "repetition": 0.2666666666666667,
+        "seen_in_training": false
+      },
+      {
+        "id": 18,
+        "section": "domain",
+        "q": "Which body conducts elections to state legislative assemblies in India?",
+        "answer": "The Governor is appointed by the Governor to the Governor of Ministers and the Governor of the Governor of the Governor of the State to make laws with respect to the matters with respect to the matters of this Part. The Governor is a State may make laws with respect to the matters with respect to the matters with",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.368421052631579,
+        "seen_in_training": false
+      },
+      {
+        "id": 19,
+        "section": "domain",
+        "q": "What can a High Court issue to protect a person's rights?",
+        "answer": "A High Court is a High Court held that the Supreme Court is a High Court under Article 124(1) of the Supreme Court, and the Supreme Court has held that the Supreme Court to be a High Court for the Supreme Court. The Supreme Court has been struck down by the Supreme Court in the",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.2592592592592593,
+        "seen_in_training": false
+      },
+      {
+        "id": 20,
+        "section": "domain",
+        "q": "What is a charge sheet?",
+        "answer": "A charge sheet is a court finds the court, the court finds the court, the court finds the court or the court to the court, the court, the court finds the court or the court. A court finds the court finds the court finds the court finds the court finds the court finds the court",
+        "score": 0.5,
+        "pass": false,
+        "repetition": 0.6603773584905661,
+        "seen_in_training": true
+      },
+      {
+        "id": 21,
+        "section": "english",
+        "q": "What is the opposite of hot?",
+        "answer": "The capital of capital of Australia is the capital of Australia is the largest desert in the largest desert in the largest desert in the largest largest largest largest largest.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5,
+        "seen_in_training": false
+      },
+      {
+        "id": 22,
+        "section": "english",
+        "q": "What is the plural of child?",
+        "answer": "The capital of Australia is the largest desert in the largest desert in the largest desert in the largest desert in the largest desert is the largest largest largest largest largest largest largest and the largest largest largest largest largest largest largest.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6,
+        "seen_in_training": false
+      },
+      {
+        "id": 23,
+        "section": "english",
+        "q": "What does the word transparent mean?",
+        "answer": "The word is a strong bones.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.0,
+        "seen_in_training": false
+      },
+      {
+        "id": 24,
+        "section": "english",
+        "q": "What is the capital of France?",
+        "answer": "The capital of Bihar is the capital of Bihar and Uttar Pradesh is the capital of Bihar. The capital of Bihar is the capital of Bihar and Uttar Pradesh is the capital of Bihar.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.625,
+        "seen_in_training": true
+      },
+      {
+        "id": 25,
+        "section": "english",
+        "q": "What is 8 times 7?",
+        "answer": "The capital of Bihar is the capital of Bihar and Uttar Pradesh is the capital of Bihar. The capital of Bihar is the capital of Bihar and Uttar Pradesh is the capital of Bihar.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.625,
+        "seen_in_training": false
+      },
+      {
+        "id": 26,
+        "section": "english",
+        "q": "What is a synonym for begin?",
+        "answer": "A synonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"The antonym of \"",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8837209302325582,
+        "seen_in_training": true
+      },
+      {
+        "id": 27,
+        "section": "english",
+        "q": "How many days are in a week?",
+        "answer": "A firewall is the largest desert in the largest desert in the largest desert is the largest desert in the largest desert.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.55,
+        "seen_in_training": false
+      },
+      {
+        "id": 28,
+        "section": "english",
+        "q": "What is the past tense of go?",
+        "answer": "The capital of Punjab is the capital of Punjab. It is the capital of Punjab and Australia is the capital of Australia is the largest desert in the largest desert in the largest desert in the largest desert.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.4722222222222222,
+        "seen_in_training": false
+      },
+      {
+        "id": 29,
+        "section": "english",
+        "q": "Which planet do we live on?",
+        "answer": "The capital of Australia is the capital of Australia is the largest desert in the largest desert in the largest desert in the largest largest largest largest largest and the largest largest largest largest largest largest largest largest.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5833333333333333,
+        "seen_in_training": false
+      },
+      {
+        "id": 30,
+        "section": "english",
+        "q": "What is the largest ocean on Earth?",
+        "answer": "The capital of India is the largest largest largest largest largest largest largest largest and the largest largest largest largest and the largest largest largest largest largest and the largest largest largest largest. The capital of the capital of the capital.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.641025641025641,
+        "seen_in_training": false
+      },
+      {
+        "id": 31,
+        "section": "chat",
+        "q": "hii",
+        "answer": "I'm sorry I'm sorry. I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I will help.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8648648648648649,
+        "seen_in_training": true
+      },
+      {
+        "id": 32,
+        "section": "chat",
+        "q": "what does btw mean?",
+        "answer": "A database is a a a a a a a a database is a a a a a a a a a a database is a a a a a a a a a a database?",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8529411764705882,
+        "seen_in_training": true
+      },
+      {
+        "id": 33,
+        "section": "chat",
+        "q": "thanks",
+        "answer": "I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8125,
+        "seen_in_training": true
+      },
+      {
+        "id": 34,
+        "section": "chat",
+        "q": "how are you?",
+        "answer": "I'm sorry, I'm sorry I'm sorry I'm sorry.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.7,
+        "seen_in_training": true
+      },
+      {
+        "id": 35,
+        "section": "chat",
+        "q": "what does imo mean?",
+        "answer": "I'm sorry, but I'm sorry. I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I will help.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8048780487804879,
+        "seen_in_training": false
+      },
+      {
+        "id": 36,
+        "section": "chat",
+        "q": "good morning",
+        "answer": "I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.7692307692307692,
+        "seen_in_training": true
+      },
+      {
+        "id": 37,
+        "section": "chat",
+        "q": "what does lol mean?",
+        "answer": "That's a good good good good or a good. A good good good good good good good good good good. A good good good good good good good good good good good good good good good good. A good good good good good good good good good good good good good good good good name and",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.7818181818181819,
+        "seen_in_training": false
+      },
+      {
+        "id": 38,
+        "section": "chat",
+        "q": "bye",
+        "answer": "I'm sorry, but I'm sorry. I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I'm sorry I will help.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.7241379310344828,
+        "seen_in_training": true
+      },
+      {
+        "id": 39,
+        "section": "chat",
+        "q": "can you help me with my resume",
+        "answer": "I'm sorry. Do you have a good or a good or a good name for a good name?",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.23529411764705888,
+        "seen_in_training": false
+      },
+      {
+        "id": 40,
+        "section": "chat",
+        "q": "what does brb mean?",
+        "answer": "I'm sorry. Do you have a good, and I know the best to know the best best?",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.0625,
+        "seen_in_training": false
+      }
+    ]
+  },
+  "backend\\training\\checkpoints_bpe\\local_serve_epoch5": {
+    "info": {
+      "parameters": 17004544,
+      "vocab_size": 16384,
+      "weights_from_step": 11135,
+      "best_val_loss": 3.6039805679371835
+    },
+    "summary": {
+      "overall_score_pct": 5.0,
+      "passed": 1,
+      "total": 40,
+      "mean_repetition_pct": 57.53479838908678,
+      "domain_score_pct": 7.5,
+      "english_score_pct": 0.0,
+      "chat_score_pct": 5.0,
+      "seen_score_pct": 0.0,
+      "unseen_score_pct": 7.407407407407407,
+      "n_seen": 13
+    },
+    "rows": [
+      {
+        "id": 1,
+        "section": "domain",
+        "q": "What is the capital of Tamil Nadu?",
+        "answer": "The capital of Tamil Nadu is the capital of Tamil Nadu. The capital of Tamil Nadu is the capital of Tamil Nadu. The capital of Tamil Nadu is the capital of Tamil Nadu. The capital of Tamil Nadu is the capital of Tamil Nadu. The capital of Tamil Nadu is the capital of Tamil Nadu.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8490566037735849,
+        "seen_in_training": true
+      },
+      {
+        "id": 2,
+        "section": "domain",
+        "q": "How many members does the Tamil Nadu Legislative Assembly have?",
+        "answer": "The Tamil Nadu Legislative Assembly is a legislative assembly that is the legislative assembly of the state of Tamil Nadu. The legislative assembly is headed by the Chief Minister of Tamil Nadu. The legislative assembly is headed by the Chief Minister of Tamil Nadu. The legislative assembly is headed by the Chief Minister of Tamil Nadu.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5,
+        "seen_in_training": true
+      },
+      {
+        "id": 3,
+        "section": "domain",
+        "q": "Who appoints the Chief Minister of a state?",
+        "answer": "The Chief Minister of Tamil Nadu is the chief minister of Tamil Nadu. The Chief Minister is the chief minister of Tamil Nadu.\nSource: https://www.tn.gov.in\nVerification status: Unverified - pending source check",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.303030303030303,
+        "seen_in_training": true
+      },
+      {
+        "id": 4,
+        "section": "domain",
+        "q": "What does the CAG do?",
+        "answer": "The CAG is a government agency responsible for the enforcement of the enforcement of the state of the state of Tamil Nadu. It is responsible for the enforcement of the state government of Tamil Nadu. It is responsible for the enforcement of the state government of Tamil Nadu.\nSource: https://en.wikipedia",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.45999999999999996,
+        "seen_in_training": false
+      },
+      {
+        "id": 5,
+        "section": "domain",
+        "q": "Which article of the Indian Constitution protects life and personal liberty?",
+        "answer": "The General of India, the Supreme Court, the Supreme Court, and the Supreme Court of India, is the highest court in India. The Supreme Court of India, in the Supreme Court, the Supreme Court of India, is the highest court of India. The Supreme Court of India, in the Supreme",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5208333333333333,
+        "seen_in_training": false
+      },
+      {
+        "id": 6,
+        "section": "domain",
+        "q": "What does RTI stand for?",
+        "answer": "The General Secretary is the head of the Government of India. The General Secretary is the head of the Government of India. The General Secretary is the head of the Government of India. The General Secretary is the head of the Government of India. The General Secretary is the head of the Government of India.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.7924528301886793,
+        "seen_in_training": false
+      },
+      {
+        "id": 7,
+        "section": "domain",
+        "q": "Which law gave citizens the right to information in India?",
+        "answer": "The General of India, the Supreme Court of India, officially known as the Constitution (Forty-second Amendment) Act, 1976, was an Act of the Parliament of India enacted by the Parliament of India on 26 January 1976. It was enacted by the Parliament of India on 26 January 1976, and was",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.20408163265306123,
+        "seen_in_training": false
+      },
+      {
+        "id": 8,
+        "section": "domain",
+        "q": "What is an FIR?",
+        "answer": "The General Directorate of Police (DGG) is a police officer of the Government of India. It is the officer of the Government of India. The officer is the officer of the Government of India.\nSource: https://en.wikipedia.org/wiki/Directorate_of_Police_Commission",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.2564102564102564,
+        "seen_in_training": true
+      },
+      {
+        "id": 9,
+        "section": "domain",
+        "q": "Which High Court has its main seat in Chennai?",
+        "answer": "The General General Council of Tamil Nadu is the largest city in the state of Tamil Nadu. It is the largest city in the state of Tamil Nadu. It is the largest city in the state of Tamil Nadu. It is the largest city in the state of Tamil Nadu.\nSource: https://en",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.607843137254902,
+        "seen_in_training": false
+      },
+      {
+        "id": 10,
+        "section": "domain",
+        "q": "What is the full form of TNPSC?",
+        "answer": "The Tamil Nadu State Department of Tamil Nadu is the administrative and administrative administrative administrative authority of Tamil Nadu. It is the administrative authority of the state of Tamil Nadu. The Tamil Nadu State Department is the administrative authority of the state of Tamil Nadu.\nSource: https://www.tn.gov.in",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.30612244897959184,
+        "seen_in_training": false
+      },
+      {
+        "id": 11,
+        "section": "domain",
+        "q": "Who was Chief Minister of Tamil Nadu when the state was renamed in 1969?",
+        "answer": "The Chief Minister of Tamil Nadu was the first Chief Minister of Tamil Nadu in the state of Tamil Nadu. The Chief Minister of Tamil Nadu was the first Chief Minister of Tamil Nadu.\nSource: https://en.wikipedia.org/wiki/Tamil_Nadu_State_Department\nVerification status:",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.3902439024390244,
+        "seen_in_training": false
+      },
+      {
+        "id": 12,
+        "section": "domain",
+        "q": "In which year was Madras State renamed Tamil Nadu?",
+        "answer": "The General General of Tamil Nadu was a state in the state of Tamil Nadu. The state was formed in 1956, and was formed in 1956. The state was formed in 1956. The state was formed in 1956.\nSource: https://en.wikipedia.org/wiki/Tamil_Nadu_",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.3023255813953488,
+        "seen_in_training": false
+      },
+      {
+        "id": 13,
+        "section": "domain",
+        "q": "Which article lets a person go to the Supreme Court when a fundamental right is violated?",
+        "answer": "The Supreme Court of India, in the Supreme Court of India, in the Supreme Court of India, in the Supreme Court of India, in the case of a Supreme Court, in the case of a Supreme Court, in the case of a Supreme Court, in the case of a Supreme Court, in",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.74,
+        "seen_in_training": false
+      },
+      {
+        "id": 14,
+        "section": "domain",
+        "q": "Who audits the accounts of the Union and the states in India?",
+        "answer": "The Comptroller and Auditor General of India (CA) is the central government of India. It is the central government of India. It is the central government of India. It is the central government of India. It is the central government of India. It is the central government of India.\nSource:",
+        "score": 1.0,
+        "pass": true,
+        "repetition": 0.6666666666666667,
+        "seen_in_training": false
+      },
+      {
+        "id": 15,
+        "section": "domain",
+        "q": "What does GST stand for?",
+        "answer": "The General Assembly is a government agency under the Ministry of Finance, Government of India. It is responsible for the implementation of the GST and the GST GST. The GST Council is responsible for the implementation of GST and the GST GST.\nSource: https://en.wikipedia.org/wiki/Tax",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.14893617021276595,
+        "seen_in_training": false
+      },
+      {
+        "id": 16,
+        "section": "domain",
+        "q": "What is the lower house of the Indian Parliament called?",
+        "answer": "The General Assembly of India is a state assembly in the Indian state of Tamil Nadu. It is the first state assembly in India. It is the first state assembly in India. It is the first state assembly in India. It is the first state assembly in India. It is the first state assembly in",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5660377358490566,
+        "seen_in_training": false
+      },
+      {
+        "id": 17,
+        "section": "domain",
+        "q": "What is the Prevention of Corruption Act about?",
+        "answer": "The Prevention of Corruption Act, 1988 (Central Act) is an Act of the Parliament of India that repealed the Act of 1988. It was enacted by the Parliament of India on 26 January 1988. It was enacted by the Parliament of India on 26 January 1988. It was enacted by the Parliament of India",
+        "score": 0.5,
+        "pass": false,
+        "repetition": 0.40384615384615385,
+        "seen_in_training": false
+      },
+      {
+        "id": 18,
+        "section": "domain",
+        "q": "Which body conducts elections to state legislative assemblies in India?",
+        "answer": "The General Assembly conducts elections to the state of Tamil Nadu. The legislative assembly elections are conducted by the state government of Tamil Nadu. The legislative assembly is headed by the Chief Minister of Tamil Nadu. The legislative assembly is headed by the Chief Minister of Tamil Nadu.\nSource: https://en.wikipedia",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.33999999999999997,
+        "seen_in_training": false
+      },
+      {
+        "id": 19,
+        "section": "domain",
+        "q": "What can a High Court issue to protect a person's rights?",
+        "answer": "The High Court of Madras is a legal legal system that allows the state to protect the rights of the people of the people. The High Court has the power to protect the people from the people of the people. The Court has also held that the right to life is not a legal right to life,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.1454545454545455,
+        "seen_in_training": false
+      },
+      {
+        "id": 20,
+        "section": "domain",
+        "q": "What is a charge sheet?",
+        "answer": "A charge sheet is a charge sheet of charge sheet that is a charge sheet of charge sheet, which is a charge sheet of charge sheet. A charge sheet is a charge sheet of charge sheet, which is a charge sheet of charge sheet. A charge sheet is a charge sheet of charge sheet sheet.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6981132075471699,
+        "seen_in_training": true
+      },
+      {
+        "id": 21,
+        "section": "english",
+        "q": "What is the opposite of hot?",
+        "answer": "The opposite is the opposite of the hot hot hot hot. The opposite is the opposite of the hot hot hot hot hot and the hot hot hot hot hot hot.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5517241379310345,
+        "seen_in_training": false
+      },
+      {
+        "id": 22,
+        "section": "english",
+        "q": "What is the plural of child?",
+        "answer": "The plural of child is a plural of the plural of the plural of the plural. The plural of the plural is plural, and the plural of the plural of the plural. The plural is plural, and the plural form of plural.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.55,
+        "seen_in_training": false
+      },
+      {
+        "id": 23,
+        "section": "english",
+        "q": "What does the word transparent mean?",
+        "answer": "The word \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four\" means \"four",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.8260869565217391,
+        "seen_in_training": false
+      },
+      {
+        "id": 24,
+        "section": "english",
+        "q": "What is the capital of France?",
+        "answer": "The capital of France is the capital of France.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.2857142857142857,
+        "seen_in_training": true
+      },
+      {
+        "id": 25,
+        "section": "english",
+        "q": "What is 8 times 7?",
+        "answer": "The average speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed of the speed",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9137931034482758,
+        "seen_in_training": false
+      },
+      {
+        "id": 26,
+        "section": "english",
+        "q": "What is a synonym for begin?",
+        "answer": "A synonym is a synonym for a synonym, meaning \"to be\" or \"to be\" or \"to be\" or \"to be\" or \"to be\" or \"to be\" or \"to be\" or \"to be\" or \"to be\" or \"to",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.6571428571428571,
+        "seen_in_training": true
+      },
+      {
+        "id": 27,
+        "section": "english",
+        "q": "How many days are in a week?",
+        "answer": "The first week of the week is the first week of the week. The first week of the week is the first week of the week. The week is the first week of the week.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.696969696969697,
+        "seen_in_training": false
+      },
+      {
+        "id": 28,
+        "section": "english",
+        "q": "What is the past tense of go?",
+        "answer": "The past tense is the past tense, and the past tense is the past tense. The past tense is the past tense, and the past tense is the past tense. The past tense is the past tense, and the past tense is the past tense.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.7906976744186046,
+        "seen_in_training": false
+      },
+      {
+        "id": 29,
+        "section": "english",
+        "q": "Which planet do we live on?",
+        "answer": "The planet is the planet's largest planet. The planet is the planet's largest planet.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.4285714285714286,
+        "seen_in_training": false
+      },
+      {
+        "id": 30,
+        "section": "english",
+        "q": "What is the largest ocean on Earth?",
+        "answer": "The largest ocean is the largest ocean in the world. The largest ocean is the largest ocean.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.4,
+        "seen_in_training": false
+      },
+      {
+        "id": 31,
+        "section": "chat",
+        "q": "hii",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": true
+      },
+      {
+        "id": 32,
+        "section": "chat",
+        "q": "what does btw mean?",
+        "answer": "That's a bold is a bold.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.0,
+        "seen_in_training": true
+      },
+      {
+        "id": 33,
+        "section": "chat",
+        "q": "thanks",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": true
+      },
+      {
+        "id": 34,
+        "section": "chat",
+        "q": "how are you?",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": true
+      },
+      {
+        "id": 35,
+        "section": "chat",
+        "q": "what does imo mean?",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": false
+      },
+      {
+        "id": 36,
+        "section": "chat",
+        "q": "good morning",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": true
+      },
+      {
+        "id": 37,
+        "section": "chat",
+        "q": "what does lol mean?",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": false
+      },
+      {
+        "id": 38,
+        "section": "chat",
+        "q": "bye",
+        "answer": "I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry, I'm sorry,",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.9117647058823529,
+        "seen_in_training": true
+      },
+      {
+        "id": 39,
+        "section": "chat",
+        "q": "can you help me with my resume",
+        "answer": "I'm sorry, I'm not sure I'm not sure to do. I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure I'm not sure",
+        "score": 0.5,
+        "pass": false,
+        "repetition": 0.8,
+        "seen_in_training": false
+      },
+      {
+        "id": 40,
+        "section": "chat",
+        "q": "what does brb mean?",
+        "answer": "That's a bug is a bug, and a bug is a bug, and a bug is a bug.",
+        "score": 0.0,
+        "pass": false,
+        "repetition": 0.5294117647058824,
+        "seen_in_training": false
+      }
+    ]
+  }
+}

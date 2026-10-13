@@ -34,3 +34,7 @@ backend/data/cache_*/
 
 # temporary uploaded / converted files (deleted at expiry)
 backend/file_store/
+
+# console logs of long runs and the generated RAG training data (rebuild with backend/data_tools/build_rag_dataset.py)
+*.out
+backend/data/rag_v1/

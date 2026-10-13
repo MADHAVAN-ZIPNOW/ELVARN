@@ -1,0 +1,2617 @@
+{
+  "backend\\training\\checkpoints_bpe\\ext512\\extended.pt": {
+    "info": {
+      "checkpoint": "backend\\training\\checkpoints_bpe\\ext512\\extended.pt",
+      "sequence_length": 512,
+      "max_new_tokens": 80,
+      "repetition_penalty": 1.15,
+      "no_repeat_ngram_size": 4,
+      "context_too_short": 0
+    },
+    "summary": {
+      "cases": 60,
+      "answerable_cases": 48,
+      "not_in_notes_cases": 12,
+      "key_fact_coverage_pct": 5.6,
+      "full_coverage_pct": 0.0,
+      "refusal_correct_pct": 0.0,
+      "false_refusal_pct": 0.0,
+      "mean_repetition_pct": 5.9,
+      "invented_rate_pct": 56.7,
+      "citation_rate_pct": 0.0
+    },
+    "rows": [
+      {
+        "id": 1,
+        "type": "double",
+        "answerable": true,
+        "answer": "The International Declaration of the UNICE FORENTime on Human Rights Day is a World Health and the Universal Declaration of the United States, which are the World Health Organization for Human Rights Day.",
+        "refused": false,
+        "repetition": 0.06451612903225812,
+        "invented": [
+          "International",
+          "Declaration",
+          "UNICE",
+          "FORENTime",
+          "Day",
+          "World",
+          "Health",
+          "Universal",
+          "Declaration",
+          "United",
+          "World",
+          "Health",
+          "Organization",
+          "Day"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 2,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The Sun is the Earth's atmosphere, the Moon's orbit of the Sun is a planet's surface of Mars.",
+        "refused": false,
+        "repetition": 0.052631578947368474,
+        "invented": [
+          "Sun",
+          "Earth's",
+          "Moon's",
+          "Sun",
+          "Mars"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 3,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The United States is the United States of the United States, where there are the United States and European Union territories that have been in the United States.",
+        "refused": false,
+        "repetition": 0.15384615384615385,
+        "invented": [
+          "United",
+          "States",
+          "United",
+          "States",
+          "United",
+          "States",
+          "United",
+          "States",
+          "United",
+          "States"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 4,
+        "type": "double",
+        "answerable": true,
+        "answer": "",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 5,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The S. Nijayyan was a Tamil film directed by the Government of India to write the film industry in the film industry. It is also known as a film, and has been released from the film industry's first film industry.",
+        "refused": false,
+        "repetition": 0.05128205128205132,
+        "invented": [
+          "Tamil",
+          "Government",
+          "India"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 6,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Maithili language is a dialect of the Indian state of Tamil Nadu. It has been spoken in the region of the state of the state, and has a few languages spoken by the majority of which are spoken languages spoken languages spoken in the state.",
+        "refused": false,
+        "repetition": 0.06818181818181823,
+        "invented": [
+          "Indian",
+          "Tamil",
+          "Nadu"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 7,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The Bengal Act of 1857, 1947, 1947, 1948, 1947, the British India's independence of India Act was a new legislation passed by the Parliament of India Act of 1857.",
+        "refused": false,
+        "repetition": 0.0714285714285714,
+        "invented": [
+          "1857",
+          "1947",
+          "1947",
+          "1948",
+          "1947",
+          "British",
+          "India's",
+          "Parliament",
+          "1857"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 8,
+        "type": "double",
+        "answerable": true,
+        "answer": "ARMs of the loan is a mortgage, the amount of the principal-linked with a fixed-freely generated by the total of the interest rate that is a mortgage is a mortgage note on the borrower's account for a mortgage.",
+        "refused": false,
+        "repetition": 0.05128205128205132,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 9,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Chief Minister of Tamil Nadu was the first president of the party.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Chief",
+          "Minister"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 10,
+        "type": "negative",
+        "answerable": false,
+        "answer": "",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 11,
+        "type": "double",
+        "answerable": true,
+        "answer": "The students's are not only one-years.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 12,
+        "type": "double",
+        "answerable": true,
+        "answer": "The first question of the film is that the film is a movie.",
+        "refused": false,
+        "repetition": 0.09090909090909094,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 13,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Supreme Court of India's judgement is a landmark decision-law that the Supreme Court of the Supreme Court in the Supreme Court held that case was notices doctrine of the Supreme court ruled that the Supreme court has been heard by the Supreme Court, which upheld the Supreme Court judgment of the Supreme Courts of the Supreme courts of India's verdict on the Supreme Court's judgement of India's appeal to be heard",
+        "refused": false,
+        "repetition": 0.22666666666666668,
+        "invented": [
+          "Supreme",
+          "Court",
+          "India's",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Supreme",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Courts",
+          "Supreme",
+          "India's",
+          "Supreme",
+          "Court's",
+          "India's"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 14,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The following are examples of the following list:",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 15,
+        "type": "negative",
+        "answerable": false,
+        "answer": "1. The list of the following are:\n2. The list is a list of the list of the last schedule of the listeneryielding of the list, the list of Call and the list of all-story list of the topography of the list are the list of each list of the most commonly used in the list of these are the listeneration of the list",
+        "refused": false,
+        "repetition": 0.19047619047619047,
+        "invented": [
+          "Call"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 16,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Koori sai is a list of the most popular music that is the first known movies in Tamil film.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Koori",
+          "Tamil"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 17,
+        "type": "single",
+        "answerable": true,
+        "answer": "A A bench of the Supreme Court of India, directed by a court to investigate the case and the case was filed against the CBI.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Supreme",
+          "India",
+          "CBI"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 18,
+        "type": "double",
+        "answerable": true,
+        "answer": "The DCPAC is a list of the most important police stations in the city of the city of Chennai Metropolitan Police, located at the city of Coimbatore.",
+        "refused": false,
+        "repetition": 0.07999999999999996,
+        "invented": [
+          "DCPAC",
+          "Chennai",
+          "Metropolitan",
+          "Coimbatore"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 19,
+        "type": "double",
+        "answerable": true,
+        "answer": "",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 20,
+        "type": "negative",
+        "answerable": false,
+        "answer": "Living mulch in the industry was a process by which banks were able to make it difficult for the production of plastic mulch.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 21,
+        "type": "double",
+        "answerable": true,
+        "answer": "Celticenting is the study of the language of the English language of the United States of England, and the United Kingdom of America. The United States of Ireland is a few languages spoken in the United States are the United States, but not only one of the United Kingdom is the United States.",
+        "refused": false,
+        "repetition": 0.1568627450980392,
+        "invented": [
+          "United",
+          "States",
+          "United",
+          "Kingdom",
+          "America",
+          "United",
+          "States",
+          "Ireland",
+          "United",
+          "States",
+          "United",
+          "States",
+          "United",
+          "Kingdom",
+          "United",
+          "States"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 22,
+        "type": "double",
+        "answerable": true,
+        "answer": "The following are examples of the differences between these factors:",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 23,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Supreme Court of Gujarat High Court of India was the first state of India's largest criminal law in India, with a number of the Supreme Court of the Supreme court of India's highest court cases filed by the Supreme Court in the Supreme Court on the Supreme Court.",
+        "refused": false,
+        "repetition": 0.20408163265306123,
+        "invented": [
+          "Supreme",
+          "Court",
+          "High",
+          "Court",
+          "India",
+          "India's",
+          "India",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "India's",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 24,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "Langu is a type of land that has been found in the northern part of the southernmost part of the Indian Ocean. The most common name is the name of the name of \"Sangelongue\" (oro-s) and the name, the name of a land of the name, which it was the name of land of the land of the region of the name is",
+        "refused": false,
+        "repetition": 0.12903225806451613,
+        "invented": [
+          "Sangelongue"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 25,
+        "type": "negative",
+        "answerable": false,
+        "answer": "A health is a method of study that can be used to determine the amount of energy. It is not possible to determine whether it is a good way to understand how much energy is needed, and if you are able to use.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 26,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Indian Ocean is a list of the most common places in India.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "India"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 27,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The Supreme Court of India in the United States was a landmark judgment that heard the Supreme Court's verdict on the Supreme Court of the Supreme Court.",
+        "refused": false,
+        "repetition": 0.15384615384615385,
+        "invented": [
+          "Supreme",
+          "Court",
+          "India",
+          "United",
+          "States",
+          "Supreme",
+          "Court's",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 28,
+        "type": "double",
+        "answerable": true,
+        "answer": "\"The Hindu-a. The Hindu god of the story of the story is a book, the story of Goddess of the story about the story of a song of the story and the story of his wife of the story, the story, in the story of an image of the story that he was the story of Shiva, the story about a story of the film, the story is the story",
+        "refused": false,
+        "repetition": 0.18840579710144922,
+        "invented": [
+          "Hindu-a",
+          "Hindu",
+          "Goddess",
+          "Shiva"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 29,
+        "type": "double",
+        "answerable": true,
+        "answer": "Anatomical terms are the following:",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 30,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The word \"Great\" is a clause that the following clause is not an adverbial verb phrase, but it is used to be used as in English. It is not only one of the same as a preposition:",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Great",
+          "English"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 31,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The Supreme Court of Madras State of Madras State was the Supreme Court of India in the High Court of Madras Presidency of Madras (1961) Act of Madras (1888, which upheld the Supreme Court held that the Supreme Court ruled that the Supreme court held that the case was a bench of Madras High Court of the Supreme Court Bench of Madras High Courts of Madras High court held that heard the Supreme Court",
+        "refused": false,
+        "repetition": 0.26388888888888884,
+        "invented": [
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court",
+          "India",
+          "High",
+          "Court",
+          "Presidency",
+          "1961",
+          "Act",
+          "1888",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "Court",
+          "Supreme",
+          "High",
+          "Court",
+          "Supreme",
+          "Court",
+          "Bench",
+          "High",
+          "Courts",
+          "High",
+          "Supreme",
+          "Court"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 32,
+        "type": "double",
+        "answerable": true,
+        "answer": "1. The Specified the process of the Specifying effect is a carbon-mium-molecule (oride)",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Specified",
+          "Specifying"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 33,
+        "type": "double",
+        "answerable": true,
+        "answer": "Ajay is a few reasons why the police are not only person who have been accused of being convicted of the case in the case, and the case is the case.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 34,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Securities and Exchange of the company's assets, including the company is a company's assets.",
+        "refused": false,
+        "repetition": 0.06666666666666665,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 35,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The word \"Great\" is a word \"Northern\" is used to mean \"the name of the name of the word \"Southern\" or \"South\", meaning \"North America\". It\", from Latin\" in the name of \"The name of the world\" (from Ancient Greek?)\" is \"the name \"the name for \"the name, \"the name\") and \"",
+        "refused": false,
+        "repetition": 0.18367346938775508,
+        "invented": [
+          "Great",
+          "Northern",
+          "Southern",
+          "South",
+          "North",
+          "America",
+          "Latin",
+          "Ancient",
+          "Greek"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 36,
+        "type": "double",
+        "answerable": true,
+        "answer": "The air pollution of the airborne, which is a high concentration of water content of water is the air and the air quality of water in the air pollution.",
+        "refused": false,
+        "repetition": 0.03703703703703709,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 37,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Registrar of Societies Act, 1860 is a legal document issued by the Government of India. It is recognised as an act of the act of the Government of the Government and the Government of a state government of India Act of India Act to provide for the Government of any other states of India.",
+        "refused": false,
+        "repetition": 0.13207547169811318,
+        "invented": [
+          "Government",
+          "India",
+          "Government",
+          "Government",
+          "Government",
+          "India",
+          "India",
+          "Government",
+          "India"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 38,
+        "type": "double",
+        "answerable": true,
+        "answer": "The most important question is that the universe is a matter of time.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 39,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The following are the most common examples of voting, which is a form of voting.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 40,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The Madras Presidency was a British government in the Madras Presidency of Madras. It was the first Indian state of India, and the second-day Madras Presidency was the Madras Presidency, and the Madras Presidency was renamed Madras Presidency.",
+        "refused": false,
+        "repetition": 0.1351351351351351,
+        "invented": [
+          "British",
+          "Indian",
+          "India"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 41,
+        "type": "single",
+        "answerable": true,
+        "answer": "The numbers are the number of countries in Europe and Europe.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Europe",
+          "Europe"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 42,
+        "type": "double",
+        "answerable": true,
+        "answer": "Kasauli's book is a list of the best known book.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 43,
+        "type": "double",
+        "answerable": true,
+        "answer": "Statistics is the best way to understand how many ways you can be done by using a problem solving problems with the problem solving problem solving problem. It's problem solving problem-solving problem solving problem, and solve problems that are not only if it.",
+        "refused": false,
+        "repetition": 0.13953488372093026,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 44,
+        "type": "double",
+        "answerable": true,
+        "answer": "The DMK's first party won the 2019 Indian general election.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "DMK's"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": false
+      },
+      {
+        "id": 45,
+        "type": "negative",
+        "answerable": false,
+        "answer": "Coimbatore City Municipal Corporation of Vellore is the city of Vellore district headquarters of Vellore district in Tamil Nadu, Chennai Metropolitan Area Development and Salem. It is the district headquarters of the district headquarters.",
+        "refused": false,
+        "repetition": 0.09375,
+        "invented": [
+          "City",
+          "Municipal",
+          "Tamil",
+          "Nadu",
+          "Chennai",
+          "Metropolitan",
+          "Area",
+          "Development",
+          "Salem"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 46,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The average rate of the total number of interest rate is the total amount of the total value of the total amount that the total amount and the total amount",
+        "refused": false,
+        "repetition": 0.1785714285714286,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 47,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Loan Mobile Guardian is a mobile phone that has been used to file an application. It can be used for the internet, and it is not only if you have a few days before the internet or even more than the internet.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Loan",
+          "Guardian"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 48,
+        "type": "double",
+        "answerable": true,
+        "answer": "",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 49,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Indian National Army (INCT)",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "INCT"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 50,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The most commonly used for the use of the following are not only one is a few things to beverages displaying short-selling is the same.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 51,
+        "type": "single",
+        "answerable": true,
+        "answer": "The Kallanallur Express was a Superfast Express train belonging to Southern Railway zone that runs between Chennai Central and Coimbatore in India. It is currently being operated by the first-weekly operated with an average speed of 22 hours of 16:00 pm on the next day.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Kallanallur",
+          "Southern",
+          "Central",
+          "Coimbatore",
+          "India",
+          "22",
+          "16",
+          "00"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 52,
+        "type": "double",
+        "answerable": true,
+        "answer": "Negative inversion is a grammatical structure that can be used in the context of the sentence. For example, if it is not an auxiliary verb phrase (e.g., I'm going to do you)",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "I'm"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 53,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The following are the same number of the following are:",
+        "refused": false,
+        "repetition": 0.125,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 54,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 55,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The following are the most important types of insurance companies:\n1. A car manufacturer is a company that has a company, company, company and company\n2. A carrier is an investment company\n3. A car rental company is a company with a company\n5. A car or company\n4. A car manufacturers who is a company\n7. A car\n6. A car",
+        "refused": false,
+        "repetition": 0.033333333333333326,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 56,
+        "type": "double",
+        "answerable": true,
+        "answer": "The National Assistance of the scheme is a Social Assistance Scheme for Social Assistance Program for Social Assumingly and how to the policy is a social auditory of the scheme, which is not only if it is a health insurance scheme. It is a good, but not a government is a public health care system of the same as a health insurance policy that the government is a health policy of",
+        "refused": false,
+        "repetition": 0.08695652173913049,
+        "invented": [
+          "Program",
+          "Assumingly"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 57,
+        "type": "double",
+        "answerable": true,
+        "answer": "",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 58,
+        "type": "single",
+        "answerable": true,
+        "answer": "The Nemyampatti lampally is a landmark in the Indian state of Tamil Nadu. It was found that the film was noticed by the film industry, but it was not only one of the most popular films and the film industry.",
+        "refused": false,
+        "repetition": 0.02631578947368418,
+        "invented": [
+          "Nemyampatti",
+          "Indian",
+          "Tamil",
+          "Nadu"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 59,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "\"I am a few days after the film is a film, I was a film. The film, and his ownly, he had been in the film, but it was a film to be a film, the film, the movie, the film is the film, and the film, I have been a film, and that of the film, which was a film, but the film is",
+        "refused": false,
+        "repetition": 0.11111111111111116,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 60,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The word \"Kyotta\" is a type of the same number of words used in the form of a variety of words that are usually used to describe the word order.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Kyotta"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      }
+    ]
+  },
+  "backend\\training\\checkpoints_bpe\\rag_ft\\epoch_2.pt": {
+    "info": {
+      "checkpoint": "backend\\training\\checkpoints_bpe\\rag_ft\\epoch_2.pt",
+      "sequence_length": 512,
+      "max_new_tokens": 80,
+      "repetition_penalty": 1.15,
+      "no_repeat_ngram_size": 4,
+      "context_too_short": 0
+    },
+    "summary": {
+      "cases": 60,
+      "answerable_cases": 48,
+      "not_in_notes_cases": 12,
+      "key_fact_coverage_pct": 22.2,
+      "full_coverage_pct": 2.1,
+      "refusal_correct_pct": 25.0,
+      "false_refusal_pct": 18.8,
+      "mean_repetition_pct": 0.6,
+      "invented_rate_pct": 40.0,
+      "citation_rate_pct": 72.9
+    },
+    "rows": [
+      {
+        "id": 1,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1]: On 17 January 2020, OSCE Commissioner on National Minorities issued a document called the OSCE.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "January"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 2,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "From the notes: In 1942, Kumaramangalam was arrested on the Indian Ocean in the Indian Ocean.",
+        "refused": false,
+        "repetition": 0.0714285714285714,
+        "invented": [
+          "1942",
+          "Indian",
+          "Ocean",
+          "Indian",
+          "Ocean"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 3,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "According to [1]: Audit reports of the European Parliament and the Council of Ministers on the European Union, including the Council of India.",
+        "refused": false,
+        "repetition": 0.04761904761904767,
+        "invented": [
+          "Ministers",
+          "India"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 4,
+        "type": "double",
+        "answerable": true,
+        "answer": "The development of Singapore, which was adopted by the United States and the United Kingdom, the Netherlands, and the Philippines. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 5,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": true
+      },
+      {
+        "id": 6,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1]: The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 7,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The 1905 partition of Bengal was extended to the bifurcation of the cervical vertebrae, and the 1902. [3]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "1902"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 8,
+        "type": "double",
+        "answerable": true,
+        "answer": "The total amount of equity is paid by a cash-inance market, which is the value of a loan.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 9,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: Still caste caste leader was elected as a major alliance with the ruling party.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 10,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [2]: The notes: Anushilan Samiti, the Prime Minister of Economic Affairs and Development, was initiated in September 2013.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Anushilan",
+          "Samiti",
+          "Minister",
+          "Development",
+          "September"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 11,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 12,
+        "type": "double",
+        "answerable": true,
+        "answer": "Production of the Margham was completed in 1984, with two major gas-bearing rock formations. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 13,
+        "type": "double",
+        "answerable": true,
+        "answer": "Nanavati, who had been forced to marry her to her husband and his wife. [2]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 14,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "According to [1]: In 2009, it was published in the notes.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 15,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [3]: Kauli is a town located in Solan district of Himachal Pradesh.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Kauli"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 16,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Koorshaving industry, weaving industry and the number of weavers have been in local areas. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Koorshaving"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 17,
+        "type": "single",
+        "answerable": true,
+        "answer": "It is noted that in 2014, he has filed a detailed report by the Madras High Court. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 18,
+        "type": "double",
+        "answerable": true,
+        "answer": "A Deputy Commissioner of Police (CP) oversees the commissioner of Police, is responsible for the administration of the city police. [1] The DCP is assisted by the rank of Inspector General of Police and the Commissioner of Police. [2]",
+        "refused": false,
+        "repetition": 0.08108108108108103,
+        "invented": [
+          "CP",
+          "Inspector",
+          "General"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 19,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: The lack of money was widely cited as the main reason for the bank account for a financial institution, which is not the primary value of a bank account.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 20,
+        "type": "negative",
+        "answerable": false,
+        "answer": "In 1949, the Banking Regulation Act was enacted by the Reserve Bank of India (RBI) to regulate the banks and the banks in India. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 21,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [2]: There are many other dialects of life, including the language of life.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 22,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: Although these effects are not beneficial, they may be beneficial for the effect of the impact of the environment.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 23,
+        "type": "double",
+        "answerable": true,
+        "answer": "In April 2009, the bill was re-introduced by the President of India, and then to amend the Constitution. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "April",
+          "India",
+          "Constitution"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 24,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 25,
+        "type": "negative",
+        "answerable": false,
+        "answer": "A method is a method to obtain particles from a thin layer of particles.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 26,
+        "type": "double",
+        "answerable": true,
+        "answer": "It is a significant portion of the world's oceans, including the tuna and seaglass. [1] The Indian Ocean is ecologically important part of the world is biogeographic catchment area of the world.",
+        "refused": false,
+        "repetition": 0.06451612903225812,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 27,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "She was born in 1985 and then Chief Minister of Bihar in 1989. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "1985",
+          "Chief",
+          "Minister",
+          "1989"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 28,
+        "type": "double",
+        "answerable": true,
+        "answer": "Ibrahim-him-e-Bu (Book of the Bijapur) was a work by Mahā-Nas-Sa-Hind, named after Bharuchi-Jar-e-Naz-e-e-a-e-dwark in Hyderabad. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Nas-Sa-Hind",
+          "Bharuchi-Jar-e-Naz-e-e-a-e-dwark"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 29,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1]: Antagonism is a role in the torqueous body that occurs when an muscle is not a part of a ballistic movement.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 30,
+        "type": "negative",
+        "answerable": false,
+        "answer": "In some cases, the allevioglods are related to the ingestion of the back. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 31,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 32,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Swernine (also known as sulfidecarboxyl) is a lack of chemical reactions, and slowing in the absence of certain molecules. [3]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Swernine"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 33,
+        "type": "double",
+        "answerable": true,
+        "answer": "He left his father to the Kasabot, who was the son of Kasagodia in the Okara district. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Kasabot",
+          "Kasagodia"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 34,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1]: In October 2011, it increased the extent of disclosures and reposures to the Mobile Guardian Archives Act (IPS) and the order has been made.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Mobile",
+          "Guardian",
+          "Archives",
+          "Act",
+          "IPS"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 35,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [1]: The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": true
+      },
+      {
+        "id": 36,
+        "type": "double",
+        "answerable": true,
+        "answer": "The police used the air use of NO2 g/m3. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 37,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 38,
+        "type": "double",
+        "answerable": true,
+        "answer": "Closure of the electromagnetic spectrum is a couple of facts about Earth's surface. [1] The portion of the electromagnetic radiation is very low in light, with more than 100mm to 400 nmm.",
+        "refused": false,
+        "repetition": 0.032258064516129004,
+        "invented": [
+          "Earth's",
+          "100mm",
+          "400"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 39,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 40,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The notes do not answer this question.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": true
+      },
+      {
+        "id": 41,
+        "type": "single",
+        "answerable": true,
+        "answer": "In 2015, the government of Congo signed a grant agreement with the Green Revolution, which provided that the sum of US$300,000 for building in the African State. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Revolution"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 1.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 42,
+        "type": "double",
+        "answerable": true,
+        "answer": "It also provides a Master of Science and Technology in Microbiology. [1] The CRI works under the World Health Organization (I) is an immuno-biological institute for nutritional epigenetics, which is a immuno-based medical institution established by the DTP group of vaccines.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Technology"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 43,
+        "type": "double",
+        "answerable": true,
+        "answer": "The standard method for the null method is done by the null product of data, and a data set to be written in a given model. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 44,
+        "type": "double",
+        "answerable": true,
+        "answer": "Ramadoss and his son, was released in prison for the 2019 Indian general election. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 45,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [2]: The population of Vellore Corporation based on a total income of ₹1,000.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "1,000"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 46,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The Kochi City DHQ is also known as the International Commandant, which was later transferred to the Commandant. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "International"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 47,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 48,
+        "type": "double",
+        "answerable": true,
+        "answer": "The nationalization of banks, which was in the late 1960s and the nationalization of Thanjavur, led to the nationalization and the nationalisation of the country. [2]",
+        "refused": false,
+        "repetition": 0.04166666666666663,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 49,
+        "type": "double",
+        "answerable": true,
+        "answer": "In Bengal, he was accused of working with the revolutionary movement. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 50,
+        "type": "negative",
+        "answerable": false,
+        "answer": "From the notes: The notes: Kumaramangalam had a total number of units, 20% were created by the bar. [2]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 51,
+        "type": "single",
+        "answerable": true,
+        "answer": "On 11 April 2018, Front wheels numbered 163/162]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "11",
+          "163",
+          "162"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 52,
+        "type": "double",
+        "answerable": true,
+        "answer": "In other words, the adjunctuation of the adjunct clause is not sensitive to the embedded clause. [2]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 53,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "It is currently being operated with 22351/1667 train numbers on a weekly basis.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "22351",
+          "1667"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 54,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "On 5 June 2013, CBI obtained permission to conduct polygraph tests on Mhakar, and leading to a 15% drop in the company's share. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Mhakar"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 55,
+        "type": "negative",
+        "answerable": false,
+        "answer": "It is an integrated bus station in the city of Mibus and Minibus services. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Mibus"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 56,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 57,
+        "type": "double",
+        "answerable": true,
+        "answer": "No person shall be issued a licence to drive a licence against the Bolshevik Revolution. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 58,
+        "type": "single",
+        "answerable": true,
+        "answer": "From the notes: Since they would have been in the notes.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 59,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 60,
+        "type": "negative",
+        "answerable": false,
+        "answer": "Ngong's candidacy of a nortical representation in the amputation of a finger, Tashi Tygyal on 3 September, Tugyal on 6 August, Tashi and Tashi Topalone on 10 November. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Tygyal",
+          "Tugyal",
+          "August",
+          "Topalone",
+          "November"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      }
+    ]
+  },
+  "backend\\training\\checkpoints_bpe\\rag_ft\\best.pt": {
+    "info": {
+      "checkpoint": "backend\\training\\checkpoints_bpe\\rag_ft\\best.pt",
+      "sequence_length": 512,
+      "max_new_tokens": 80,
+      "repetition_penalty": 1.15,
+      "no_repeat_ngram_size": 4,
+      "context_too_short": 0
+    },
+    "summary": {
+      "cases": 60,
+      "answerable_cases": 48,
+      "not_in_notes_cases": 12,
+      "key_fact_coverage_pct": 22.2,
+      "full_coverage_pct": 4.2,
+      "refusal_correct_pct": 25.0,
+      "false_refusal_pct": 25.0,
+      "mean_repetition_pct": 0.5,
+      "invented_rate_pct": 46.7,
+      "citation_rate_pct": 70.8
+    },
+    "rows": [
+      {
+        "id": 1,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1]: On 17 January 2020, OSCE Commissioner on National Minorities issued a document called \"Streaming diversity of COVID-19 pandemic\".",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "January",
+          "Streaming"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 2,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "From the notes: In 1941, Kumaramangalam was arrested on P. Sivaswami Iyer and S. Subramaniami in the Indian National Congress (infrared) for expeditious pamphlets from the Earth's atmosphere at the Sun. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Iyer",
+          "Indian",
+          "National",
+          "Congress",
+          "Earth's",
+          "Sun"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 3,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 4,
+        "type": "double",
+        "answerable": true,
+        "answer": "The development of Singapore, which was created in the 1980s and the United States, and the Netherlands, and the Philippines, and the United Kingdom, and the Republic of Korea, and the Americas. [1]",
+        "refused": false,
+        "repetition": 0.032258064516129004,
+        "invented": [
+          "Republic",
+          "Americas"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 1.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 5,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": true
+      },
+      {
+        "id": 6,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 7,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The 1905 partition of Bengal was a population of 1,038. [2]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "1,038"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 8,
+        "type": "double",
+        "answerable": true,
+        "answer": "The total amount of equity is paid for a cash-inance loan. [3]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 9,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: Still caste caste based on political parties, the ruling party came under the leadership of Dravida Munnetra Kazhagam.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Dravida",
+          "Munnetra",
+          "Kazhagam"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 10,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [2]: An archaeological surveyed the letter of the Department of Economic Affairs, which was leaked by the vicinity of the Vaigai River in 2011.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 11,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 12,
+        "type": "double",
+        "answerable": true,
+        "answer": "Production at Margham was completed in 1984, with two major gas-bearing years ago. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 13,
+        "type": "double",
+        "answerable": true,
+        "answer": "Nanavati, who had doubted her to her husband and his wife, for the film Thumbja. [1] Sylvanised his mother at the Metro, which he was forced to take action from her husband, and ordered him to be taken to her.",
+        "refused": false,
+        "repetition": 0.02631578947368418,
+        "invented": [
+          "Thumbja",
+          "Sylvanised"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 14,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "According to [1]: In 2009, it works as the junction of agroecology in Tura and in Turia.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Turia"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 15,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [3]: Kauli is a town located in Solan district of Himachal Pradesh.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Kauli"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 16,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Koor weaving industry, which has been in local areas. [1] Some of the Koorshaving industry have been associated with the number of weavers and saverses from thousands to millions of years.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Koor",
+          "Koorshaving"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 17,
+        "type": "single",
+        "answerable": true,
+        "answer": "It is noted that in 2014, he has filed a detailed report by the Madras High Court. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 18,
+        "type": "double",
+        "answerable": true,
+        "answer": "A Deputy Commissioner of Police (CP) oversees the commissioner of Police and is responsible for the day-day operations. [1] The DCP (Adminute) oversees its functions as the Commissioner of Police, headed by the Commissioner of police. [2]",
+        "refused": false,
+        "repetition": 0.13888888888888884,
+        "invented": [
+          "CP",
+          "Adminute"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 19,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: The lack of money was widely cited as the main reason for not only a bank account.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 20,
+        "type": "negative",
+        "answerable": false,
+        "answer": "In 1949, the Banking Regulation Act was enacted by the Reserve Bank of India (RBI) to regulate the banks and the banks in India. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 21,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: There is no evidence for the linguistic situation in Britain.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 22,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: Although these effects are not beneficial, they may be beneficial for the impact of the impacts of the environment.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 23,
+        "type": "double",
+        "answerable": true,
+        "answer": "In April 2009, the bill was re-introduced in the state legislature. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "April"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 24,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 25,
+        "type": "negative",
+        "answerable": false,
+        "answer": "A method to obtain a continuous particle from a thin film is thermal, and mechanical dewetting. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 26,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Indian Ocean is a major portion of the world's tuna and seal reefs, which are home to endangered species. [1] It has a significant portion of the country's coastline with important ecosystems, including mangroves, mangroves and leagass. [2]",
+        "refused": false,
+        "repetition": 0.02564102564102566,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 27,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 28,
+        "type": "double",
+        "answerable": true,
+        "answer": "Ibrahim-e-Bimla (Book of the Bijapur) was published in 1818. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "1818"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 29,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1] and [2]: Antagonism is a role in the case of an individual's body.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 30,
+        "type": "negative",
+        "answerable": false,
+        "answer": "In some cases, the allevius is related to the ingestion of the spinal cervical slits. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 31,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 32,
+        "type": "double",
+        "answerable": true,
+        "answer": "The Swernine is a lack of effective carbon dioxide in the troposphere. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Swernine"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 33,
+        "type": "double",
+        "answerable": true,
+        "answer": "He left his father to the Okkot, Kasabot in the Okara District of Punjab. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Okkot",
+          "Kasabot"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 34,
+        "type": "double",
+        "answerable": true,
+        "answer": "According to [1]: In October 2011, it increased the extent of disclosures and disclosures to the Mobile Guardian Archives Act.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Mobile",
+          "Guardian",
+          "Archives",
+          "Act"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 35,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [1]: The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": true
+      },
+      {
+        "id": 36,
+        "type": "double",
+        "answerable": true,
+        "answer": "The police used the high concentration of NO2 g/m3. [1] In the cities of Ararat, Gyad, Grazer and Tsa, Tsi, Tsay, Tshat, Ts, and Tsangel, are a lower concentrations of NO2.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Gyad",
+          "Grazer",
+          "Tsa",
+          "Tsi",
+          "Tsay",
+          "Tshat",
+          "Ts",
+          "Tsangel"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 37,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 38,
+        "type": "double",
+        "answerable": true,
+        "answer": "Closure of the electromagnetic spectrum is a couple of facts about Earth's spectrum. [1] The portion of the electromagnetic radiation is very rare, but are highly sensitive to ultraviolet light wavelengths.",
+        "refused": false,
+        "repetition": 0.033333333333333326,
+        "invented": [
+          "Earth's"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 39,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not answer this question.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 40,
+        "type": "negative",
+        "answerable": false,
+        "answer": "The notes do not answer this question.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": true
+      },
+      {
+        "id": 41,
+        "type": "single",
+        "answerable": true,
+        "answer": "In 2015, the government of Congo signed a grant agreement with the Green Revolution, which provided the sum of US$2,000 for building in the African State. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Revolution",
+          "2,000"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 42,
+        "type": "double",
+        "answerable": true,
+        "answer": "The CRI works as a Master of Science and Research Institute in Microbiology. [1] It also provides a Bachelor of Medicine, Biotechnology, which is an immuno-biological institute for the DTP program.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Research",
+          "Institute",
+          "Bachelor",
+          "Medicine",
+          "Biotechnology"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 43,
+        "type": "double",
+        "answerable": true,
+        "answer": "The standard method for the null method is done by the null and the null product set of data sets, a data series set to be proven.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 44,
+        "type": "double",
+        "answerable": true,
+        "answer": "Ramadoss and his son, was released in prison for a seat in Tamil Nadu. [1] The party continued its alliance with AIADMK and BJP won 2 seats in the 2019 Indian general election.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 1.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 45,
+        "type": "negative",
+        "answerable": false,
+        "answer": "According to [1]: The population of Vellore Corporation based on a national average income of ₹4,000.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "4,000"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 46,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The Kochi City DHQ is under command of a Commandant, which was approximately 10% of the Commandant. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 47,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 48,
+        "type": "double",
+        "answerable": true,
+        "answer": "The nationalization of banks, which was in the late 1960s to the early 1990s. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "1990s"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 49,
+        "type": "double",
+        "answerable": true,
+        "answer": "In Bengal, he was accused of working with the revolutionary movement. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 50,
+        "type": "negative",
+        "answerable": false,
+        "answer": "From the notes: The notes: Kumaramangalam had a total number of units, 20% were achieved by the bar. [2]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "refusal_correct": false
+      },
+      {
+        "id": 51,
+        "type": "single",
+        "answerable": true,
+        "answer": "On 20 April 2018, Front wheels of WDPD numbered 166153/160.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "20",
+          "WDPD",
+          "166153",
+          "160"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 52,
+        "type": "double",
+        "answerable": true,
+        "answer": "In other words, the adjunctuation of the adjunct clause is not sensitive to the embedded clause. [1] The notes do not contain this information.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 53,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "It is currently being operated with 2267/1660 train numbers on a weekly basis.",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "2267",
+          "1660"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": false
+      },
+      {
+        "id": 54,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "On 5 June 2013, CBI obtained permission to conduct polygraph tests on Mhakar, and leading to a 15% drop in the company's share. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Mhakar"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.3333333333333333,
+        "cites_a_note": true
+      },
+      {
+        "id": 55,
+        "type": "negative",
+        "answerable": false,
+        "answer": "It is an integrated bus station in the city of Mibus and Minibus services. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "Mibus"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      },
+      {
+        "id": 56,
+        "type": "double",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 57,
+        "type": "double",
+        "answerable": true,
+        "answer": "No person shall be issued a licence to drive a licence against the Bolshevik Revolution of August 1917, when Communist involvement in the Bolsolshevik–Molshevik. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "August",
+          "Bolsolshevik",
+          "Molshevik"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.6666666666666666,
+        "cites_a_note": true
+      },
+      {
+        "id": 58,
+        "type": "single",
+        "answerable": true,
+        "answer": "From the notes: Since they would find that in Nagappa Chettiar had been able to pursue their livelihood in Nagapatnam, and then then then then Narkoiler who were also a dedicated craft craft. [1]",
+        "refused": false,
+        "repetition": 0.03125,
+        "invented": [
+          "Nagappa",
+          "Chettiar",
+          "Nagapatnam",
+          "Narkoiler"
+        ],
+        "invented_any": true,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": true
+      },
+      {
+        "id": 59,
+        "type": "single_distractors",
+        "answerable": true,
+        "answer": "The notes do not say.",
+        "refused": true,
+        "repetition": 0.0,
+        "invented": [],
+        "invented_any": false,
+        "key_fact_coverage": 0.0,
+        "cites_a_note": false
+      },
+      {
+        "id": 60,
+        "type": "negative",
+        "answerable": false,
+        "answer": "Ngong's candidacy announced its candidacy on 9 August, Tashi Tygyal on 10 September, Tashi on 11 December. [1]",
+        "refused": false,
+        "repetition": 0.0,
+        "invented": [
+          "August",
+          "Tygyal",
+          "11",
+          "December"
+        ],
+        "invented_any": true,
+        "refusal_correct": false
+      }
+    ]
+  }
+}

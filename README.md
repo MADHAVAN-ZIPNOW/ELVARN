@@ -171,10 +171,10 @@ Limits and storage (env vars in `.env.example`): 5 MB per upload (`ELVARN_MAX_UP
 
 Security: size is limited while reading; type is decided by extension AND content (they must agree); names are cleaned and never used as paths (files are stored under random names with random 192-bit ids); docx zip bombs, macros and XML entities are refused (any DTD/entity makes the file be rejected, so no XML expansion attack is possible); HTML input is reduced to plain text (scripts, styles, frames, forms and every attribute are dropped) and HTML output is escaped, carries a strict CSP, and is only ever sent as an attachment; CSV cells starting with `= + - @` get a leading `'`; downloads send `nosniff`, `no-store`, a fixed content type and a sandbox CSP; conversions run in a worker thread with a timeout and size caps; logs hold only type, size and timing. The UI was not tested in a real browser by the automated tests.
 
-## Planned: answering from web notes (512 context + RAG fine-tune)
+## Answering from web notes (512 context + RAG fine-tune) - done once, commands to repeat it
 
-Goal: make the model good at answering FROM the "Web notes" that live web search puts in the prompt. Steps (run later, after the
-current training has finished; every step writes to a NEW folder and never overwrites):
+Goal: make the model good at answering FROM the "Web notes" that live web search puts in the prompt. This was run once
+(results in "Where things stand" below). Steps (every step writes to a NEW folder and never overwrites):
 
 ```powershell
 # 1. Longer context: 128 -> 512 (copies every weight; short inputs give exactly the same logits)
@@ -193,6 +193,36 @@ current training has finished; every step writes to a NEW folder and never overw
 Compare the two rows: key-fact coverage and correct refusals should go up; invented numbers/names and repetition should go down.
 At answer time the server turns on `repetition_penalty` (1.15) and `no_repeat_ngram_size` (4) only when web evidence is in the prompt;
 clients can set both in the request (`repetition_penalty` 1.0-2.0, `no_repeat_ngram_size` 0-10; 1.0 / 0 = off).
+
+## Where things stand (13 Oct 2026)
+
+**Deployed on Render (free plan):**
+
+| Service | What it is | Address |
+|---|---|---|
+| `elvarn` | the chat site + model, auto-deploys from `main` | https://elvarn.onrender.com |
+| `elvarn-search` | protected SearXNG (`search_service/`), Docker, only answers requests that carry a secret token | https://elvarn-search.onrender.com |
+
+**The live model** is `deploy/models/17m_rag`: 17,152,000 parameters, 512-token context, vocabulary 16,384 (tokenizer trained on the v2 data).
+Stage 1 trained 5 epochs on Wikipedia / Dolly / OASST / the original domain text (validation loss 3.604). Stage 2 fine-tuned 3 epochs on
+"notes, question, answer written from the notes" examples (RAG validation loss 2.408). The previous model (6.7M, 128 context) is still in
+`deploy/models/7m_epoch2`. **Rollback:** set the Render environment variable `ELVARN_CHECKPOINT_DIR` to `deploy/models/7m_epoch2` and redeploy.
+
+**Measured quality (be realistic, it is a small model):**
+- Writing score on the 82 original validation documents, bits per character (lower is better): old live model 1.139, 17M before RAG 0.953, live model 1.120.
+- 60-case RAG test (`backend/eval/run_rag_eval.py`, results in `backend/eval/results/`): facts copied from the notes 5.6% -> 22%, cites a real note
+  about 70% of the time, still invents details in about 45% of answers and sometimes refuses wrongly. Answers can be wrong; the sources shown under them are the reliable part.
+- Memory on Render: about 361 MB steady (limit 512 MB). Generation uses a KV cache (same text as without it, much faster).
+
+**Live web search:** in India Law mode every question is searched (with legal context added to the query); other modes search fact questions.
+Results must contain the question's distinctive words and numbers, adult results are dropped and every search uses strict safe-search.
+The free search engines are unreliable from a cloud address, so some questions return no sources (the page then says the answer was not checked against the web).
+Environment variables on the `elvarn` service: `SEARXNG_BASE_URL`, `SEARXNG_AUTH_TOKEN` (the same value as `SEARCH_PROXY_TOKEN` on `elvarn-search`),
+`SEARXNG_TIMEOUT_SECONDS`, `ELVARN_MAX_UPLOAD_MB`, `ELVARN_MAX_STORE_MB`. Secrets live only in Render's environment and the local `.env` (git ignores it).
+
+**Not in git on purpose:** raw and processed data, the RAG dataset (`backend/data/rag_v1`), training checkpoints and logs. See `DATA_SOURCES.md` for the data and its licences.
+
+**Ideas for the next step:** longer, human-written RAG answers; copy-biased decoding (make words from the notes more likely); a better search source for Render.
 
 ## Deploying on Render
 
