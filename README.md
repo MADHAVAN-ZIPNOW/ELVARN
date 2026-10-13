@@ -18,11 +18,11 @@ is "verified" just because it is in the corpus; the domain blocks are marked
 | `backend/tokenizer/bpe_tokenizer.py` | Loads the fixed BPE tokenizer. |
 | `backend/tokenizer/train_bpe.py` | Trains the BPE tokenizer (vocab 4096). |
 | `backend/tokenizer/bpe/tokenizer.json` | The saved tokenizer. Must match the checkpoint. |
-| `backend/tokenizer/tokenizer.py`, `vocab.json` | Old word tokenizer. Kept only for the old checkpoints. |
 | `backend/model/` | `attention.py`, `transformer.py`, `generation.py`. |
 | `backend/training/train_batch.py` | The training job (resumable). |
 | `backend/training/checkpoints_bpe/` | New checkpoints: `last.pt`, `best.pt`, `final.pt`, `latest.json`. |
 | `backend/training/checkpoints/` | (deleted on 13 Oct 2026) the very first word-vocabulary model, not compatible with the BPE models. |
+| *(moved out)* | The first, word-level version of the code (embedding, loss, training step, data loader...) lives in `../ELVARN_V1_word_level_legacy/`, outside this project, for study. |
 | `backend/api/` | FastAPI server and model loader. |
 | `frontend/index.html` | The chat UI. |
 | `backend/tests/` | Tests. |
