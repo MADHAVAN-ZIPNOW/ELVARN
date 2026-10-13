@@ -6,7 +6,7 @@ characters in the validation documents (lower is better).
 
 Usage (project root):
     python backend/training/compare_models.py <checkpoint_dir> [<checkpoint_dir> ...]
-Each directory must hold final.pt and the tokenizer.json saved with it.
+Each directory must hold final.pt (or best.pt) and the tokenizer.json saved with it.
 """
 import math
 import sys
@@ -28,7 +28,10 @@ from tokenizer.bpe_tokenizer import BPETokenizer  # noqa: E402
 def bits_per_char(ckpt_dir, val_docs):
     ckpt_dir = Path(ckpt_dir)
     tok = BPETokenizer(ckpt_dir / "tokenizer.json")
-    ck = torch.load(ckpt_dir / "final.pt", map_location="cpu", weights_only=False)
+    ck_file = ckpt_dir / "final.pt"
+    if not ck_file.is_file():
+        ck_file = ckpt_dir / "best.pt"          # runs that keep only best.pt (and deploy folders)
+    ck = torch.load(ck_file, map_location="cpu", weights_only=False)
     if ck["tokenizer_sha256"] != tok.sha256:
         raise SystemExit(f"{ckpt_dir}: tokenizer does not match the checkpoint")
     model, _ = model_from_checkpoint(ck)
