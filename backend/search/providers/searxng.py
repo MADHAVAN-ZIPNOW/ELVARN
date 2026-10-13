@@ -116,7 +116,7 @@ class SearxngProvider(SearchProvider):
     def search(self, query, count, timeout) -> List[RawResult]:
         q = validate_query(query)
         count = max(1, min(int(count), HARD_MAX_RESULTS))
-        params = {"q": q, "format": "json", "language": "en", "safesearch": "1", "pageno": "1"}
+        params = {"q": q, "format": "json", "language": "en", "safesearch": "2", "pageno": "1"}
         return self._parse(self._get_with_retry(params, timeout), count)
 
     # ------------------------------------------------------------------ http

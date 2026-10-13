@@ -109,7 +109,7 @@ def test_searxng_builds_json_request_and_parses_results():
     req = seen[0]
     assert req.method == "GET" and req.url.path == "/search" and req.url.host == "127.0.0.1" and req.url.port == 8080
     assert req.url.params["format"] == "json" and req.url.params["q"] == "hello world"
-    assert req.url.params["safesearch"] == "1" and req.url.params["language"] == "en"
+    assert req.url.params["safesearch"] == "2" and req.url.params["language"] == "en"        # strict safe-search on every search
     assert "authorization" not in req.headers
 
 
@@ -835,3 +835,19 @@ def test_sampling_is_capped_only_when_notes_are_in_the_prompt():
     assert sampling_settings(calm, 3) == (0.2, 10, "client")                       # lower values are never raised
     assert sampling_settings(GenerateRequest(text="x", greedy=True, temperature=1.5), 3)[2] == "client"    # greedy is untouched
     assert sampling_settings(GenerateRequest(text="x", temperature=0.9, top_k=0), 1)[:2] == (0.4, 20)       # top_k 0 (no limit) is capped too
+
+
+# ------------------------------------------------------------------ adult content is never shown
+def test_adult_results_are_dropped_even_when_they_match_the_question():
+    results = [RawResult("Best Porn Videos - EPORNER: HD Porn Tube", "https://www.eporner.com/best-videos/", "Watch the best Collegium system videos"),
+               RawResult("Collegium system", "https://adult.example/xxx-collegium", "The Collegium system of judges"),
+               RawResult("Collegium system - Wikipedia", "https://wiki.example/c", "The Collegium system appoints judges to the Supreme Court")]
+    out = SearchService(FakeProvider(results)).search("What is the Collegium system")
+    assert [s.url for s in out.sources] == ["https://wiki.example/c"]
+
+
+def test_every_search_asks_for_strict_safe_search():
+    seen = []
+    p = sx_provider(ok_handler([{"title": "paris", "url": "https://s.example", "content": "paris"}], seen))
+    p.search("paris", 3, 3.0)
+    assert seen and seen[0].url.params["safesearch"] == "2"

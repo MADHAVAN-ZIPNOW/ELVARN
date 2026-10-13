@@ -27,6 +27,14 @@ USED_NO_EVIDENCE_MESSAGE = ("Live web results were found (see the sources), but 
                             "so the answer text was NOT written from them. Read the sources instead.")
 
 
+# Words that mark adult content in a result's address, title or snippet. A match drops the result completely.
+_ADULT = re.compile(r"(porn|xxx|hentai|nsfw|erotic|escort|onlyfans|camgirl|nude|nudes|sex ?cam|sexcam|adult video|fetish|xvideos|xnxx|redtube|youporn|pornhub|eporner|brazzers)", re.I)
+
+
+def is_adult(*texts):
+    return any(_ADULT.search(t or "") for t in texts)
+
+
 def _stem(word):
     """Very rough word stem so 'India' matches 'Indian' and 'article' matches 'articles'."""
     return word[:5]
@@ -144,6 +152,8 @@ class SearchService:
             snippet = clean_text(getattr(item, "snippet", ""), self.max_snippet)
             if not checked or not (title or snippet) or checked[0] in seen or per_domain.get(checked[1], 0) >= 2:
                 continue  # unsafe URL, empty, duplicate, or a third hit from one site (spam)
+            if is_adult(checked[0], title, snippet):
+                continue  # adult content: never shown, whatever the search engines return
             if wanted and not _relevant(base, wanted, f"{title} {snippet} {checked[1]}"):
                 continue  # too little in common with the question (or a number from the question is missing): not relevant evidence
             seen.add(checked[0])
