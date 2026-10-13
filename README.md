@@ -22,7 +22,7 @@ is "verified" just because it is in the corpus; the domain blocks are marked
 | `backend/model/` | `attention.py`, `transformer.py`, `generation.py`. |
 | `backend/training/train_batch.py` | The training job (resumable). |
 | `backend/training/checkpoints_bpe/` | New checkpoints: `last.pt`, `best.pt`, `final.pt`, `latest.json`. |
-| `backend/training/checkpoints/` | Old word-vocabulary checkpoints. Not compatible. Untouched. |
+| `backend/training/checkpoints/` | (deleted on 13 Oct 2026) the very first word-vocabulary model, not compatible with the BPE models. |
 | `backend/api/` | FastAPI server and model loader. |
 | `frontend/index.html` | The chat UI. |
 | `backend/tests/` | Tests. |
