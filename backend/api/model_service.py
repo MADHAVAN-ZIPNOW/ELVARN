@@ -22,7 +22,7 @@ def default_checkpoint_dir():
 
     1. ELVARN_CHECKPOINT_DIR (relative paths are relative to the project root),
     2. a model you trained locally: backend/training/checkpoints_bpe,
-    3. the weights-only model committed for deployment: deploy/models/7m.
+    3. the weights-only model committed for deployment: deploy/models/17m_rag.
     """
     env = os.environ.get("ELVARN_CHECKPOINT_DIR")
     if env:
@@ -31,7 +31,7 @@ def default_checkpoint_dir():
     local = BACKEND_DIR / "training" / "checkpoints_bpe"
     if (local / "latest.json").is_file():
         return local
-    return PROJECT_DIR / "deploy" / "models" / "7m"
+    return PROJECT_DIR / "deploy" / "models" / "17m_rag"
 
 
 DEFAULT_CHECKPOINT_DIR = default_checkpoint_dir()

@@ -10,7 +10,7 @@ model gives (almost) the same answers as the old one, and training then continue
     (Very close: the loss differs by about 0.0005, not exactly equal.)
 
 Usage (from the project root):
-    python backend/training/grow_model.py --init-from deploy/models/7m_epoch2/best.pt --out-dir backend/training/checkpoints_bpe/grown_17m \
+    python backend/training/grow_model.py --init-from <trained checkpoint>/best.pt --out-dir backend/training/checkpoints_bpe/grown_17m \
         --embedding-size 384 --hidden-size 1536 --num-heads 12 --num-layers 7
 
 Never overwrites: the output folder must not already exist. The tokenizer is copied unchanged.

@@ -6,7 +6,7 @@ The server only needs the weights, the model config, the tokenizer and latest.js
 Usage (project root):
     python backend/training/export_deploy.py <checkpoint_dir> <output_dir>
 Example:
-    python backend/training/export_deploy.py backend/training/checkpoints_bpe/4m deploy/models/7m
+    python backend/training/export_deploy.py backend/training/checkpoints_bpe/rag_ft deploy/models/17m_rag
 """
 import json
 import shutil

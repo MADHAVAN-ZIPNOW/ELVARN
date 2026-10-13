@@ -253,6 +253,6 @@ def test_default_model_folder_falls_back_to_deploy_models(monkeypatch, tmp_path)
     monkeypatch.delenv("ELVARN_CHECKPOINT_DIR", raising=False)
     monkeypatch.setattr(model_service, "BACKEND_DIR", tmp_path / "backend")     # no local training folder
     monkeypatch.setattr(model_service, "PROJECT_DIR", tmp_path)
-    assert model_service.default_checkpoint_dir() == tmp_path / "deploy" / "models" / "7m"
-    monkeypatch.setenv("ELVARN_CHECKPOINT_DIR", "deploy/models/tiny")
-    assert model_service.default_checkpoint_dir() == tmp_path / "deploy" / "models" / "tiny"   # relative -> project root
+    assert model_service.default_checkpoint_dir() == tmp_path / "deploy" / "models" / "17m_rag"
+    monkeypatch.setenv("ELVARN_CHECKPOINT_DIR", "deploy/models/other")
+    assert model_service.default_checkpoint_dir() == tmp_path / "deploy" / "models" / "other"   # relative -> project root

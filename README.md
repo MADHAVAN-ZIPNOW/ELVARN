@@ -205,8 +205,9 @@ clients can set both in the request (`repetition_penalty` 1.0-2.0, `no_repeat_ng
 
 **The live model** is `deploy/models/17m_rag`: 17,152,000 parameters, 512-token context, vocabulary 16,384 (tokenizer trained on the v2 data).
 Stage 1 trained 5 epochs on Wikipedia / Dolly / OASST / the original domain text (validation loss 3.604). Stage 2 fine-tuned 3 epochs on
-"notes, question, answer written from the notes" examples (RAG validation loss 2.408). The previous model (6.7M, 128 context) is still in
-`deploy/models/7m_epoch2`. **Rollback:** set the Render environment variable `ELVARN_CHECKPOINT_DIR` to `deploy/models/7m_epoch2` and redeploy.
+"notes, question, answer written from the notes" examples (RAG validation loss 2.408). The older models (6.7M and 0.8M) were removed from
+`deploy/models` on 13 Oct 2026; they are still in git history (for example `git checkout 8471762 -- deploy/models/7m_epoch2`).
+**Rollback** means restoring a model folder from git history, then setting `ELVARN_CHECKPOINT_DIR` on Render to that folder and redeploying.
 
 **Measured quality (be realistic, it is a small model):**
 - Writing score on the 82 original validation documents, bits per character (lower is better): old live model 1.139, 17M before RAG 0.953, live model 1.120.
@@ -239,7 +240,7 @@ Settings (environment variables, already set in `render.yaml`):
 
 | Variable | Meaning |
 |---|---|
-| `ELVARN_CHECKPOINT_DIR` | Model folder: `deploy/models/7m_epoch2` (6.7M parameters, best validation loss 3.5979, the default), `deploy/models/7m` (the earlier 6.7M weights, 3.6358) or `deploy/models/tiny` (0.8M, uses less memory). |
+| `ELVARN_CHECKPOINT_DIR` | Model folder: `deploy/models/17m_rag` (17.15M parameters, 512 context, RAG validation loss 2.408, the default). |
 | `ELVARN_PUBLIC` | `1` = public site: per-visitor rate limit, cap on simultaneous replies, `/api/reload` disabled. |
 | `ELVARN_RATE_LIMIT` | Chat requests per visitor per minute (default 20 when public). |
 | `ELVARN_MAX_CONCURRENT` | Replies generated at the same time (default 2 when public). |
@@ -247,7 +248,7 @@ Settings (environment variables, already set in `render.yaml`):
 Notes:
 
 * **Memory.** Render's free plan has 512 MB of RAM, which is tight for PyTorch. If the service restarts with
-  "out of memory", switch `ELVARN_CHECKPOINT_DIR` to `deploy/models/tiny` or use the Starter plan.
+  "out of memory", use a plan with more RAM (the 17M model uses about 361 MB on Render, measured).
 * **Free plan sleeps** after about 15 minutes without visitors and takes about a minute to wake.
 * The site has no login. Anyone with the link can use it, which is why the rate limit exists.
 * ELVARN is a small model. Its replies can be wrong, and the page says so. Do not present it as a source of legal facts.

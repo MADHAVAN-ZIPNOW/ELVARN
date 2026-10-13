@@ -3,7 +3,7 @@
 Usage (project root):
     python backend/eval/run_benchmark.py <model_dir> [<model_dir> ...]
         [--raw-dir backend/data/raw --raw-dir backend/data/raw_v2]   # data to check which questions were seen in training
-Each <model_dir> holds latest.json, the checkpoint and tokenizer.json (e.g. deploy/models/7m_epoch2).
+Each <model_dir> holds latest.json, the checkpoint and tokenizer.json (e.g. deploy/models/17m_rag).
 
 For every question the reply must contain, for each keyword group, at least one of its keywords (whole word/phrase,
 case-insensitive). Score = groups satisfied / groups. 'PASS' = every group satisfied. Questions that appear word for word
