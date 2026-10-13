@@ -1,0 +1,23 @@
+{
+  "checkpoint": "best.pt",
+  "status": "completed",
+  "weights_from_step": 2631,
+  "final_step": 2631,
+  "weights_from_epoch": 3,
+  "best_val_loss": 2.408243836509464,
+  "tokenizer_sha256": "04994e75538c4703756e7fb021ad345f7bf3ee6aa6b6af83839d8fa689c69fe9",
+  "vocab_size": 16384,
+  "config": {
+    "embedding_size": 384,
+    "hidden_size": 1536,
+    "sequence_length": 512,
+    "num_layers": 6,
+    "num_heads": 12,
+    "dropout": 0.1,
+    "tie_weights": true
+  },
+  "init_from": "backend\\training\\checkpoints_bpe\\ext512\\extended.pt",
+  "completed_at": "2026-10-13 08:07:52",
+  "exported_at": "2026-10-13 08:10:23",
+  "weights_only": true
+}
