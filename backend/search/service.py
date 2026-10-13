@@ -45,6 +45,14 @@ def _relevant(query, wanted, result_text):
             return False
     want = {_stem(w) for w in wanted}
     got = {_stem(w) for w in keywords(result_text)}
+    # The distinctive word of the question must appear: a capitalised word ("Collegium", "Paris") or, for a very short
+    # lowercase question, its longest word. "What is the Collegium system?" must not return a page about Linux
+    # just because it also contains the common word "system".
+    anchors = {_stem(w.lower()) for w in re.findall(r"[A-Z][a-z]{3,}", query) if w.lower() in wanted}
+    if not anchors and len(want) <= 2 and wanted:
+        anchors = {_stem(max(sorted(wanted), key=len))}
+    if anchors and not (anchors & got):
+        return False
     need = 1 if len(want) <= 2 else 2                        # one shared word is enough for a very short question; otherwise two
     return len(want & got) >= need
 

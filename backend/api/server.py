@@ -73,6 +73,21 @@ def repetition_settings(req, evidence_in_prompt):
     return settings, ("client" if client else "web_default" if web else "off")
 
 
+# When the answer is written from web notes, random sampling (temperature 0.8, top-k 40-65) makes the small model drift away
+# from the notes and swap in details from memory. In that case the sliders are capped (lower numbers are kept as they are).
+WEB_SAMPLING_CAP = {"temperature": 0.4, "top_k": 20}
+
+
+def sampling_settings(req, evidence_in_prompt):
+    """(temperature, top_k, where they came from). Greedy decoding is never changed; without notes in the prompt nothing changes."""
+    if evidence_in_prompt > 0 and not req.greedy:
+        t = min(req.temperature, WEB_SAMPLING_CAP["temperature"])
+        k = req.top_k if req.top_k == 0 else min(req.top_k, WEB_SAMPLING_CAP["top_k"])
+        k = WEB_SAMPLING_CAP["top_k"] if req.top_k == 0 else k          # top_k 0 means "no limit": cap it too
+        return t, k, ("web_cap" if (t, k) != (req.temperature, req.top_k) else "client")
+    return req.temperature, req.top_k, "client"
+
+
 GENERATION_PATHS = ("/api/chat", "/api/chat/stream", "/api/generate")
 
 
@@ -208,13 +223,15 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             found = search_step(plan, req, request)
             text, hist = model_input(req, found, history)
             rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
+            temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
             result = service.generate(
                 text, mode=req.mode, max_new_tokens=req.max_new_tokens,
-                temperature=req.temperature, top_k=req.top_k,
+                temperature=temp, top_k=topk,
                 greedy=req.greedy, history=hist, **rep,
             )
             result.update(found.fields())
             result["repetition_source"] = rep_source
+            result["sampling_source"] = sampling_source
             return result
         except ModelNotReady as exc:
             raise HTTPException(503, str(exc))
@@ -269,14 +286,16 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                     yield json.dumps({"event": "sources", **found.fields()}) + "\n"
                 text, hist = model_input(req, found, history)
                 rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
+                temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
                 for event in service.generate_stream(
                     text, mode=req.mode, max_new_tokens=req.max_new_tokens,
-                    temperature=req.temperature, top_k=req.top_k,
+                    temperature=temp, top_k=topk,
                     greedy=req.greedy, history=hist, **rep,
                 ):
                     if event["event"] == "done":
                         event.update(found.fields())
                         event["repetition_source"] = rep_source
+                        event["sampling_source"] = sampling_source
                     yield json.dumps(event) + "\n"
             except Exception as exc:  # reported to the UI instead of a broken stream
                 yield json.dumps({"event": "error", "message": str(exc)}) + "\n"

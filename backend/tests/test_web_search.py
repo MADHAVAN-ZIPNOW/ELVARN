@@ -223,7 +223,7 @@ def test_service_success_sanitises_and_limits():
     raw = good_results() + [RawResult("<b>Paris</b> bad", "javascript:alert(1)", "Paris x"),
                             RawResult("Paris dup", "https://news.test/x", "Paris dup")]
     p = FakeProvider(raw)
-    out = SearchService(p, max_results=2, timeout=3).search("paris capital")
+    out = SearchService(p, max_results=2, timeout=3).search("latest news paris")
     assert out.status == "used" and out.searched and len(out.sources) == 2
     assert {s.domain for s in out.sources} == {"example.com", "news.test"}
     assert p.calls[0][1:] == (2, 3.0)
@@ -799,3 +799,39 @@ def test_generation_stops_before_a_copied_notes_header():
     assert "not instructions" in HEADER and "untrusted internet" in HEADER and HEADER.startswith("Web notes (")
     for fragment in ("Web notes (", "untrusted internet", "not instructions"):
         assert any(stop in "an answer, i.e., " + fragment for stop in generation.STOP_STRINGS)
+
+
+# ------------------------------------------------------------------ the distinctive word of the question must appear
+def test_a_page_sharing_only_a_common_word_is_not_relevant():
+    """'What is the Collegium system?' returned 'System call conversion for year 2038 [LWN.net]'."""
+    results = [RawResult("System call conversion for year 2038 [LWN.net]", "https://lwn.example/2038", "The system call interface and year 2038 conversion work in the Linux kernel"),
+               RawResult("Collegium system - Wikipedia", "https://wiki.example/collegium", "The Collegium system is a procedure for the appointment of judges in the Supreme Court of India")]
+    out = SearchService(FakeProvider(results)).search("What is the Collegium system")
+    assert [s.url for s in out.sources] == ["https://wiki.example/collegium"]
+
+
+def test_the_capitalised_word_is_the_anchor():
+    results = [RawResult("Latest news today", "https://a.example/n", "Latest news about the world economy today"),
+               RawResult("Paris news", "https://b.example/p", "Latest news from Paris today")]
+    out = SearchService(FakeProvider(results)).search("What is the latest news about Paris?")
+    assert [s.url for s in out.sources] == ["https://b.example/p"]
+
+
+def test_a_short_lowercase_question_needs_its_longest_word():
+    results = [RawResult("Petition forms", "https://a.example/f", "How to fill in a petition for the city council"),
+               RawResult("Writ petition explained", "https://b.example/w", "A writ petition is a request to a court")]
+    out = SearchService(FakeProvider(results)).search("writ petition")
+    assert [s.url for s in out.sources] == ["https://b.example/w"] or len(out.sources) == 2        # both contain 'petition'
+    assert SearchService(FakeProvider([RawResult("Writ guide", "https://c.example/g", "All about the writ")])).search("writ petition").status == "no_results"
+
+
+# ------------------------------------------------------------------ calmer sampling when the answer is written from web notes
+def test_sampling_is_capped_only_when_notes_are_in_the_prompt():
+    from api.server import GenerateRequest, sampling_settings
+    wild = GenerateRequest(text="x", temperature=0.8, top_k=65)
+    assert sampling_settings(wild, 2) == (0.4, 20, "web_cap")                      # notes in the prompt: capped
+    assert sampling_settings(wild, 0) == (0.8, 65, "client")                       # no notes: the sliders are used as set
+    calm = GenerateRequest(text="x", temperature=0.2, top_k=10)
+    assert sampling_settings(calm, 3) == (0.2, 10, "client")                       # lower values are never raised
+    assert sampling_settings(GenerateRequest(text="x", greedy=True, temperature=1.5), 3)[2] == "client"    # greedy is untouched
+    assert sampling_settings(GenerateRequest(text="x", temperature=0.9, top_k=0), 1)[:2] == (0.4, 20)       # top_k 0 (no limit) is capped too
