@@ -119,6 +119,9 @@ class SearchService:
     def search(self, query, core=None):
         started = time.perf_counter()
         status, sources = self._run(query, core)
+        if status == NO_RESULTS and core and core.strip() and core.strip() != (query or "").strip():
+            # The wording we added ("... under Indian law") sometimes sends the search engines the wrong way: try the plain question once.
+            status, sources = self._run(core, core)
         ms = int((time.perf_counter() - started) * 1000)
         # minimal metadata only: never the query text, results or any key
         log.info("web_search status=%s results=%d ms=%d", status, len(sources), ms)

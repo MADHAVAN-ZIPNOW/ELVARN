@@ -851,3 +851,26 @@ def test_every_search_asks_for_strict_safe_search():
     p = sx_provider(ok_handler([{"title": "paris", "url": "https://s.example", "content": "paris"}], seen))
     p.search("paris", 3, 3.0)
     assert seen and seen[0].url.params["safesearch"] == "2"
+
+
+# ------------------------------------------------------------------ fall back to the plain question when the widened one finds nothing
+class _WordingProvider(FakeProvider):
+    """Finds nothing for the query with added words, but results for the plain question."""
+
+    def search(self, query, count, timeout):
+        self.calls.append((query, count, timeout))
+        return [] if query.endswith("under Indian law") else self.results
+
+
+def test_plain_question_is_tried_when_the_widened_one_finds_nothing():
+    results = [RawResult("Section 420 explained", "https://a.example/420", "Section 420 deals with cheating")]
+    p = _WordingProvider(results)
+    out = SearchService(p, retry_delay=0).search("What is Section 420 under Indian law", core="What is Section 420")
+    assert out.status == "used" and [s.url for s in out.sources] == ["https://a.example/420"]
+    assert p.calls[-1][0] == "What is Section 420"
+
+
+def test_no_second_wording_when_there_is_none():
+    p = FakeProvider([])
+    out = SearchService(p, retry_delay=0).search("paris capital")
+    assert out.status == "no_results" and len(p.calls) == 2         # only the empty-answer retry, no extra wording
