@@ -17,7 +17,9 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
-from .convert import EXT
+from typing import List
+
+from .convert import EXT, MIME, convert
 from .errors import FileError, TooLarge
 from .sniff import ACCEPT_ATTR
 
@@ -26,6 +28,32 @@ ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
 
 class ConvertRequest(BaseModel):
     target: str = Field(min_length=1, max_length=20)
+
+
+class ExportMessage(BaseModel):
+    role: str = Field(max_length=10)
+    text: str = Field(default="", max_length=20000)
+    sources: List[dict] = Field(default_factory=list, max_length=12)
+
+
+class ExportRequest(BaseModel):
+    title: str = Field(default="ELVARN chat", max_length=120)
+    format: str = Field(pattern="^(pdf|docx|txt)$")
+    messages: List[ExportMessage] = Field(min_length=1, max_length=200)
+
+
+def export_markdown(req):
+    """The chat as Markdown, which the existing converters turn into Word / PDF / plain text."""
+    out = [f"# {req.title.strip() or 'ELVARN chat'}", ""]
+    for m in req.messages:
+        text = m.text.strip()
+        if not text:
+            continue
+        out += ["## You" if m.role == "user" else "## ELVARN", "", text, ""]
+        links = [(str(x.get("title") or x.get("domain") or x.get("url"))[:120], str(x.get("url") or "")[:300]) for x in m.sources if x.get("url")]
+        if links:
+            out += ["Sources:", ""] + [f"- {t}: {u}" for t, u in links] + [""]
+    return "\n".join(out)
 
 
 def content_disposition(name, fmt):
@@ -99,6 +127,19 @@ def install_file_routes(app, service, visitor):
         except FileError as exc:
             fail(exc)
         return JSONResponse(body, headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
+
+    @app.post("/api/export")
+    async def export_chat(req: ExportRequest):
+        md = export_markdown(req)
+        if len(md) > 400_000:
+            raise HTTPException(413, "This chat is too long to export in one file.")
+        try:
+            result = await run_in_threadpool(convert, "md", md.encode("utf-8"), req.format, req.title)
+        except FileError as exc:
+            fail(exc)
+        name = (re.sub(r"[^\w .-]+", "_", req.title, flags=re.U).strip(" ._") or "ELVARN chat")[:60] + "." + EXT[req.format]
+        return Response(content=result.data, media_type=MIME[req.format], headers={
+            "Content-Disposition": content_disposition(name, req.format), "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
 
     @app.delete("/api/files/{file_id}")
     def delete(file_id: str):

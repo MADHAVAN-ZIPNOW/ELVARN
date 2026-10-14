@@ -171,6 +171,53 @@ button.menu-btn{display:none}
 .sources .dom{color:var(--ink3);font-weight:500;font-size:12px}
 .sources .snip{color:var(--ink2);font-size:12.5px;margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
 .sources.warn .snote{color:var(--ink2);font-style:italic}
+/* formatted answer text */
+.bubble.rich{white-space:normal}
+.rich p{margin:0 0 .85em}
+.rich p:last-child,.rich ul:last-child,.rich ol:last-child{margin-bottom:0}
+.rich ul,.rich ol{margin:0 0 .85em;padding-left:1.35em}
+.rich li{margin:.28em 0;padding-left:.2em}
+.rich li::marker{color:var(--ink3)}
+.rich h4{font-size:1.02em;margin:1.1em 0 .4em;font-weight:800;color:var(--ink)}
+.rich strong{font-weight:800}
+.rich code{font-family:ui-monospace,Consolas,monospace;font-size:.88em;padding:1px 7px;border-radius:8px;background:var(--bg);box-shadow:var(--inset)}
+.rich a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.rich sup.cite{display:inline-grid;place-items:center;min-width:17px;height:17px;margin:0 2px;border-radius:9px;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink2);font-size:10px;font-weight:800;cursor:pointer;vertical-align:super;line-height:1;padding:0 4px}
+.rich sup.cite:hover{color:var(--ink)}
+/* action row under an answer */
+.tool.on{box-shadow:var(--inset);color:var(--ink)}
+.tool.srcchip{padding:5px 14px 5px 8px;color:var(--ink)}
+.favstack{display:inline-flex}
+.favstack .fav{margin-left:-7px;border:2px solid var(--bg)}
+.favstack .fav:first-child{margin-left:0}
+.fav{width:20px;height:20px;border-radius:50%;background:var(--bg);display:inline-grid;place-items:center;overflow:hidden;flex:none;font-size:10px;font-weight:800;color:var(--ink2);box-shadow:var(--raise-sm)}
+.fav img{width:100%;height:100%;object-fit:cover;display:block}
+/* download menu */
+.dlmenu{position:fixed;z-index:30;min-width:170px;padding:8px;border-radius:18px;background:var(--bg);box-shadow:var(--raise);display:grid;gap:4px}
+.dlmenu button{border:none;background:transparent;color:var(--ink);font:inherit;font-weight:700;font-size:13px;text-align:left;padding:9px 12px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:9px}
+.dlmenu button:hover,.dlmenu button:focus-visible{box-shadow:var(--raise-sm);outline:none}
+.dlmenu button:active{box-shadow:var(--inset)}
+.dlmenu small{color:var(--ink3);font-weight:600;margin-left:auto}
+/* sources drawer (right side) with one creative card per source */
+.srcpanel{position:fixed;z-index:22;top:0;right:0;height:100dvh;width:min(400px,100%);background:var(--bg);color:var(--ink);box-shadow:-10px 0 30px var(--lo);
+  transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);overflow-y:auto;padding:20px 20px 30px;padding-top:max(20px,env(safe-area-inset-top))}
+.srcpanel.show{transform:none}
+.srcpanel h3{font-size:18px;margin:4px 0 4px;display:flex;align-items:center;justify-content:space-between}
+.srcpanel .sub{color:var(--ink3);font-size:12px;margin:0 0 16px;line-height:1.45}
+.srcpanel .x{border:none;background:var(--bg);box-shadow:var(--raise-sm);border-radius:50%;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.srcpanel .x:active{box-shadow:var(--inset)}
+.scard{display:block;text-decoration:none;color:var(--ink);padding:14px 16px;margin:0 0 16px;border-radius:20px;background:var(--bg);box-shadow:var(--raise);transition:transform .15s,box-shadow .15s;position:relative}
+.scard:hover,.scard:focus-visible{transform:translateY(-3px);outline:none}
+.scard:active{box-shadow:var(--inset);transform:none}
+.scard.flash{animation:pop .4s ease-out}
+.scard .top{display:flex;align-items:center;gap:9px;margin-bottom:9px;color:var(--ink3);font-size:12px;font-weight:600}
+.scard .top .dom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scard .num{font-size:11px;font-weight:800;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;background:var(--bg);box-shadow:var(--inset);color:var(--ink2)}
+.scard .ttl{font-size:15px;font-weight:800;line-height:1.35;margin-bottom:6px;overflow-wrap:anywhere}
+.scard .snip{font-size:12.5px;color:var(--ink2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.scard .go{margin-top:10px;font-size:12px;font-weight:800;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.scard .go svg.i{width:14px;height:14px}
+
 .origin{margin:10px 0 0;max-width:640px;font-size:12.5px;line-height:1.4;padding:7px 12px;border-radius:12px;border:1px solid var(--ink3);color:var(--ink2)}
 .origin b{color:var(--ink)}
 .origin.kb{border-color:var(--ink)}
@@ -548,13 +595,17 @@ select option{color:#1f2a44}
 .stime b{display:block;font-weight:700;color:var(--ink2)}
 .sdel{border:none;background:transparent;cursor:pointer;width:34px;height:34px;border-radius:12px;display:grid;place-items:center}
 .sdel:hover{box-shadow:var(--raise-sm)}
+.sdel.pinned{box-shadow:var(--inset)}
+.sdel.pinned svg.i{fill:currentColor}
+.sacts{display:flex;gap:2px;align-items:center}
+.stitle-edit{width:100%;font:inherit;font-weight:800;font-size:15px;color:var(--ink);background:var(--bg);border:none;border-radius:12px;padding:6px 10px;box-shadow:var(--inset);outline:2px solid #2f7dff}
 .sdel svg.i{width:18px;height:18px}
 @media (max-width:600px){
   .srow{grid-template-columns:1fr auto;gap:8px 10px}
   .srow .stag{grid-column:1;justify-self:start}
   .srow .smid{grid-column:1 / -1;order:3}
   .srow .stime{grid-column:2;grid-row:1}
-  .srow .sdel{grid-column:2;grid-row:3;justify-self:end}
+  .srow .sacts{grid-column:2;grid-row:3;justify-self:end}
   .sess-tools{width:100%;justify-content:space-between}
   .sessearch{width:100%}
 }
@@ -678,6 +729,7 @@ select option{color:#1f2a44}
 </div>
 
 <div class="scrim" id="scrim"></div>
+<aside class="srcpanel" id="srcPanel" aria-label="Sources" aria-hidden="true"></aside>
 <aside class="panel" id="panel" aria-label="Model lab and settings">
   <h3>Model lab <button class="icon-btn" id="closeLab" aria-label="Close"><span data-i="x"></span></button></h3>
 
@@ -750,9 +802,14 @@ const P = {
   bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z"/>',
   sessions:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/>',
   rocket:'<path d="M12 2.4c3.1 2 4.6 5.6 4.6 9.6l-1.9 3.6H9.3L7.4 12c0-4 1.5-7.6 4.6-9.6z"/><circle cx="12" cy="9.2" r="1.7"/><path d="M7.5 12.2L4.4 14.9l1 3.2 3.2-1.6M16.5 12.2l3.1 2.7-1 3.2-3.2-1.6"/><path class="flame" d="M10.4 18.6c.4 1.7.9 2.9 1.6 3.9.7-1 1.2-2.2 1.6-3.9"/>',
+  pin:'<path d="M9 4h6l-1 5 3 3v1.5H7V12l3-3zM12 13.5V20"/>',
+  thumbup:'<path d="M7 11v8H4.5a1 1 0 01-1-1v-6a1 1 0 011-1zM7 11l3.5-6.5a1.8 1.8 0 013.2 1.4L13 9.5h5a2 2 0 012 2.4l-1.2 5.8a2.5 2.5 0 01-2.4 2H7"/>',
+  thumbdown:'<path d="M7 13V5H4.5a1 1 0 00-1 1v6a1 1 0 001 1zM7 13l3.5 6.5a1.8 1.8 0 003.2-1.4L13 14.5h5a2 2 0 002-2.4l-1.2-5.8a2.5 2.5 0 00-2.4-2H7"/>',
+  share:'<circle cx="6.5" cy="12" r="2.3"/><circle cx="17.5" cy="6" r="2.3"/><circle cx="17.5" cy="18" r="2.3"/><path d="M8.5 10.9l7-3.8M8.5 13.1l7 3.8"/>',
+  link:'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>',
   hand:'<path d="M8 12V6.5a1.5 1.5 0 013 0V11M11 10V4.5a1.5 1.5 0 013 0V11M14 10V6a1.5 1.5 0 013 0v7a6 6 0 01-6 6h-.5a5 5 0 01-4.2-2.3L4.5 13.5a1.5 1.5 0 012.5-1.7L8 13"/>',
 };
-const COLOR={upload:"logo",plusb:"blue",file:"blue",download:"blue",rocket:"blue",menu:"blue",plus:"white",x:"pink",search:"blue",trash:"pink",sliders:"orange",theme:"blue",mic:"logo",clip:"blue",send:"cyan",speaker:"blue",stop:"orange",copy:"blue",info:"blue",check:"white"};
+const COLOR={upload:"logo",plusb:"blue",file:"blue",download:"blue",rocket:"blue",menu:"blue",plus:"white",x:"pink",search:"blue",trash:"pink",pen:"blue",pin:"blue",sliders:"orange",theme:"blue",mic:"logo",clip:"blue",send:"cyan",speaker:"blue",stop:"orange",copy:"blue",thumbup:"blue",thumbdown:"blue",share:"blue",link:"blue",info:"blue",check:"white"};
 const FILLED=new Set(["send","stop"]);
 function icon(name){ const s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("viewBox","0 0 24 24"); s.setAttribute("class","i g-"+(COLOR[name]||"white")+(FILLED.has(name)?" fill":"")); s.setAttribute("aria-hidden","true"); s.innerHTML=P[name]||""; return s; }
 function hydrateIcons(root){ (root||document).querySelectorAll("[data-i]").forEach(n=>{ if(!n.firstChild) n.appendChild(icon(n.dataset.i)); n.style.display="inline-grid"; }); }
@@ -884,7 +941,7 @@ function banner(msg, kind){ const b=$("banner"); b.textContent=msg||""; b.classN
 function scrollDown(){ const c=$("chat"); c.scrollTop=c.scrollHeight; }
 function setTheme(t){ state.s.theme=t; document.documentElement.dataset.theme=t==="dusk"?"dusk":""; document.querySelector('meta[name=theme-color]').content=t==="dusk"?"#43558c":"#e6eaf3"; }
 function openSide(){ $("side").classList.add("show"); $("scrim").classList.add("show"); }
-function closeAll(){ $("side").classList.remove("show"); $("panel").classList.remove("show"); $("scrim").classList.remove("show"); }
+function closeAll(){ $("srcPanel").classList.remove("show"); $("side").classList.remove("show"); $("panel").classList.remove("show"); $("scrim").classList.remove("show"); }
 
 /* ---------- Sessions page ---------- */
 function ago(ts){
@@ -912,7 +969,7 @@ function renderHistory(){
     if(f.month&&d.getMonth()+1!==+f.month) return false;
     if(f.date&&`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`!==f.date) return false;
     return !q||c.title.toLowerCase().includes(q)||c.messages.some(m=>m.text.toLowerCase().includes(q));
-  }).sort((a,b)=>state.sort==="old"?when(a)-when(b):when(b)-when(a));
+  }).sort((a,b)=>(!!b.pinned-!!a.pinned)||(state.sort==="old"?when(a)-when(b):when(b)-when(a)));          // pinned sessions stay on top
   const bits=[]; if(f.year) bits.push(f.year); if(f.month) bits.push(MONTH_FULL[+f.month-1]); if(f.date) bits.push(f.date); if(q) bits.push(`"${$("search").value.trim()}"`);
   $("sessSub").textContent=`${list.length} session${list.length===1?"":"s"}`+(bits.length?` · ${bits.join(" · ")}`:"");
   const box=$("sessList"); box.textContent="";
@@ -923,18 +980,36 @@ function renderHistory(){
     row.appendChild(el("span","stag k-"+mode.col,mode.label));
     const mid=el("div","smid"); mid.appendChild(el("div","stitle",c.title));
     const last=[...c.messages].reverse().find(m=>m.role==="bot"&&!m.error);
-    if(last) mid.appendChild(el("div","ssnip",last.text.replace(/\s+/g," ").slice(0,140)));
+    if(last) mid.appendChild(el("div","ssnip",last.text.replace(/[*`#]+/g,"").replace(/(^|\n)\s*([-•]|\d{1,2}[.)])\s+/g,"$1").replace(/\s+/g," ").trim().slice(0,140)));
     row.appendChild(mid);
     const d=new Date(when(c)), t=el("span","stime"); t.title=d.toLocaleString();
     t.append(el("b",null,`${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`), document.createTextNode(ago(when(c))));
     row.appendChild(t);
+    const acts=el("span","sacts");
+    const pin=btnWith("sdel","pin"); pin.title=c.pinned?"Unpin session":"Pin session"; pin.setAttribute("aria-label",pin.title); pin.setAttribute("aria-pressed",!!c.pinned);
+    if(c.pinned){ pin.classList.add("pinned"); row.classList.add("pinnedrow"); }
+    pin.onclick=e=>{ e.stopPropagation(); c.pinned=!c.pinned; save(); renderHistory(); };
+    const ren=btnWith("sdel","pen"); ren.title="Rename session"; ren.setAttribute("aria-label","Rename session");
+    ren.onclick=e=>{ e.stopPropagation(); renameInline(c, mid.firstChild); };
     const del=btnWith("sdel","trash"); del.title="Delete session"; del.setAttribute("aria-label","Delete session");
     del.onclick=e=>{ e.stopPropagation(); deleteConv(c.id); };
-    row.appendChild(del);
+    const dlb=dlButton(()=>c.title, ()=>c.messages); dlb.classList.add("sdel"); dlb.classList.remove("tool"); dlb.title="Download this session as PDF, Word or text";
+    acts.append(pin,ren,dlb,del); row.appendChild(acts);
     const open=()=>{ switchTo(c.id); closeAll(); };
     row.onclick=open; row.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } };
     box.appendChild(row);
   });
+}
+/* rename a session in place: Enter or leaving the box saves, Esc cancels, an empty name keeps the old one */
+function renameInline(c, titleEl){
+  const inp=el("input","stitle-edit"); inp.type="text"; inp.value=c.title; inp.maxLength=80; inp.setAttribute("aria-label","Session name");
+  let done=false;
+  const finish=save_=>{ if(done) return; done=true; const v=inp.value.replace(/\s+/g," ").trim();
+    if(save_ && v && v!==c.title){ c.title=v; save(); updateHeading(); } renderHistory(); };
+  inp.onclick=e=>e.stopPropagation();
+  inp.onkeydown=e=>{ e.stopPropagation(); if(e.key==="Enter"){ e.preventDefault(); finish(true); } else if(e.key==="Escape"){ e.preventDefault(); finish(false); } };
+  inp.onblur=()=>finish(true);
+  titleEl.replaceWith(inp); inp.focus(); inp.select();
 }
 function updateHeading(){
   const sv=state.view==="sessions", c=cur();
@@ -1047,13 +1122,132 @@ function buildBot(){
   wrap.append(procHolder,bubble,fileHolder,srcHolder,toolsHolder); row.appendChild(wrap); place(row);
   return {row,procHolder,bubble,fileHolder,srcHolder,toolsHolder};
 }
+/* ---------- readable answer text: paragraphs, lists, bold, code, links, [n] citation marks (built with DOM nodes, never innerHTML) ---------- */
+function inlineInto(parent, text, onCite){
+  const re=/(\*\*[^*\n]+\*\*|`[^`\n]+`|https?:\/\/[^\s<>)\]]+|\[\d{1,2}\])/g; let last=0, m;
+  while((m=re.exec(text))){
+    if(m.index>last) parent.appendChild(document.createTextNode(text.slice(last,m.index)));
+    const t=m[0];
+    if(t.startsWith("**")) parent.appendChild(el("strong",null,t.slice(2,-2)));
+    else if(t[0]==="`") parent.appendChild(el("code",null,t.slice(1,-1)));
+    else if(t[0]==="["){ const sp=el("sup","cite",t.slice(1,-1)); sp.setAttribute("role","button"); sp.tabIndex=0; sp.title="Show source "+t.slice(1,-1);
+      if(onCite){ sp.onclick=()=>onCite(+t.slice(1,-1)); sp.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onCite(+t.slice(1,-1)); } }; } parent.appendChild(sp); }
+    else{ const tail=t.match(/[.,;:!?]+$/); const url=tail?t.slice(0,-tail[0].length):t; const href=safeHttpUrl(url);
+      if(href){ const a=el("a",null,url); a.href=href; a.target="_blank"; a.rel="noopener noreferrer"; parent.appendChild(a); if(tail) parent.appendChild(document.createTextNode(tail[0])); }
+      else parent.appendChild(document.createTextNode(t)); }
+    last=m.index+t.length;
+  }
+  if(last<text.length) parent.appendChild(document.createTextNode(text.slice(last)));
+}
+function richInto(node, text, onCite){
+  node.textContent=""; node.classList.add("rich");
+  const lines=String(text||"").replace(/\r/g,"").split("\n"); let para=[], list=null;
+  const flushPara=()=>{ if(para.length){ const p=el("p"); inlineInto(p,para.join(" "),onCite); node.appendChild(p); para=[]; } };
+  const flushList=()=>{ list=null; };
+  lines.forEach(raw=>{
+    const line=raw.trim(); let mm;
+    if(!line){ flushPara(); flushList(); return; }
+    if((mm=line.match(/^#{1,4}\s+(.*)$/))){ flushPara(); flushList(); const h=el("h4"); inlineInto(h,mm[1],onCite); node.appendChild(h); return; }
+    if((mm=line.match(/^[-*•]\s+(.*)$/))){ flushPara(); if(!list||list.tagName!=="UL"){ list=el("ul"); node.appendChild(list); } const li=el("li"); inlineInto(li,mm[1],onCite); list.appendChild(li); return; }
+    if((mm=line.match(/^\d{1,2}[.)]\s+(.*)$/))){ flushPara(); if(!list||list.tagName!=="OL"){ list=el("ol"); node.appendChild(list); } const li=el("li"); inlineInto(li,mm[1],onCite); list.appendChild(li); return; }
+    flushList(); para.push(line);
+  });
+  flushPara();
+  if(!node.firstChild) node.textContent=String(text||"");
+}
+/* ---------- source cards ---------- */
+function sourceList(info){ return ((info&&info.searched&&info.sources)||[]).map(s=>({s,href:safeHttpUrl(s.url)})).filter(x=>x.href); }
+function favicon(x){
+  const f=el("span","fav"), dom=String(x.s.domain||new URL(x.href).hostname).replace(/^www\./,"");
+  const letter=()=>{ f.textContent=(dom[0]||"?").toUpperCase(); };
+  try{ const img=new Image(); img.alt=""; img.referrerPolicy="no-referrer"; img.loading="lazy"; img.onerror=()=>{ img.remove(); letter(); }; img.src=new URL(x.href).origin+"/favicon.ico"; f.appendChild(img); }catch(e){ letter(); }
+  return f;
+}
+function openSources(info, focus){
+  const list=sourceList(info), p=$("srcPanel"); if(!list.length) return;
+  p.textContent="";
+  const h=el("h3"); h.appendChild(document.createTextNode(list.length+(list.length===1?" source":" sources")));
+  const x=el("button","x"); x.type="button"; x.setAttribute("aria-label","Close sources"); x.appendChild(icon("x")); x.onclick=()=>closeSources(); h.appendChild(x); p.appendChild(h);
+  p.appendChild(el("div","sub",info.kb?"Stored documents used for this answer. Open one to read the original. The small model's wording can still be wrong.":"Pages found by the web search. Open one to read it. The small model's wording can still be wrong."));
+  list.forEach((it,i)=>{
+    const a=el("a","scard"); a.href=it.href; a.target="_blank"; a.rel="noopener noreferrer"; a.id="scard"+(i+1);
+    a.setAttribute("aria-label","Source "+(i+1)+": "+(it.s.title||it.s.domain)+", opens in a new tab");
+    const top=el("div","top"); top.appendChild(favicon(it)); top.appendChild(el("span","dom",String(it.s.domain||"").replace(/^www\./,"").slice(0,60))); top.appendChild(el("span","num",String(i+1))); a.appendChild(top);
+    a.appendChild(el("div","ttl",String(it.s.title||it.s.domain||it.href).slice(0,160)));
+    if(it.s.snippet) a.appendChild(el("div","snip",String(it.s.snippet).slice(0,300)));
+    const go=el("div","go"); go.appendChild(icon("link")); go.appendChild(document.createTextNode("Open source")); a.appendChild(go);
+    p.appendChild(a);
+  });
+  p.classList.add("show"); p.setAttribute("aria-hidden","false");
+  if(focus){ const c=$("scard"+focus); if(c){ c.scrollIntoView({block:"center"}); c.classList.add("flash"); setTimeout(()=>c.classList.remove("flash"),500); } }
+}
+function closeSources(){ const p=$("srcPanel"); p.classList.remove("show"); p.setAttribute("aria-hidden","true"); }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSources(); });
+document.addEventListener("click",e=>{ const p=$("srcPanel"); if(p.classList.contains("show") && !p.contains(e.target) && !e.target.closest(".srcchip") && !e.target.closest("sup.cite")) closeSources(); });
+/* ---------- download a chat or one answer as PDF / Word / TXT (built by the server) ---------- */
+function exportPayload(msgs){
+  return msgs.filter(m=>m.text).map(m=>({role:m.role==="user"?"user":"bot",text:String(m.text).slice(0,20000),
+    sources:sourceList(m.meta&&m.meta.search).slice(0,12).map(x=>({title:String(x.s.title||x.s.domain||"").slice(0,120),url:x.href,domain:x.s.domain||""}))}));
+}
+async function downloadAs(title, msgs, fmt){
+  try{
+    const r=await fetch("/api/export",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:String(title||"ELVARN chat").slice(0,120),format:fmt,messages:exportPayload(msgs).slice(-200)})});
+    if(!r.ok){ let why=""; try{ why=(await r.json()).detail||""; }catch(e){} banner("Could not make the file. "+(typeof why==="string"?why:""),"info"); return; }
+    const blob=await r.blob(), a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    const cd=r.headers.get("content-disposition")||"", m=cd.match(/filename\*=UTF-8''([^;]+)/); a.download=m?decodeURIComponent(m[1]):("ELVARN."+fmt);
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }catch(e){ banner("Could not make the file. Check your connection and try again.","info"); }
+}
+function closeDlMenu(){ document.querySelectorAll(".dlmenu").forEach(n=>n.remove()); }
+document.addEventListener("click",e=>{ if(!e.target.closest(".dlmenu") && !e.target.closest("[data-dl]")) closeDlMenu(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDlMenu(); });
+function openDlMenu(anchor, title, getMsgs){
+  closeDlMenu();
+  const menu=el("div","dlmenu"); menu.setAttribute("role","menu");
+  [["pdf","PDF",".pdf"],["docx","Word",".docx"],["txt","Text",".txt"]].forEach(([fmt,label,ext])=>{
+    const b=el("button"); b.type="button"; b.setAttribute("role","menuitem"); b.append(icon("download"),document.createTextNode(label),el("small",null,ext));
+    b.onclick=e=>{ e.stopPropagation(); closeDlMenu(); downloadAs(title,getMsgs(),fmt); };
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r=anchor.getBoundingClientRect(), mw=menu.offsetWidth, mh=menu.offsetHeight;
+  menu.style.left=Math.max(8,Math.min(r.left,innerWidth-mw-8))+"px";
+  menu.style.top=((r.bottom+mh+12>innerHeight)?Math.max(8,r.top-mh-8):r.bottom+8)+"px";
+  menu.querySelector("button").focus();
+}
+function dlButton(title, getMsgs, label){
+  const b=btnWith("tool","download",label||""); b.type="button"; b.dataset.dl="1"; b.setAttribute("aria-label",label?"Download "+label:"Download"); b.title="Download as PDF, Word or text";
+  b.setAttribute("aria-haspopup","menu"); b.onclick=e=>{ e.stopPropagation(); openDlMenu(b,typeof title==="function"?title():title,getMsgs); };
+  return b;
+}
 function addTools(b, text, meta){
   b.toolsHolder.textContent="";
   const tools=el("div","tools");
   const sp=btnWith("tool","speaker","Listen"); sp.onclick=()=>speak(text,b.bubble,sp);
   const cp=copyBtn(text);
   const inf=btnWith("tool","info","Details"); inf.onclick=()=>{ showLast(meta||{}); openLab(); };
-  tools.append(sp,cp,inf);
+  const info=meta&&meta.search, list=sourceList(info);
+  if(list.length){
+    const chip=el("button","tool srcchip"); chip.type="button"; chip.setAttribute("aria-label","Show "+list.length+" sources");
+    const st=el("span","favstack"); list.slice(0,3).forEach(x=>st.appendChild(favicon(x))); chip.append(st,document.createTextNode(list.length+(list.length===1?" source":" sources")));
+    chip.onclick=()=>openSources(info); tools.appendChild(chip);
+  }
+  const fb=(meta&&meta.feedback)||"";
+  const up=btnWith("tool","thumbup",""), dn=btnWith("tool","thumbdown","");
+  up.setAttribute("aria-label","Good answer"); dn.setAttribute("aria-label","Bad answer"); up.title="Good answer"; dn.title="Bad answer";
+  const mark=v=>{ up.classList.toggle("on",v==="up"); dn.classList.toggle("on",v==="down"); up.setAttribute("aria-pressed",v==="up"); dn.setAttribute("aria-pressed",v==="down"); };
+  mark(fb);
+  const vote=v=>{ const now=(meta&&meta.feedback)===v?"":v; if(meta) meta.feedback=now; mark(now); save(); };
+  up.onclick=()=>vote("up"); dn.onclick=()=>vote("down");
+  const sh=btnWith("tool","share","Share"); sh.setAttribute("aria-label","Share this answer");
+  sh.onclick=async()=>{
+    try{ if(navigator.share){ await navigator.share({text}); return; } }catch(e){ if(e&&e.name==="AbortError") return; }
+    const ok=await copyPlain(text); sh.textContent=""; sh.append(icon(ok?"check":"share"),document.createTextNode(ok?"Copied":"Share"));
+    setTimeout(()=>{ sh.textContent=""; sh.append(icon("share"),document.createTextNode("Share")); },1400);
+  };
+  const dl=dlButton(()=>(cur()&&cur().title)||"ELVARN chat", ()=>{ const ms=(cur()&&cur().messages)||[]; let i=ms.length-1; while(i>=0 && !(ms[i].role==="bot" && ms[i].text===text)) i--;
+    const q=i>0&&ms[i-1].role==="user"?ms[i-1]:null; return q?[q,ms[i]]:[{role:"bot",text,meta}]; }, "Download");
+  tools.append(...(list.length?[tools.firstChild]:[]),cp,up,dn,sh,dl,sp,inf);
   if(meta && meta.generated_tokens!=null) tools.append(el("span","meta",`${meta.generated_tokens} tokens · ${meta.seconds}s`));
   b.toolsHolder.appendChild(tools);
 }
@@ -1077,24 +1271,9 @@ function renderSources(holder, info){
     });
     fb.appendChild(ul); holder.appendChild(fb);
   }
-  const box=el("section","sources"); box.setAttribute("aria-label",info.kb?"Sources":"Web sources");
-  const list=(info.sources||[]).map(s=>({s,href:safeHttpUrl(s.url)})).filter(x=>x.href);
-  if(info.searched && list.length){
-    box.appendChild(el("div","snote",info.kb?"Sources used for this answer (stored documents). The small model's text above can still be wrong, so check them.":"Sources from a web search. The small model's text above can still be wrong, so check the sources."));
-    const ol=el("ol");
-    list.forEach((x,i)=>{
-      const li=el("li"), a=el("a",null,String(x.s.title||x.s.domain||x.href).slice(0,160));
-      a.href=x.href; a.target="_blank"; a.rel="noopener noreferrer";
-      a.setAttribute("aria-label","Source "+(i+1)+": "+(x.s.title||x.s.domain)+" ("+x.s.domain+"), opens in a new tab");
-      a.appendChild(el("span","dom"," · "+String(x.s.domain||"").slice(0,80)));
-      li.appendChild(a); if(x.s.snippet) li.appendChild(el("div","snip",String(x.s.snippet).slice(0,260)));
-      ol.appendChild(li);
-    });
-    box.appendChild(ol);
-  }else{
-    box.classList.add("warn");
-    box.appendChild(el("div","snote",info.message||"This answer was not checked against the web."));
-  }
+  if(info.searched && sourceList(info).length) return;          // the sources are in the "N sources" button under the answer (opens the card drawer)
+  const box=el("section","sources warn"); box.setAttribute("aria-label","Web sources");
+  box.appendChild(el("div","snote",info.message||"This answer was not checked against the web."));
   holder.appendChild(box);
 }
 /* where did this answer come from? (text only, always shown under the reply) */
@@ -1119,7 +1298,7 @@ function drawMessage(m){
   const b=buildBot();
   if(m.error){ b.row.classList.add("err"); b.bubble.textContent=m.text; return b; }
   if(m.meta && m.meta.file_action){ b.bubble.textContent=m.text; renderDownloads(b.fileHolder,m.meta.files); return b; }
-  if(m.text) b.bubble.textContent=m.text; else b.bubble.appendChild(el("span","empty-out","(the model produced no text)"));
+  if(m.text) richInto(b.bubble,m.text,n=>openSources(m.meta&&m.meta.search,n)); else b.bubble.appendChild(el("span","empty-out","(the model produced no text)"));
   if(m.meta && m.meta.proc) renderProc(b.procHolder, m.meta.proc, false);
   if(m.meta) renderAnswerInfo(b.srcHolder, m.meta);
   addTools(b, m.text, m.meta);
@@ -1299,7 +1478,7 @@ async function send(textArg){
       proc.done={generated_tokens:proc.tokens,seconds:+secs,tokens_per_second:proc.last?proc.last.tokens_per_second:0,stop_reason:"stopped",mean_token_probability:null};
       meta={...proc.done,prompt_tokens:proc.start?proc.start.prompt_tokens:null,raw_text:replyText};
     }
-    b.bubble.textContent=""; if(replyText) b.bubble.textContent=replyText; else b.bubble.appendChild(el("span","empty-out","(the model produced no text)"));
+    b.bubble.textContent=""; if(replyText) richInto(b.bubble,replyText,n=>openSources(proc.search,n)); else b.bubble.appendChild(el("span","empty-out","(the model produced no text)"));
     renderProc(b.procHolder,proc,false);
     meta.proc={start:proc.start,done:compact(proc.done),search:proc.search||null}; meta.search=proc.search||null;
     renderAnswerInfo(b.srcHolder, meta);
