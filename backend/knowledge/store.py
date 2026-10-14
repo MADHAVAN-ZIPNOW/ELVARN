@@ -5,6 +5,7 @@ If Chroma fails after Neo4j succeeded, the next attempt sees the document as a d
 whatever is missing in Chroma, so the two stores converge instead of drifting apart. `consistency()` reports any gap.
 """
 import hashlib
+import os
 
 from backend.knowledge.kb import passage_id
 
@@ -13,8 +14,28 @@ def digest_of(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def graph_wants_reference():
+    """GRAPH_REFERENCE_DOCS=0 keeps Wikipedia / project-note passages out of Neo4j (they live in Chroma only). Used for a hosted graph with a
+    node limit; the default (unset) stores everything in both, as before."""
+    return os.environ.get("GRAPH_REFERENCE_DOCS", "1").strip().lower() not in ("0", "false", "no", "off")
+
+
 def store_document(kb, rag, *, title, doc_type, text, passages, url=None, publisher=None, published_date=None, licence=None, cache=None):
-    """Returns 'loaded' (new in Neo4j) or 'duplicate' (already in Neo4j). `rag` and `cache` may be None."""
+    """Returns 'loaded' (new) or 'duplicate' (already stored). `rag` and `cache` may be None.
+    A reference document goes to the vector store only when GRAPH_REFERENCE_DOCS is off."""
+    if doc_type == "reference" and not graph_wants_reference():
+        if rag is None or not passages:
+            return "duplicate"
+        h = digest_of(text)
+        ids = [passage_id(h, i) for i in range(len(passages))]
+        todo = set(rag.missing(ids))
+        if todo:
+            rag.add([{"id": ids[i], "text": p["text"], "meta": {"title": title, "url": url, "doc_type": doc_type, "publisher": publisher,
+                                                                "published_date": published_date, "licence": licence, "locator": p.get("locator"), "position": i}}
+                     for i, p in enumerate(passages) if ids[i] in todo])
+            if cache is not None:
+                cache.bump_version()
+        return "loaded" if todo else "duplicate"
     sid, created = kb.add_document(title, doc_type, text, passages, url=url, publisher=publisher,
                                    published_date=published_date, licence=licence)
     if rag is not None and passages:

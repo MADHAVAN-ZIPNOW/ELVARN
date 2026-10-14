@@ -64,6 +64,21 @@ Cold start: on a free plan the service sleeps and needs about 30-60 seconds to w
 to wake it early. While it is asleep a corruption question gets "The knowledge base is unavailable right now, so I can't answer
 this reliably."; every other question keeps working (web search, plain model).
 
+## Hosting for $0: what to create, in order
+Nothing below needs a paid plan. Free-tier facts were checked on 2026-10-14 from the providers' pages and public sources; **confirm
+each on the provider's own page when you sign up** (free tiers change). Put every value in your local `.env`, never in a chat.
+
+| # | Create | Free-tier facts | You get -> put in `.env` |
+|---|---|---|---|
+| 1 | **Neo4j AuraDB Free** (console.neo4j.io) | No credit card. Neo4j's pages print no node cap; other sources say 50,000 or 200,000 nodes. **The lean graph is 7,024 nodes, so it fits either.** Pauses after about 3 days without activity (resume with a click; the nightly pipeline keeps it active). No backups. One database. | `TARGET_NEO4J_URI=neo4j+s://...`, `TARGET_NEO4J_USER`, `TARGET_NEO4J_PASSWORD` |
+| 2 | **Chroma Cloud** (trychroma.com) | "Starter" is $0/month with $5 of free credit, then pay-as-you-go (about $0.33 per GiB-month for storage, $2.50 per GiB written). Our 470 MB is roughly $0.15-0.20 a month plus about $1 once for the first load, so the credit should last many months. Not free forever, and a card may be asked for. | `TARGET_CHROMA_API_KEY`, `TARGET_CHROMA_TENANT`, `TARGET_CHROMA_DATABASE` |
+| 3 | **Render Key Value** (free) | 25 MB, and its data is lost on restart: fine for a cache and short-term memory (remembered turns reset when it restarts). One free instance per workspace. | `REDIS_URL` = its Internal URL, set on the knowledge service |
+| 4 | **Render Web Service** (free) running `knowledge_service/` | 512 MB RAM (measured 198 MB), sleeps after ~15 min idle. Settings table above. | `KNOWLEDGE_URL` + `KNOWLEDGE_TOKEN` on the ELVARN site |
+
+Why the graph is lean: about 44,000 of the 64,000 local graph nodes are Wikipedia / project-note passages. They are searched through Chroma, so the
+hosted graph does not need them: it keeps the official documents, proposed facts, entities and approved facts (7,024 nodes now).
+Set `GRAPH_REFERENCE_DOCS=0` in the pipeline's environment so new Wikipedia passages go to Chroma only.
+
 ## Moving your data to the hosted stores (one time, from this computer)
 The local stores keep running; this copies them. Put the hosted details in `.env` with a `TARGET_` prefix:
 ```
@@ -72,7 +87,7 @@ TARGET_CHROMA_API_KEY=...  TARGET_CHROMA_TENANT=...  TARGET_CHROMA_DATABASE=...
 ```
 ```
 python -m backend.knowledge.migrate_stores --neo4j --chroma --dry-run     # only report counts
-python -m backend.knowledge.migrate_stores --neo4j                        # graph: refuses a target that is not empty
+python -m backend.knowledge.migrate_stores --neo4j --official-only        # graph without Wikipedia/notes passages (7,024 nodes); refuses a target that is not empty
 python -m backend.knowledge.migrate_stores --chroma                       # copies the passages WITH their embeddings, skips ids already there
 python -m backend.knowledge.migrate_stores --verify                       # compare counts
 ```

@@ -140,3 +140,48 @@ def test_target_prefix_selects_a_second_store(spy, monkeypatch):
     monkeypatch.setenv("TARGET_CHROMA_DATABASE", "d")
     vectorstore.make_client("TARGET_")
     assert spy.calls[-1] == ("cloud", {"tenant": "t", "database": "d", "api_key": "ck-9"}) and vectorstore.configured("TARGET_")
+
+
+# ---- a lean hosted graph (free-tier node limit): Wikipedia/notes passages live only in Chroma ------------------
+def titles(kb):
+    return sorted(r["t"] for r in kb._read("MATCH (s:Source) RETURN s.title AS t"))
+
+
+def test_official_only_export_drops_uncited_reference_documents(kb, rag_store, tmp_path):
+    load(kb, rag_store)
+    full = kb.export_jsonl(tmp_path / "full.jsonl")
+    lean = kb.export_jsonl(tmp_path / "lean.jsonl", skip_reference=True)
+    assert lean["nodes"] < full["nodes"] and lean["relationships"] < full["relationships"]
+    kb._run("MATCH (n) DETACH DELETE n")
+    assert kb.import_jsonl(tmp_path / "lean.jsonl") == lean
+    assert titles(kb) == ["DVAC press release 12", "Test v. State (Madras High Court)"]                 # the Wikipedia article is gone
+    assert kb._read("MATCH (p:Passage) RETURN count(p) AS n")[0]["n"] == 2 and kb.audit() == []
+    person = kb.find_entities("Test Person")[0]["id"]
+    assert kb.cases_of_person(person)                                                                 # facts and entities came across intact
+
+
+def test_a_reference_document_that_a_fact_cites_is_kept(kb, rag_store, tmp_path):
+    load(kb, rag_store)
+    pid = kb._read("MATCH (p:Passage)-[:FROM]->(s:Source {doc_type:'reference'}) RETURN p.id AS id")[0]["id"]
+    kb.add_claim(kb.find_entities("Test Person")[0]["id"], "lives_near", "reported", pid, object_value="the Kaveri")
+    kb.export_jsonl(tmp_path / "lean.jsonl", skip_reference=True)
+    kb._run("MATCH (n) DETACH DELETE n")
+    kb.import_jsonl(tmp_path / "lean.jsonl")
+    assert "Rivers of Tamil Nadu (Wikipedia)" in titles(kb) and kb.audit() == []                         # the citation still resolves
+
+
+def test_reference_documents_can_be_kept_out_of_the_graph(kb, rag_store, monkeypatch):
+    from knowledge.store import store_document
+    monkeypatch.setenv("GRAPH_REFERENCE_DOCS", "0")
+    text = "The Kaveri is the longest river flowing through Tamil Nadu and supports farming in the delta districts."
+    assert store_document(kb, rag_store, title="Kaveri (Wikipedia)", doc_type="reference", text=text, passages=[{"locator": "chunk 1", "text": text}]) == "loaded"
+    assert kb._read("MATCH (n) RETURN count(n) AS n")[0]["n"] == 0                                       # nothing in the graph...
+    assert rag_store.query("longest river Tamil Nadu farming", k=1)[0]["meta"]["title"] == "Kaveri (Wikipedia)"   # ...but searchable
+    assert store_document(kb, rag_store, title="Kaveri (Wikipedia)", doc_type="reference", text=text, passages=[{"locator": "chunk 1", "text": text}]) == "duplicate"
+    official = "DVAC press release dated 2026-10-12: A village officer was trapped and arrested for demanding a bribe in Nilgiris District."
+    assert store_document(kb, rag_store, title="DVAC 1", doc_type="press_release", text=official, passages=[{"locator": "listing", "text": official}]) == "loaded"
+    assert kb._read("MATCH (s:Source) RETURN count(s) AS n")[0]["n"] == 1                                # official documents still go to both stores
+    monkeypatch.delenv("GRAPH_REFERENCE_DOCS")
+    other = "Another reference text about the Vaigai river and the districts it flows through in southern Tamil Nadu and its history."
+    store_document(kb, rag_store, title="Vaigai (Wikipedia)", doc_type="reference", text=other, passages=[{"locator": "chunk 1", "text": other}])
+    assert kb._read("MATCH (s:Source) RETURN count(s) AS n")[0]["n"] == 2                                # default behaviour is unchanged
