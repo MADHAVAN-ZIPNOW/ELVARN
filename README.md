@@ -9,6 +9,47 @@ text and can be wrong, repetitive or incomplete. Nothing in the training data
 is "verified" just because it is in the corpus; the domain blocks are marked
 `Unverified - pending source check`.
 
+## What this project is
+
+ELVARN is a small language model (17M parameters, 512-token context) wrapped in a system that gives it **grounded, cited answers about Tamil Nadu corruption cases (1947-2026)** and **refuses instead of inventing** when it has no record.
+
+**Live demo:** https://elvarn.onrender.com (free hosting: the first request after a quiet period can take up to a minute while the services wake up).
+
+The model alone cannot recall facts, so it never answers from memory. Each question is routed:
+
+```
+question
+  |-- corruption question --> GraphRAG over stored records
+  |       Neo4j knowledge graph (facts, ontology)  ||  Chroma vector search (all passages)
+  |       -> merge and rank -> the model writes the answer from the cited records
+  |       -> no match? "Not found in my data."  (never invented)
+  |-- general / time-sensitive question --> live web search (SearXNG) -> model writes from the results
+  `-- chat / creative --> the model alone (and the UI says so)
+Redis keeps per-session memory (follow-ups like "what was the outcome?") and a retrieval cache.
+```
+
+Every answer carries an **"Answered from"** label (stored records / live web search / the model alone / nothing) and clickable **source cards**.
+
+### Parts
+
+| Part | What it does |
+|---|---|
+| `backend/model/`, `backend/training/` | The 17M decoder-only Transformer, byte-level BPE tokenizer, resumable training |
+| `backend/knowledge/` | Ontology (`ontology.ttl`), Neo4j store, Chroma store, GraphRAG pipeline, snapshot export/import |
+| `knowledge_service/` | One free self-contained Docker service (read-only snapshot of the knowledge base + embedded Chroma + local Redis), token-protected |
+| `backend/pipeline/`, `dags/` | Daily collection (DVAC, CBI, Supreme Court, Madras High Court) through Kafka and Spark, scheduled by Airflow, de-duplicated, gated retraining |
+| `backend/search/`, `search_service/` | Live web search through a self-hosted SearXNG, with a router that decides when to search |
+| `backend/api/`, `frontend/` | FastAPI server and the chat UI (formatted answers, source drawer, PDF / Word / TXT export, rename and pin sessions) |
+| `scripts/deploy_render.py` | Creates the knowledge service on Render through its API and wires the site to it |
+
+Hosted snapshot (2026-10-14): 7,024 graph nodes, 5,872 relationships, 9,781 searchable passages. 874 automated tests.
+
+### Honest limits
+
+- The 17M model writes poorly: even with the right records, its wording can be garbled. The records and citations are the trustworthy part, so check the source cards.
+- No facts are human-approved yet (about 1,400 proposed facts wait for review).
+- Exact rare names and numbers can be missed by retrieval, and live web search quality varies.
+
 ## Project layout
 
 | Path | Purpose |
