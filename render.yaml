@@ -1,4 +1,5 @@
 # Render Blueprint: connect this repo in Render (New > Blueprint) and it reads this file.
+# Two services: the chat site (elvarn) and the knowledge service (elvarn-knowledge, free plan, one Docker container like the search service).
 services:
   - type: web
     name: elvarn
@@ -8,6 +9,9 @@ services:
     startCommand: python -m uvicorn backend.api.server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     autoDeploy: true
+    buildFilter:
+      ignoredPaths:
+        - knowledge_service/**   # refreshing the knowledge snapshot must not redeploy the site
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
@@ -21,3 +25,27 @@ services:
         value: "2"                   # simultaneous replies
       - key: OMP_NUM_THREADS
         value: "1"
+      - key: KNOWLEDGE_URL           # the knowledge service below (the site only sends the token over https)
+        value: https://elvarn-knowledge.onrender.com
+      - key: KNOWLEDGE_TOKEN         # the same secret as the knowledge service: shared, never written in this file
+        fromService:
+          type: web
+          name: elvarn-knowledge
+          envVarKey: KNOWLEDGE_TOKEN
+
+  - type: web
+    name: elvarn-knowledge
+    runtime: docker
+    plan: free                       # 512 MB: measured 190 MB idle / 237 MB under load, no outside service needed (see knowledge_service/README.md)
+    dockerfilePath: ./knowledge_service/Dockerfile
+    dockerContext: .                 # the build needs backend/knowledge and backend/usermemory from the repo root
+    healthCheckPath: /healthz
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - knowledge_service/**
+        - backend/knowledge/**
+        - backend/usermemory/**
+    envVars:
+      - key: KNOWLEDGE_TOKEN         # generated once by Render (a long random secret); the site reads the same value
+        generateValue: true
