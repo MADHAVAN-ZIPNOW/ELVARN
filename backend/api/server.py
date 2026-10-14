@@ -40,7 +40,9 @@ from search.service import USED, USED_NO_EVIDENCE_MESSAGE, SearchService, Source
 KB_RAG_MESSAGE = ("Answer written from verified knowledge-graph facts and stored documents (judgments, press releases, reference pages); "
                   "every note is cited and labelled alleged / reported / court finding. The small model can still be wrong, so check the sources.")
 
-FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
+# The React app (frontend-react/, built into dist/) is served when it has been built; the earlier single-file page in frontend/ is the fallback.
+REACT_DIST = BACKEND_DIR.parent / "frontend-react" / "dist"
+FRONTEND_DIR = REACT_DIST if (REACT_DIST / "index.html").is_file() and os.environ.get("ELVARN_LEGACY_UI") != "1" else BACKEND_DIR.parent / "frontend"
 
 
 class Turn(BaseModel):

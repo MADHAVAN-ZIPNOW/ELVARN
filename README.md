@@ -39,7 +39,7 @@ Every answer carries an **"Answered from"** label (stored records / live web sea
 | `knowledge_service/` | One free self-contained Docker service (read-only snapshot of the knowledge base + embedded Chroma + local Redis), token-protected |
 | `backend/pipeline/`, `dags/` | Daily collection (DVAC, CBI, Supreme Court, Madras High Court) through Kafka and Spark, scheduled by Airflow, de-duplicated, gated retraining |
 | `backend/search/`, `search_service/` | Live web search through a self-hosted SearXNG, with a router that decides when to search |
-| `backend/api/`, `frontend/` | FastAPI server and the chat UI (formatted answers, source drawer, PDF / Word / TXT export, rename and pin sessions) |
+| `backend/api/`, `frontend-react/` | FastAPI server and the chat UI, built with React + Vite (formatted answers, source drawer, PDF / Word / TXT export, rename and pin sessions). The built `dist/` is committed; the earlier single-file page in `frontend/` is the fallback |
 | `scripts/deploy_render.py` | Creates the knowledge service on Render through its API and wires the site to it |
 
 Hosted snapshot (2026-10-14): 7,024 graph nodes, 5,872 relationships, 9,781 searchable passages. 874 automated tests.

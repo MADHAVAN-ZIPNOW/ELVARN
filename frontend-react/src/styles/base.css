@@ -1,0 +1,48 @@
+:root{
+  --bg:#e6eaf3; --ink:#1f2a44; --ink2:#55617f; --ink3:#8a94ad;
+  --hi:#ffffff; --lo:#c1c9dc; --line:rgba(31,42,68,.09);
+  --ok:#16a34a; --bad:#e5484d;
+  --raise:7px 7px 16px var(--lo), -7px -7px 16px var(--hi);
+  --raise-sm:4px 4px 10px var(--lo), -4px -4px 10px var(--hi);
+  --inset:inset 4px 4px 9px var(--lo), inset -4px -4px 9px var(--hi);
+  --card:var(--bg); --bot:var(--bg);
+  --scrim:rgba(31,42,68,.35);
+}
+:root[data-theme="dusk"]{
+  --bg:#43558c; --ink:#f4f7ff; --ink2:#d3dcf5; --ink3:#a3b0d8;
+  --hi:#566aa8; --lo:#2e3d6d; --line:rgba(255,255,255,.14);
+  --scrim:rgba(10,14,35,.5);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;color:var(--ink);overflow:hidden;background:var(--bg)}
+button{font:inherit;color:inherit}
+svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* coloured gradient glyphs, like the reference icons */
+svg.i.g-pink{stroke:url(#gPink)}   svg.i.g-blue{stroke:url(#gBlue)}   svg.i.g-cyan{stroke:url(#gCyan)}
+svg.i.g-logo{stroke:url(#gLogo)} svg.i.g-orange{stroke:url(#gOrange)} svg.i.g-green{stroke:url(#gGreen)} svg.i.g-white{stroke:#fff}
+svg.i.fill.g-cyan{fill:url(#gCyan)} svg.i.fill.g-orange{fill:url(#gOrange)} svg.i.fill.g-blue{fill:url(#gBlue)} svg.i.fill.g-pink{fill:url(#gPink)}
+*{scrollbar-width:thin;scrollbar-color:#9aa6c4 transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#9aa6c4;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+.shell{display:flex;height:100dvh;width:100%}
+
+/* ---------- glossy 3D pill buttons (reference image 2) ---------- */
+.gloss{position:relative;border:none;cursor:pointer;color:#fff;font-weight:800;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.28);
+  background:linear-gradient(180deg,var(--ga),var(--gb));
+  box-shadow:0 9px 20px var(--glow), inset 0 1px 0 rgba(255,255,255,.65), inset 0 -4px 8px rgba(0,0,0,.2);
+  transition:transform .12s, filter .12s, box-shadow .12s}
+.gloss::after{content:"";position:absolute;inset:3px;border-radius:inherit;border:1px solid rgba(255,255,255,.4);pointer-events:none}
+.gloss::before{content:"";position:absolute;left:7%;right:7%;top:2px;height:46%;border-radius:999px 999px 50% 50%;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));pointer-events:none}
+.gloss>*{position:relative}
+.gloss:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.gloss:active{transform:translateY(2px);box-shadow:0 3px 8px var(--glow), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 5px rgba(0,0,0,.25)}
+.c-blue{--ga:#47a6ff;--gb:#1456e0;--glow:rgba(30,100,255,.42)}
+.c-green{--ga:#2fbf55;--gb:#087027;--glow:rgba(20,140,60,.4)}
+.c-teal{--ga:#2cc4d1;--gb:#07808e;--glow:rgba(10,150,165,.4)}
+.c-orange{--ga:#ffb62e;--gb:#f27300;--glow:rgba(255,140,0,.42)}
+.c-pink{--ga:#ff5aa2;--gb:#cf0f5b;--glow:rgba(230,30,110,.4)}
+.c-red{--ga:#ff7e33;--gb:#de3a00;--glow:rgba(240,80,10,.4)}
+

@@ -1,0 +1,67 @@
+/* ---------- sidebar: frosted-glass 3D cards, glossy orbs, tilt toward the cursor ---------- */
+:root{--glass:rgba(255,255,255,.62);--glasstext:#1f2a44;
+  --sidebg:radial-gradient(circle at 18% 5%,#b7dcff 0,transparent 42%),radial-gradient(circle at 98% 36%,#ffd0e5 0,transparent 38%),radial-gradient(circle at 8% 86%,#ffe2b3 0,transparent 42%),radial-gradient(circle at 92% 97%,#c6f2da 0,transparent 36%),#eef2fb}
+:root[data-theme="dusk"]{--glass:rgba(255,255,255,.17);--glasstext:#f4f7ff;
+  --sidebg:radial-gradient(circle at 18% 5%,#6a84d6 0,transparent 45%),radial-gradient(circle at 98% 38%,#9a68bd 0,transparent 40%),radial-gradient(circle at 8% 90%,#3597ae 0,transparent 45%),#43558c}
+.side{background:var(--sidebg);box-shadow:6px 0 22px var(--lo);overflow-y:auto;scrollbar-width:none;margin-left:0;
+  transition:width .28s cubic-bezier(.2,.8,.2,1), padding .28s, transform .26s cubic-bezier(.2,.8,.2,1)}
+.side::-webkit-scrollbar{display:none}
+
+.brand{display:flex;align-items:center;gap:10px;padding:0 0 clamp(10px,3vh,30px);perspective:600px}
+.brand .wordmark3d{flex:1}
+.orbbtn{flex:none;width:46px;height:46px;border:none;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+  background:radial-gradient(circle at 32% 26%,#fff 0 7%,#80b8ff 11%,#2f7dff 58%,#1a52c9 100%);
+  box-shadow:0 10px 18px rgba(47,125,255,.45), inset 0 -5px 9px rgba(0,0,0,.25), inset 0 3px 5px rgba(255,255,255,.7);
+  transform:perspective(500px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .18s ease-out, box-shadow .2s}
+.orbbtn:hover{box-shadow:0 14px 24px rgba(47,125,255,.55), inset 0 -5px 9px rgba(0,0,0,.25), inset 0 3px 5px rgba(255,255,255,.7)}
+.orbbtn:active{transform:perspective(500px) scale(.93)}
+.orbbtn svg.i{stroke:#fff;width:22px;height:22px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.orbbtn:focus-visible{outline:3px solid #2f7dff;outline-offset:3px}
+.wordmark3d{display:block;font-size:clamp(25px,3.7vh,31px);font-weight:900;letter-spacing:.14em;text-align:center;
+  background:var(--logo-grad);background-size:100% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 var(--logo-shadow)) drop-shadow(0 10px 12px var(--logo-shadow));
+  transform:perspective(520px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .18s ease-out}
+.side .search{margin:18px 0 4px}
+.sidelabel{margin:clamp(6px,2.4vh,26px) 6px clamp(6px,1.4vh,14px)}
+.modes,.modelist{display:flex;flex-direction:column;gap:clamp(7px,1.9vh,18px)}
+.modes{padding:2px 2px 4px}
+.key{--face:#2f7dff;--lite:#80b8ff;--edge:#1a52c9;--glow:rgba(47,125,255,.45);--onface:#fff;
+  position:relative;display:flex;align-items:center;gap:14px;width:100%;cursor:pointer;padding:clamp(5px,1.25vh,12px) 14px clamp(5px,1.25vh,12px) 10px;border-radius:22px;
+  border:1px solid rgba(255,255,255,.85);font-weight:800;font-size:13px;letter-spacing:.06em;text-align:left;color:var(--glasstext);
+  background:var(--glass);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);
+  box-shadow:0 14px 28px rgba(40,60,130,.16), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -3px 8px rgba(110,130,200,.14);
+  transform:perspective(650px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transform-style:preserve-3d;
+  transition:transform .18s ease-out, box-shadow .2s, background .2s, color .2s}
+.key::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .2s;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.8),transparent 58%)}
+.key>*{position:relative;z-index:1}
+.key::after{z-index:0}
+.key:hover::after{opacity:1}
+.key.active:hover::after,.key.solid:hover::after{opacity:.4}
+.key:hover{box-shadow:0 22px 38px rgba(40,60,130,.24), 0 0 0 2px var(--lite), inset 0 1px 0 rgba(255,255,255,.95)}
+.key:active{transform:perspective(650px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.975)}
+.key .kicon{width:clamp(34px,5.4vh,50px);height:clamp(34px,5.4vh,50px);border-radius:50%;display:grid;place-items:center;flex:none;transform:translateZ(34px);
+  background:radial-gradient(circle at 32% 26%,#fff 0 7%,var(--lite) 11%,var(--face) 58%,var(--edge) 100%);
+  box-shadow:0 12px 20px var(--glow), inset 0 -5px 9px rgba(0,0,0,.25), inset 0 3px 5px rgba(255,255,255,.7);animation:floaty 4.6s ease-in-out infinite}
+.modelist .key:nth-child(2) .kicon{animation-delay:-.9s}.modelist .key:nth-child(3) .kicon{animation-delay:-1.8s}
+.modelist .key:nth-child(4) .kicon{animation-delay:-2.7s}.modelist .key:nth-child(5) .kicon{animation-delay:-3.6s}
+@keyframes floaty{50%{transform:translateZ(34px) translateY(-3px)}}
+.key .kicon svg.i{stroke:#fff;width:20px;height:20px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.key .klabel{flex:1;min-width:0;text-transform:uppercase;transform:translateZ(18px)}
+.key.active,.key.solid{background:linear-gradient(135deg,var(--face),var(--lite));color:var(--onface);border-color:rgba(255,255,255,.55);
+  box-shadow:0 18px 34px var(--glow), inset 0 1px 0 rgba(255,255,255,.6), inset 0 -4px 10px rgba(0,0,0,.18)}
+.key.active .kicon,.key.solid .kicon{background:radial-gradient(circle at 32% 26%,#fff 0 9%,#f3f8ff 13%,#dce7ff 62%,#b9caf6 100%);box-shadow:0 10px 18px rgba(0,0,0,.25), inset 0 -4px 8px rgba(80,100,170,.3)}
+.key.active .kicon svg.i,.key.solid .kicon svg.i{stroke:var(--face);filter:none}
+.key.small{width:auto;padding:6px 16px 6px 7px;font-size:12px;border-radius:20px}
+.key.small .kicon{width:32px;height:32px;transform:translateZ(18px);animation:none}
+.key.small .kicon svg.i{width:16px;height:16px}
+.key .kcount{min-width:26px;padding:2px 8px;border-radius:999px;font-size:11px;text-align:center;background:rgba(0,0,0,.1);color:inherit}
+.k-blue{--face:#2f7dff;--lite:#80b8ff;--edge:#1a52c9;--glow:rgba(47,125,255,.45)}
+.k-green{--face:#22b35a;--lite:#7ee0a3;--edge:#12803c;--glow:rgba(34,179,90,.42)}
+.k-teal{--face:#14b8c6;--lite:#82e4ec;--edge:#0b7f8a;--glow:rgba(20,184,198,.42)}
+.k-orange{--face:#ff9f1c;--lite:#ffd18c;--edge:#d77200;--glow:rgba(255,159,28,.45)}
+.k-pink{--face:#ff4f97;--lite:#ffa3c8;--edge:#c2185b;--glow:rgba(255,79,151,.42)}
+.k-yellow{--face:#ffc233;--lite:#ffe38d;--edge:#d49a00;--glow:rgba(255,194,51,.5);--onface:#4a3200}
+.key:focus-visible{outline:3px solid #2f7dff;outline-offset:4px}
+.side{padding:clamp(12px,3vh,32px) 16px 16px;padding-top:max(clamp(12px,3vh,32px),env(safe-area-inset-top))}
+

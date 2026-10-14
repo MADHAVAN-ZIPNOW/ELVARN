@@ -50,3 +50,6 @@ backend/data/kb_state/
 backend/data/collect_logs/
 backend/data/train_logs/
 backend/data/rag_kb_*/
+
+# React frontend: dependencies are not committed, the built dist/ is (the Render build has no Node step)
+frontend-react/node_modules/

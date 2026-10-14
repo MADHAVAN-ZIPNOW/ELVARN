@@ -1,0 +1,106 @@
+.notice{font-size:11px;color:var(--ink3);text-align:center;padding:4px 12px 8px}
+.composer{padding:6px clamp(14px,3vw,34px) max(16px,env(safe-area-inset-bottom))}
+@property --ang{syntax:"<angle>";initial-value:0deg;inherits:false}
+.box{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:4px;border:3px solid transparent;border-radius:30px;padding:6px;
+  background:linear-gradient(var(--bg),var(--bg)) padding-box, linear-gradient(var(--bg),var(--bg)) border-box;box-shadow:var(--inset);transition:box-shadow .25s}
+.box:focus-within{background:linear-gradient(var(--bg),var(--bg)) padding-box, conic-gradient(from var(--ang),#47a6ff,#2fbf55,#ffb62e,#ff5aa2,#2cc4d1,#47a6ff) border-box;
+  animation:ring 3.2s linear infinite;box-shadow:var(--inset), 0 0 22px rgba(71,166,255,.38), 0 0 34px rgba(255,90,162,.24)}
+@keyframes ring{to{--ang:360deg}}
+textarea{flex:1;border:none;background:transparent;resize:none;font:inherit;font-size:16px;color:var(--ink);max-height:150px;padding:11px 0;line-height:1.4;overflow-y:hidden;scrollbar-width:none}
+textarea::-webkit-scrollbar{display:none}
+textarea::placeholder{color:var(--ink3)}
+textarea:focus-visible{outline:none}
+.mic,.send{flex:none;width:48px;height:48px;border-radius:17px;border:none;cursor:pointer;display:grid;place-items:center;background:var(--bg);box-shadow:var(--raise-sm);transition:transform .12s}
+.mic:hover,.send:hover{transform:translateY(-2px)}
+.mic:active,.send:active{box-shadow:var(--inset);transform:none}
+.mic{box-shadow:var(--raise-sm), 0 0 0 2px rgba(208,51,143,.25)}
+.mic:hover{box-shadow:var(--raise-sm), 0 0 14px rgba(208,51,143,.45)}
+.mic.on{box-shadow:var(--inset), 0 0 0 3px var(--bad);animation:rec 1.2s infinite}
+@keyframes rec{0%{box-shadow:var(--inset),0 0 0 0 rgba(229,72,77,.55)}100%{box-shadow:var(--inset),0 0 0 14px rgba(229,72,77,0)}}
+.send svg.i,.mic svg.i{width:24px;height:24px}
+/* creative upload button: a glossy sphere like the rocket Send button, with a page that shoots an arrow up and twinkling sparks (logo colours) */
+.attach{flex:none;width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;display:grid;place-items:center;position:relative;
+  background:radial-gradient(circle at 32% 26%,#fff 0 6%,#f4f7ff 12%,#dfe8fb 62%,#c3d1ee 100%);
+  box-shadow:0 8px 16px rgba(60,80,150,.25), inset 0 -4px 8px rgba(70,90,160,.25), inset 0 3px 5px rgba(255,255,255,.9), 0 0 0 2px rgba(122,47,208,.22);
+  transition:transform .15s, box-shadow .2s}
+.attach:hover{transform:translateY(-3px);box-shadow:0 12px 20px rgba(122,47,208,.32), 0 0 14px rgba(208,51,143,.4), inset 0 -4px 8px rgba(70,90,160,.25), inset 0 3px 5px rgba(255,255,255,.9), 0 0 0 2px rgba(208,51,143,.35)}
+.attach:active{box-shadow:var(--inset);transform:none}
+.attach svg.i .arrow{transition:transform .25s}
+.attach:hover svg.i .arrow{transform:translateY(-2.5px)}
+.attach svg.i .spark{opacity:.6;transform-box:fill-box;transform-origin:50% 50%}
+.attach:hover svg.i .spark{opacity:1;animation:twinkle .7s ease-in-out infinite alternate}
+.attach:hover svg.i .spark.s2{animation-delay:.25s}
+@keyframes twinkle{from{transform:scale(.6) rotate(0deg)}to{transform:scale(1.25) rotate(45deg)}}
+.attach.has{background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95) 0 5%,transparent 14%),linear-gradient(135deg,#1d15ab 0%,#065fc3 24%,#03b9dc 46%,#511c83 68%,#a52976 86%,#d27b47 100%);
+  box-shadow:0 10px 22px rgba(80,40,170,.5), 0 0 0 3px rgba(255,255,255,.55), inset 0 -5px 9px rgba(0,0,0,.28), inset 0 3px 5px rgba(255,255,255,.55);animation:readyfloat 2.4s ease-in-out infinite}
+.attach.has svg.i{stroke:#fff;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+@media (prefers-reduced-motion:reduce){.attach,.attach.has,.attach svg.i .spark{animation:none!important;transition:none}}
+.attach:focus-visible,.fchip button:focus-visible,.qchip:focus-visible,.dlbtn:focus-visible,.dlcard:focus-visible,.fpbtn:focus-visible,.fpname:focus-visible{outline:3px solid #47a6ff;outline-offset:3px}
+.attach svg.i{width:27px;height:27px;stroke-width:2;overflow:visible;transition:transform .25s}
+.attach:disabled{opacity:.5;cursor:default}
+.filebar{margin:0;padding:6px 6px 2px 8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.boxrow{display:flex;align-items:flex-end;gap:10px}
+.boxrow textarea{padding-left:4px}
+.fchip{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:3px 5px 3px 4px;border-radius:999px;background:var(--bg);box-shadow:var(--raise-sm);font-size:13px;color:var(--ink)}
+.fchip .fopen{display:inline-flex;align-items:center;gap:8px;min-width:0;border:none;background:transparent;color:inherit;font:inherit;padding:4px 6px 4px 8px;border-radius:999px}
+.fchip button.fopen{cursor:pointer}
+.fchip button.fopen:hover .fname{text-decoration:underline}
+.fchip .fopen svg.i{width:18px;height:18px;flex:none}
+.fchip .fname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(46vw,260px)}
+.fchip .fmeta{color:var(--ink3);font-size:12px;white-space:nowrap}
+.fchip>button:not(.fopen){border:none;background:transparent;color:var(--ink2);cursor:pointer;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;padding:0}
+.fchip svg.i{width:14px;height:14px}
+.fchip.busy .fmeta::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border:2px solid #47a6ff;border-top-color:transparent;border-radius:50%;animation:spin .9s linear infinite;vertical-align:-1px}
+.fchip.err{box-shadow:var(--raise-sm), 0 0 0 2px var(--bad)}
+.qchip{border:none;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink2);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.qchip:hover{color:var(--ink)}
+.qchip:active{box-shadow:var(--inset)}
+.qlabel{font-size:12px;color:var(--ink3)}
+.row.user .fchip{margin-bottom:6px;box-shadow:none;background:rgba(255,255,255,.55);color:#17305f;font-weight:700}
+.dlcard{margin:12px 0 0;max-width:420px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:var(--bg);box-shadow:var(--raise-sm)}
+.dlcard .dlmain{min-width:0;flex:1}
+.dlcard .dlname{font-weight:700;font-size:14px;overflow-wrap:anywhere}
+.dlcard .dlmeta{color:var(--ink3);font-size:12px;margin-top:2px}
+.dlcard .badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--lo);color:var(--ink);font-weight:700;font-size:11px;margin-right:6px}
+.dlcard .dlnote{color:var(--ink3);font-size:11.5px;margin-top:4px}
+.dlbtn{flex:none;border:none;border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;color:#fff;background:linear-gradient(180deg,#47a6ff,#1456e0);box-shadow:var(--raise-sm)}
+.dlbtn:disabled{background:var(--lo);color:var(--ink3);cursor:default}
+.dlcard.expired .dlname{text-decoration:line-through;opacity:.7}
+.dlcard{max-width:480px;cursor:pointer;transition:transform .12s}
+.dlcard:hover{transform:translateY(-1px)}
+.dlcard .dlicon{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;box-shadow:var(--inset)}
+.dlcard .dlicon svg.i{width:22px;height:22px}
+.dlbtns{display:flex;flex:none;gap:8px;flex-wrap:wrap}
+.dlbtn{display:inline-flex;align-items:center;gap:6px}
+.dlbtn.alt{background:var(--bg);color:var(--ink);box-shadow:var(--raise-sm)}
+.dlbtn.alt:disabled{box-shadow:var(--inset);color:var(--ink3)}
+.dlbtn svg.i{width:16px;height:16px}
+/* ---------- right-side file viewer ---------- */
+.fpanel{flex:none;width:clamp(360px,40%,560px);height:100dvh;display:flex;flex-direction:column;min-width:0;background:var(--bg);color:var(--ink);box-shadow:-8px 0 26px var(--lo);animation:fpIn .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes fpIn{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
+.fphead{padding:14px 14px 8px;padding-top:max(14px,env(safe-area-inset-top))}
+.fprow{display:flex;align-items:center;gap:10px}
+.fpicon{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:14px;box-shadow:var(--inset)}
+.fpicon svg.i{width:22px;height:22px}
+.fptitle{min-width:0;flex:1}
+.fpname{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:6px}
+.fpmeta{font-size:12px;color:var(--ink3);margin-top:3px}
+.fpmeta .badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--lo);color:var(--ink);font-weight:700;font-size:11px;margin-right:6px}
+.fpacts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.fpbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 14px;border:none;border-radius:14px;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.fpbtn.round{padding:0;width:40px}
+.fpbtn:active{box-shadow:var(--inset)}
+.fpbtn:disabled{opacity:.5;cursor:default}
+.fpbtn svg.i{width:18px;height:18px}
+.fpnote{margin:6px 14px 0;font-size:12px;color:var(--ink3)}
+.fpbody{flex:1;min-height:0;overflow:auto;margin:10px 14px 14px;padding:14px;border-radius:18px;box-shadow:var(--inset)}
+.fptext{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.55 ui-monospace,Consolas,"Courier New",monospace;color:var(--ink)}
+.fptext.msg{font-family:inherit;color:var(--ink2)}
+.fptext.err{font-family:inherit;color:var(--bad);font-weight:700}
+@media (max-width:1100px){.fpanel{position:fixed;top:0;right:0;z-index:30;width:min(480px,100%)}}
+@media (max-width:700px){.fpanel{width:100%}}
+.main.dragover .composer .box{box-shadow:var(--inset), 0 0 0 3px #47a6ff}
+@media (max-width:600px){.dlcard{flex-wrap:wrap}.attach{width:44px;height:44px}}
+
+
+
