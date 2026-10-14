@@ -44,6 +44,13 @@ _CREATIVE = re.compile(r"\b(write|compose|draft|poem|story|joke|riddle|song|lyri
 _ABOUT_CONVERSATION = re.compile(r"\b(what did i (say|ask)|our (chat|conversation)|summari[sz]e (this|our|the) |"
                                  r"repeat (that|it)|say that again|you just (said|told)|earlier)\b", re.I)
 _DOMAIN_QUESTION = re.compile(r"^\s*(what|who|whom|when|where|which|why|how|define|explain|describe|tell me about|meaning of|is|are|can|does|do)\b", re.I)
+# Informational questions ("what is photosynthesis?", "tell me about the Kaveri river", "capital of Brazil"): the 17M model cannot recall facts
+# reliably (it copies key facts from notes only about 22% of the time and loops or invents without them), so these are looked up on the web.
+_INFORMATIONAL = re.compile(r"^\s*((what|who|whom|whose|when|where|which|why|how)\b|define\b|explain\b|describe\b|tell me about\b|"
+                            r"meaning of\b|(the )?(capital|population|area|length|height|history|origin|definition|meaning|founder|president|"
+                            r"prime minister|chief minister) of\b)", re.I)
+_ABOUT_ASSISTANT = re.compile(r"\b(you|your|yours|yourself|my|mine|myself)\b", re.I)               # "what is your name?", "what is my name?"
+_CHAT_ABBREVIATION = re.compile(r"\bwhat (does|do) \w{2,4} (mean|stand for)\b", re.I)            # "what does btw mean?" is casual chat, not a lookup
 _QUESTION_START =re.compile(r"^\s*(who|what|when|where|which|how (many|much|old|tall|far|long))\b", re.I)
 _REFERENCE = re.compile(r"\b(it|its|that|this|they|them|their|he|him|his|she|her|there|those|these|the (company|"
                         r"person|team|country|city|product|game|movie|film))\b", re.I)
@@ -70,6 +77,11 @@ def _has_named_entity(text):
     return False
 
 
+def _content_words(text):
+    """Words of 3+ letters that are not question filler: a question needs at least one to be searchable."""
+    return [w for w in re.findall(r"[A-Za-z0-9]{3,}", text.lower()) if w not in _STOP and w not in ("tell", "capital", "history", "origin")]
+
+
 def _worth_searching(text):
     """(bool, reason) for one message on its own."""
     if _EXPLICIT.search(text):
@@ -80,6 +92,9 @@ def _worth_searching(text):
         return True, "time-sensitive words"
     if _QUESTION_START.match(text) and _has_named_entity(text):
         return True, "fact question about a named thing"
+    if (_INFORMATIONAL.match(text) and not _ABOUT_ASSISTANT.search(text) and not _CHAT_ABBREVIATION.search(text)
+            and not _REFERENCE.search(text) and _content_words(text)):          # 'when was that company founded?' needs history to mean anything
+        return True, "informational question (the small model cannot recall facts reliably)"
     return False, "answerable without the web"
 
 
