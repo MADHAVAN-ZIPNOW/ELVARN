@@ -11,3 +11,7 @@ search_service/*.sh text eol=lf
 search_service/Dockerfile text eol=lf
 search_service/*.py text eol=lf
 search_service/*.yml text eol=lf
+
+# knowledge_service and docker: built/run in Linux containers, so keep LF line endings
+knowledge_service/* text eol=lf
+docker/* text eol=lf

@@ -177,7 +177,7 @@ def is_val_topic(topic):
 def load_wikipedia_passages(raw_dir=RAW_V2):
     """[{topic, notes, key}] for every Text: block of raw_v2/wikipedia_*.txt."""
     passages = []
-    for path in sorted(Path(raw_dir).glob("wikipedia_*.txt")):
+    for path in sorted([*Path(raw_dir).glob("wikipedia_*.txt"), *Path(raw_dir).glob("kb_*.txt")]):    # kb_*.txt: exported from the knowledge base
         text = path.read_text(encoding="utf-8", errors="replace")
         for tag, body in corpus._BLOCK_RE.findall(text):
             m = re.search(r"^Topic: (.+)$", body, re.M)

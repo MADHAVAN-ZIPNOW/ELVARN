@@ -171,6 +171,14 @@ button.menu-btn{display:none}
 .sources .dom{color:var(--ink3);font-weight:500;font-size:12px}
 .sources .snip{color:var(--ink2);font-size:12.5px;margin-top:3px;line-height:1.45;overflow-wrap:anywhere}
 .sources.warn .snote{color:var(--ink2);font-style:italic}
+.facts{margin:12px 0 0;max-width:640px;font-size:13px}
+.facts .fhead{font-weight:700;color:var(--ink);margin-bottom:6px}
+.facts .fnote{color:var(--ink3);font-size:12px;margin-bottom:8px}
+.facts ul{list-style:none;padding:0;display:grid;gap:8px}
+.facts li{padding:9px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink2);line-height:1.45;overflow-wrap:anywhere}
+.facts .lvl{display:inline-block;margin-right:8px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--ink3);color:var(--ink2)}
+.facts .lvl.court_finding{color:var(--ink);border-color:var(--ink)}
+.facts a{color:var(--ink3);font-size:12px;margin-left:6px}
 
 /* thinking line + details: raised soft card, Google-style running colours */
 .proc{width:min(100%,580px);margin:0 0 14px;border-radius:20px;background:var(--bg);box-shadow:var(--raise-sm);overflow:hidden}
@@ -789,6 +797,8 @@ const MODE_PAGES = {
 const state = { convs:[], currentId:null, mode:"chat", view:"chat", sort:"new", filters:{year:"",month:"",date:""}, busy:false, lastRaw:"", speakingEl:null,
   s:{autoSend:false, collapsed:false, theme:"aurora", greedy:false, temp:.8, maxTok:80, topk:40, autoSpeak:false, voice:"", rate:1, recLang:"en-IN"} };
 const KEY="elvarn.v2";
+const SESSION_KEY="elvarn.session";
+function sessionId(){ try{ let v=localStorage.getItem(SESSION_KEY); if(!v){ v=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2)); localStorage.setItem(SESSION_KEY,v);} return v; }catch(e){ return null; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({s:state.s, mode:state.mode, currentId:state.currentId, convs:state.convs.slice(0,60)})); }catch(e){} }
 function load(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||"null"); if(d){ Object.assign(state.s,d.s||{}); state.mode=d.mode||"chat"; state.convs=Array.isArray(d.convs)?d.convs:[]; state.currentId=d.currentId; } }catch(e){} }
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -1048,10 +1058,25 @@ function safeHttpUrl(u){ try{ const x=new URL(String(u)); return (x.protocol==="
 function renderSources(holder, info){
   holder.textContent="";
   if(!info || !info.status || info.status==="skipped") return;
-  const box=el("section","sources"); box.setAttribute("aria-label","Web sources");
+  if(info.kb && (info.facts||[]).length){
+    const fb=el("section","facts"); fb.setAttribute("aria-label","Verified facts from the knowledge graph");
+    fb.appendChild(el("div","fhead","Facts from the knowledge graph"));
+    fb.appendChild(el("div","fnote","Read these first: they are stored facts with their source and status. The model's wording above may differ and can be wrong."));
+    const ul=el("ul");
+    info.facts.slice(0,6).forEach(f=>{
+      const li=el("li"); const lv=String(f.level||"");
+      li.appendChild(el("span","lvl "+lv.replace(/[^a-z_]/g,""),lv.replace("_"," ")));
+      li.appendChild(document.createTextNode(String(f.text||"").slice(0,300)));
+      const href=safeHttpUrl(f.source&&f.source.url);
+      if(href){ const a=el("a",null,"["+String((f.source&&f.source.label)||"source").slice(0,40)+"]"); a.href=href; a.target="_blank"; a.rel="noopener noreferrer"; li.appendChild(a); }
+      ul.appendChild(li);
+    });
+    fb.appendChild(ul); holder.appendChild(fb);
+  }
+  const box=el("section","sources"); box.setAttribute("aria-label",info.kb?"Sources":"Web sources");
   const list=(info.sources||[]).map(s=>({s,href:safeHttpUrl(s.url)})).filter(x=>x.href);
   if(info.searched && list.length){
-    box.appendChild(el("div","snote","Sources from a web search. The small model's text above can still be wrong, so check the sources."));
+    box.appendChild(el("div","snote",info.kb?"Sources used for this answer (stored documents). The small model's text above can still be wrong, so check them.":"Sources from a web search. The small model's text above can still be wrong, so check the sources."));
     const ol=el("ol");
     list.forEach((x,i)=>{
       const li=el("li"), a=el("a",null,String(x.s.title||x.s.domain||x.href).slice(0,160));
@@ -1068,7 +1093,7 @@ function renderSources(holder, info){
   }
   holder.appendChild(box);
 }
-const searchInfo=e=>e&&e.search_status?{status:e.search_status,searched:!!e.searched,message:e.search_message||"",sources:e.sources||[]}:null;
+const searchInfo=e=>e&&e.search_status?{status:e.search_status,searched:!!e.searched,message:e.search_message||"",sources:e.sources||[],kb:e.kb_facts!==undefined,facts:e.kb_facts||[],entities:e.kb_entities||[]}:null;
 function drawMessage(m){
   removeWelcome();
   if(m.role==="user") return drawUser(m.text,m.file);
@@ -1219,6 +1244,7 @@ async function send(textArg){
   const body={text, mode:state.mode, max_new_tokens:+state.s.maxTok, temperature:+state.s.temp, top_k:+state.s.topk,
     greedy:state.s.greedy, history:(state.mode==="chat"||state.mode==="humour")&&hist.length?hist:null,
     web_search:state.s.webSearch!==false?"auto":"off"};
+  const sid=sessionId(); if(sid) body.session_id=sid;
   if(c.files&&c.files.length) body.file_ids=c.files.map(f=>f.file_id);
 
   let finalEv=null, errorMsg=null, aborted=false;

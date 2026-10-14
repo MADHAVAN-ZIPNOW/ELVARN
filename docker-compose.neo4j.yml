@@ -1,0 +1,27 @@
+# Neo4j for the ELVARN knowledge graph.
+#   1. put NEO4J_PASSWORD=<a strong password> in .env (see .env.example)
+#   2. docker compose -f docker-compose.neo4j.yml up -d
+# Data lives in the named volumes below, so it survives restarts and image upgrades.
+# Ports are bound to this machine only (127.0.0.1); do not publish them.
+services:
+  neo4j:
+    image: neo4j:5.26-community
+    container_name: elvarn-neo4j
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7474:7474"   # browser UI
+      - "127.0.0.1:7687:7687"   # bolt (the app connects here)
+    environment:
+      NEO4J_AUTH: "neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}"
+      NEO4J_server_memory_heap_max__size: "1G"
+    volumes:
+      - elvarn_neo4j_data:/data
+      - elvarn_neo4j_backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#neo4j/}\" 'RETURN 1' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+volumes:
+  elvarn_neo4j_data:
+  elvarn_neo4j_backups:

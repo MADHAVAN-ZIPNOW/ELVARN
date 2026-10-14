@@ -1,0 +1,7 @@
+# Only what the knowledge service needs (the chat site does NOT install these).
+fastapi>=0.110
+uvicorn>=0.30
+httpx>=0.27
+neo4j>=5
+chromadb==1.5.9
+redis>=5

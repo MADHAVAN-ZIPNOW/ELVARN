@@ -1,0 +1,44 @@
+# The other two stores next to Neo4j (docker-compose.neo4j.yml):
+#   Chroma  - RAG store: every document passage + its embedding, for similarity search
+#   Redis   - cache / memory: each user's latest conversation context and cached recent retrievals
+#
+#   docker compose --env-file .env -f docker-compose.stores.yml up -d
+# Data lives in named volumes (survives restarts). Ports are bound to this machine only.
+# REDIS_PASSWORD (and optionally CHROMA_TOKEN) come from .env.
+name: elvarn-stores
+
+services:
+  chroma:
+    image: chromadb/chroma:1.5.9
+    container_name: elvarn-chroma
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8000"          # 8001 on the host: 8000 is the ELVARN app
+    environment:
+      IS_PERSISTENT: "TRUE"
+      PERSIST_DIRECTORY: /data
+      ANONYMIZED_TELEMETRY: "FALSE"
+    volumes:
+      - elvarn_chroma_data:/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: elvarn-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}", "--appendonly", "yes",
+              "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - elvarn_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  elvarn_chroma_data:
+  elvarn_redis_data:

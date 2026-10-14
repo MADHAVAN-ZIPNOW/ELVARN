@@ -75,3 +75,76 @@ def write_checkpoint(directory, tokenizer, seed=0, steps=15):
 def ckpt_dir(tmp_path, tok):
     write_checkpoint(tmp_path / "ckpt", tok)
     return tmp_path / "ckpt"
+
+
+@pytest.fixture
+def kb():
+    """A clean knowledge graph for one test. Needs a DISPOSABLE Neo4j: set NEO4J_TEST_URI (e.g. bolt://localhost:7688).
+    Community Neo4j has a single database, so the fixture wipes everything in it and refuses to touch the real instance."""
+    import os
+    uri = os.environ.get("NEO4J_TEST_URI")
+    if not uri:
+        pytest.skip("set NEO4J_TEST_URI to a disposable Neo4j to run knowledge-graph tests")
+    if uri.rstrip("/") == (os.environ.get("NEO4J_URI") or "").rstrip("/"):
+        pytest.fail("NEO4J_TEST_URI is the real database; refusing to wipe it")
+    from knowledge.kb import KnowledgeBase
+    k = KnowledgeBase(uri, password=os.environ.get("NEO4J_TEST_PASSWORD", "testpassword123"))
+    k._run("MATCH (n) DETACH DELETE n")
+    yield k
+    k._run("MATCH (n) DETACH DELETE n")
+    k.close()
+
+
+def _hash_embedding_class():
+    """A deterministic bag-of-words embedder for tests: texts that share words are close (no model download needed)."""
+    import hashlib
+    from chromadb import EmbeddingFunction
+
+    class HashEmbedding(EmbeddingFunction):
+        DIM = 256
+
+        def __init__(self):
+            pass
+
+        def __call__(self, input):
+            out = []
+            for text in input:
+                v = [0.0] * self.DIM
+                for w in __import__("re").findall(r"[a-z0-9]+", text.lower()):
+                    if len(w) >= 3:
+                        v[int(hashlib.md5(w[:5].encode()).hexdigest(), 16) % self.DIM] += 1.0
+                norm = sum(x * x for x in v) ** 0.5 or 1.0
+                out.append([x / norm for x in v])
+            return out
+
+        @staticmethod
+        def name():
+            return "hash-embedding-test"
+
+        def get_config(self):
+            return {}
+
+        @staticmethod
+        def build_from_config(config):
+            return HashEmbedding()
+
+        def default_space(self):
+            return "cosine"
+
+    return HashEmbedding
+
+
+@pytest.fixture
+def rag_store():
+    """An in-memory Chroma collection with the fake embedder (a fresh collection per test)."""
+    import uuid
+    import chromadb
+    from knowledge.vectorstore import RagStore
+    return RagStore(client=chromadb.EphemeralClient(), embedding_function=_hash_embedding_class()(), collection="t" + uuid.uuid4().hex[:12])
+
+
+@pytest.fixture
+def memory():
+    import fakeredis
+    from usermemory.store import Memory
+    return Memory(fakeredis.FakeRedis(decode_responses=True))

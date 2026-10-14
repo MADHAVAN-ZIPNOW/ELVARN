@@ -1,6 +1,6 @@
 """Put search evidence into the model prompt, inside the model's tiny context window.
 
-The model only sees `context_limit` tokens (128 for the real model) for the prompt
+The model only sees `context_limit` tokens (512 for the live 17M RAG model) for the prompt
 AND the answer together, so only a few very short snippets fit. Snippets are cut
 using the real tokenizer's token counts. Evidence is clearly labelled as untrusted
 notes, never instructions; its text was already cleaned by search.sanitize.
