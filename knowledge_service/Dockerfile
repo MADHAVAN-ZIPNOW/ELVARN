@@ -1,10 +1,16 @@
-# ELVARN knowledge service: GraphRAG over Neo4j (facts) + Chroma (passages) + Redis (memory), behind a secret token.
+# ELVARN knowledge service: GraphRAG over the knowledge graph + vector passages + memory, behind a secret token.
+# Like search_service/: ONE self-contained container. It bundles a snapshot of the knowledge base (knowledge_service/snapshot/),
+# fills an embedded Chroma from it at BUILD time, and starts its own Redis, so it needs no other service and no outside account.
+# (Set NEO4J_URI and friends instead, and it runs against live stores: see README.)
+#
 # Build context = the REPOSITORY ROOT (it needs backend/knowledge and backend/usermemory); the root .dockerignore is an allowlist.
 #   docker build -f knowledge_service/Dockerfile -t elvarn-knowledge .
 FROM python:3.11-slim
 
 WORKDIR /app
 ENV PYTHONPATH=/app PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends redis-server bash && rm -rf /var/lib/apt/lists/*
 
 COPY knowledge_service/requirements.txt /app/knowledge_service/requirements.txt
 RUN pip install --no-cache-dir -r /app/knowledge_service/requirements.txt
@@ -16,15 +22,18 @@ COPY knowledge_service /app/knowledge_service
 COPY backend/knowledge /app/backend/knowledge
 COPY backend/usermemory /app/backend/usermemory
 
-# Not root.
-RUN useradd --create-home --uid 10001 elvarn && chown -R elvarn /app
-USER elvarn
-# The user's own home now holds nothing: copy the model the root user downloaded so the first request does not download it again.
-USER root
-RUN mkdir -p /home/elvarn/.cache && cp -r /root/.cache/chroma /home/elvarn/.cache/chroma && chown -R elvarn /home/elvarn/.cache
+# Fill the embedded Chroma from the snapshot once, now (its embeddings are in the snapshot, so no model runs and start-up stays instant).
+ENV CHROMA_PATH=/app/chroma_data
+RUN python -m backend.knowledge.snapshot check --dir /app/knowledge_service/snapshot \
+ && python -m backend.knowledge.snapshot load --dir /app/knowledge_service/snapshot --chroma-path /app/chroma_data
+
+# Not root. The embedding model that the root user downloaded is copied to this user's cache.
+RUN useradd --create-home --uid 10001 elvarn \
+ && mkdir -p /home/elvarn/.cache && cp -r /root/.cache/chroma /home/elvarn/.cache/chroma \
+ && chown -R elvarn /app /home/elvarn/.cache && chmod +x /app/knowledge_service/start.sh
 USER elvarn
 
 # Render sets PORT itself; 10000 is only the default for local runs.
 ENV PORT=10000
 EXPOSE 10000
-CMD ["sh", "-c", "exec uvicorn --factory knowledge_service.app:create_from_env --host 0.0.0.0 --port ${PORT} --workers 1"]
+CMD ["/bin/bash", "/app/knowledge_service/start.sh"]

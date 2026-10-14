@@ -1,0 +1,19 @@
+{
+  "created_at": "2026-10-14T14:01:27+00:00",
+  "embedding_model": "chroma default (all-MiniLM-L6-v2, 384 dimensions)",
+  "files": {
+    "graph.jsonl.gz": "44a6a22d6305494384ef4c6fe6005d89e719768638e5b3e460895be6244a1871",
+    "passages.jsonl.gz": "4844cb201e0c6cc58c029a75c9599a53ba6d0b5fcf573ebe572afb986ef61723",
+    "vectors.npz": "1b47db76b9454cef2a23d713a5929cecf65d30b69b931a3394f98e92d591bd57"
+  },
+  "graph": {
+    "nodes": 7024,
+    "relationships": 5872
+  },
+  "passages": 9781,
+  "passages_by_reason": {
+    "official": 3882,
+    "project notes/files": 1505,
+    "wikipedia (Tamil Nadu + corruption)": 4394
+  }
+}

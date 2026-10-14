@@ -442,14 +442,26 @@ class KnowledgeBase:
             problems.append(f"{n} passage(s) without a source")
         return problems
 
-    def export_jsonl(self, path):
-        """Portable backup: every node and relationship as JSON lines (restore by re-creating them). Returns counts."""
+    # Nodes that are NOT exported when reference documents are left out (see export_jsonl): a reference source nothing cites,
+    # its passages, and any proposed facts attached to those passages.
+    _KEEP = ("NOT ({x}:Source AND {x}.id IN $drop) AND NOT ({x}:Passage AND {x}.source_id IN $drop) "
+             "AND NOT ({x}:Candidate AND EXISTS {{ ({x})-[:FROM_PASSAGE]->(q:Passage) WHERE q.source_id IN $drop }})")
+
+    def export_jsonl(self, path, skip_reference=False):
+        """Portable backup: every node and relationship as JSON lines (restore with import_jsonl). Returns counts.
+        skip_reference=True leaves out reference documents (Wikipedia, project notes) and their passages unless a fact cites them:
+        the hosted graph then stays small, and those passages are served by the vector store alone."""
         nodes = rels = 0
+        drop = []
+        if skip_reference:
+            drop = [r["id"] for r in self._read(
+                "MATCH (s:Source {doc_type:'reference'}) WHERE NOT EXISTS { MATCH (s)<-[:FROM]-(:Passage)<-[:SUPPORTED_BY]-() } RETURN s.id AS id")]
         with open(path, "w", encoding="utf-8") as f, self._session() as s:
-            for r in s.run("MATCH (n) RETURN elementId(n) AS id, labels(n) AS labels, properties(n) AS props"):
+            for r in s.run(f"MATCH (n) WHERE {self._KEEP.format(x='n')} RETURN elementId(n) AS id, labels(n) AS labels, properties(n) AS props", drop=drop):
                 f.write(json.dumps({"node": r["id"], "labels": r["labels"], "props": r["props"]}, ensure_ascii=False) + "\n")
                 nodes += 1
-            for r in s.run("MATCH (a)-[r]->(b) RETURN elementId(a) AS a, type(r) AS type, elementId(b) AS b, properties(r) AS props"):
+            for r in s.run(f"MATCH (a)-[r]->(b) WHERE {self._KEEP.format(x='a')} AND {self._KEEP.format(x='b')} "
+                           "RETURN elementId(a) AS a, type(r) AS type, elementId(b) AS b, properties(r) AS props", drop=drop):
                 f.write(json.dumps({"rel": r["type"], "from": r["a"], "to": r["b"], "props": r["props"]}, ensure_ascii=False) + "\n")
                 rels += 1
         return {"nodes": nodes, "relationships": rels}

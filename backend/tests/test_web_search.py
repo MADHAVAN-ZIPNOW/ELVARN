@@ -262,14 +262,19 @@ def test_service_logs_only_metadata(caplog):
 # ------------------------------------------------------------------ router
 @pytest.mark.parametrize("q", ["What is the latest news about OpenAI?", "bitcoin price today", "Who won the 2026 world cup?",
                                "search the web for Python 3.14 features", "Who is Narendra Modi?",
-                               "what is the weather in Chennai", "Where is Mount Everest located? Tell me about Everest"])
+                               "what is the weather in Chennai", "Where is Mount Everest located? Tell me about Everest",
+                               # informational questions: the small model cannot recall facts, so they are looked up
+                               "Tell me about the Kaveri river", "What is photosynthesis?", "explain how rivers form", "capital of Brazil",
+                               "Why is the sky blue?", "how does a vaccine work"])
 def test_router_searches(q):
     d = router.decide(q)
     assert d.search and d.query
 
 
 @pytest.mark.parametrize("q", ["hii", "Hello!", "thanks", "write a poem about the moon", "tell me a joke",
-                               "what did I say earlier?", "what does btw mean?", "ok", "I am bored"])
+                               "what did I say earlier?", "what does btw mean?", "ok", "I am bored",
+                               # about the assistant or the user, or no real subject: never a web lookup
+                               "what is your name?", "who are you?", "how are you?", "what is my name?", "what is it?", "do you like music?", "is it nice?"])
 def test_router_does_not_search(q):
     assert not router.decide(q).search
 
@@ -759,7 +764,8 @@ def test_india_law_mode_searches_concept_questions_but_other_modes_do_not():
     d = router.decide("What is a writ petition?", None, "domain")
     assert d.search and d.query == "What is a writ petition under Indian law"
     assert router.decide("Explain the basic structure doctrine", None, "domain").search
-    assert not router.decide("What is a writ petition?", None, "english").search               # unchanged elsewhere
+    english = router.decide("What is a writ petition?", None, "english")
+    assert english.search and english.query == "What is a writ petition"                    # other modes now search too, without the legal suffix
     assert not router.decide("hello how are you", None, "domain").search                      # greetings are never searched
     assert not router.decide("Write a poem about justice", None, "domain").search             # creative requests are never searched
     assert not router.decide("What did I ask you before?", None, "domain").search             # questions about the chat itself are not searched

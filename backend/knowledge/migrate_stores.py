@@ -7,6 +7,7 @@ The SOURCE is the normal environment (NEO4J_*, CHROMA_*). The TARGET is the same
     or TARGET_CHROMA_HOST=... TARGET_CHROMA_PORT=443 TARGET_CHROMA_SSL=1 [TARGET_CHROMA_TOKEN=...]   (a server you host)
 
     python -m backend.knowledge.migrate_stores --neo4j          # graph: export locally, restore into the EMPTY target graph
+    python -m backend.knowledge.migrate_stores --neo4j --official-only   # same, without Wikipedia/notes passages (about 8,000 nodes instead of 64,000)
     python -m backend.knowledge.migrate_stores --chroma         # vectors: copy passages WITH their existing embeddings
     python -m backend.knowledge.migrate_stores --neo4j --chroma --dry-run     # only report what would be copied
 
@@ -36,10 +37,11 @@ def copy_chroma(src, dst, batch=500, progress=print):
     return copied
 
 
-def copy_graph(src_kb, dst_kb, workdir=None):
-    """Export the source graph to a JSON-lines file and restore it into the (empty) target graph. Returns the counts."""
+def copy_graph(src_kb, dst_kb, workdir=None, official_only=False):
+    """Export the source graph to a JSON-lines file and restore it into the (empty) target graph. Returns the counts.
+    official_only leaves out Wikipedia / project-note passages (they are copied to the vector store, which is what serves them)."""
     path = Path(workdir or tempfile.mkdtemp()) / "graph_backup.jsonl"
-    exported = src_kb.export_jsonl(path)
+    exported = src_kb.export_jsonl(path, skip_reference=official_only)
     imported = dst_kb.import_jsonl(path)
     if exported != imported:
         raise RuntimeError(f"the restored graph does not match the export: {exported} vs {imported}")
@@ -50,6 +52,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--neo4j", action="store_true")
     ap.add_argument("--chroma", action="store_true")
+    ap.add_argument("--official-only", action="store_true", help="graph: leave out reference (Wikipedia/notes) passages; the vector store keeps them")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--verify", action="store_true", help="compare counts of source and target")
     a = ap.parse_args(argv)
@@ -63,8 +66,11 @@ def main(argv=None):
         src, dst = KnowledgeBase(), KnowledgeBase(os.environ["TARGET_NEO4J_URI"], os.environ.get("TARGET_NEO4J_USER", "neo4j"), os.environ.get("TARGET_NEO4J_PASSWORD", ""))
         count = lambda kb: kb._read("MATCH (n) RETURN count(n) AS n")[0]["n"]          # noqa: E731
         print(f"graph: source has {count(src):,} nodes; target has {count(dst):,}")
+        if a.neo4j and a.dry_run and a.official_only:
+            would = src.export_jsonl(Path(tempfile.mkdtemp()) / "dry.jsonl", skip_reference=True)
+            print(f"graph: --official-only would copy {would['nodes']:,} nodes and {would['relationships']:,} relationships")
         if a.neo4j and not a.dry_run:
-            print("restored into the target:", copy_graph(src, dst))
+            print("restored into the target:", copy_graph(src, dst, official_only=a.official_only))
             print(f"graph: target now has {count(dst):,} nodes; audit problems on the target: {dst.audit()}")
     if a.chroma or a.verify:
         if not configured("TARGET_"):

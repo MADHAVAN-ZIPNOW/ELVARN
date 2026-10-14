@@ -15,3 +15,6 @@ search_service/*.yml text eol=lf
 # knowledge_service and docker: built/run in Linux containers, so keep LF line endings
 knowledge_service/* text eol=lf
 docker/* text eol=lf
+
+# the snapshot baked into the knowledge service image: compressed binaries, never convert line endings
+knowledge_service/snapshot/* binary

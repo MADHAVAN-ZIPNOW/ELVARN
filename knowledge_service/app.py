@@ -15,6 +15,11 @@ Endpoints
 Anything else: 404 / 405. A missing or wrong token gives the same 401 body. Logs hold only status codes and timings,
 never the token, the question text or client addresses.
 
+Two ways to run (the service picks one at start-up)
+    snapshot (free hosting)   the graph and vectors baked into the image (knowledge_service/snapshot/); Redis runs inside the container
+    live                      real Neo4j + Chroma + Redis, configured with the variables below
+    It runs from the snapshot when one is bundled and NEO4J_URI is not set (or when SNAPSHOT_DIR is set).
+
 Environment
     KNOWLEDGE_TOKEN                 required, at least 24 characters; without it the service refuses to start
     NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD      the graph (neo4j+s://... for Aura)
@@ -30,6 +35,7 @@ import os
 import re
 import threading
 import time
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Query
@@ -157,6 +163,35 @@ def create_app(token, kb=None, rag=None, memory=None, rate_per_minute=120, max_c
     return app
 
 
+SNAPSHOT_DEFAULT = Path(__file__).resolve().parent / "snapshot"
+
+
+def snapshot_dir():
+    """The folder of the baked-in snapshot when this service should run from it: SNAPSHOT_DIR if set, else the bundled one when no
+    Neo4j is configured. None means 'use the configured stores' (Neo4j + Chroma + Redis)."""
+    explicit = os.environ.get("SNAPSHOT_DIR")
+    if explicit:
+        return Path(explicit)
+    return SNAPSHOT_DEFAULT if (SNAPSHOT_DEFAULT / "manifest.json").is_file() and not os.environ.get("NEO4J_URI") else None
+
+
+def stores_from_snapshot(directory):
+    """Free hosted mode: the graph is served from memory, the vectors from an embedded Chroma that was filled from the snapshot
+    (at image build time, so start-up is instant; refilled here only if the folder is empty or from another snapshot)."""
+    import chromadb
+    from backend.knowledge import snapshot
+    from backend.knowledge.snapshot_graph import SnapshotGraph
+    from backend.knowledge.vectorstore import RagStore
+    manifest = snapshot.check_snapshot(directory)
+    chroma_path = Path(os.environ.get("CHROMA_PATH", "/tmp/elvarn_chroma"))
+    chroma_path.mkdir(parents=True, exist_ok=True)
+    rag = RagStore(client=chromadb.PersistentClient(path=str(chroma_path)))
+    loaded = snapshot.load_vectors(directory, rag, marker_file=chroma_path / "snapshot.marker")
+    graph = SnapshotGraph(Path(directory) / snapshot.GRAPH)
+    log.info("snapshot %s: graph %s, %d passages (%d loaded now)", manifest["created_at"], manifest["graph"], rag.count(), loaded)
+    return graph, rag
+
+
 def create_from_env():
     """uvicorn --factory knowledge_service.app:create_from_env"""
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
@@ -170,10 +205,15 @@ def create_from_env():
         except Exception as exc:  # noqa: BLE001 - a store that is down is left out, the others still work
             log.warning("%s unavailable at start-up: %s", name, exc.__class__.__name__)
             return None
-    kb = attempt("graph", KnowledgeBase.from_env)
-    rag = attempt("vector store", RagStore.from_env)
+    directory = snapshot_dir()
+    if directory is not None:
+        graph_rag = attempt("snapshot", lambda: stores_from_snapshot(directory))
+        kb, rag = graph_rag if graph_rag else (None, None)
+    else:
+        kb = attempt("graph", KnowledgeBase.from_env)
+        rag = attempt("vector store", RagStore.from_env)
     memory = attempt("memory", Memory.from_env)
-    log.info("stores: graph=%s vector=%s memory=%s", kb is not None, rag is not None, memory is not None)
+    log.info("mode=%s stores: graph=%s vector=%s memory=%s", "snapshot" if directory is not None else "live", kb is not None, rag is not None, memory is not None)
     return create_app(os.environ.get("KNOWLEDGE_TOKEN", ""), kb, rag, memory,
                       rate_per_minute=int(os.environ.get("KNOWLEDGE_RATE_PER_MINUTE", "120")),
                       max_concurrent=int(os.environ.get("KNOWLEDGE_MAX_CONCURRENT", "4")))
