@@ -35,7 +35,8 @@ class DeployError(Exception):
     pass
 
 
-def read_env(path=ENV_FILE):
+def read_env(path=None):
+    path = path or ENV_FILE                  # looked up at call time (tests point ENV_FILE elsewhere)
     out = {}
     if Path(path).is_file():
         for line in Path(path).read_text(encoding="utf-8").splitlines():
@@ -45,8 +46,8 @@ def read_env(path=ENV_FILE):
     return out
 
 
-def save_env(key, value, path=ENV_FILE):
-    with open(path, "a", encoding="utf-8") as f:
+def save_env(key, value, path=None):
+    with open(path or ENV_FILE, "a", encoding="utf-8") as f:
         f.write(f"\n{key}={value}\n")
 
 

@@ -123,6 +123,7 @@ def test_waiting_gives_up_with_a_pointer_to_the_logs():
 def test_main_without_a_key_explains_what_to_do_and_touches_nothing(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(dr, "ENV_FILE", tmp_path / ".env")
     monkeypatch.delenv("RENDER_API_KEY", raising=False)
+    monkeypatch.delenv("KNOWLEDGE_TOKEN", raising=False)
     assert dr.main([]) == 2
     err = capsys.readouterr().err
     assert "RENDER_API_KEY" in err and "Do not paste" in err and not (tmp_path / ".env").exists()

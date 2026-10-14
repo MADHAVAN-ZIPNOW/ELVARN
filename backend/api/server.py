@@ -99,14 +99,9 @@ def sampling_settings(req, evidence_in_prompt):
     return req.temperature, req.top_k, "client"
 
 
-def wake_remote(remote):
-    """The hosted service sleeps on a free plan: ping its public /healthz once at start-up, in the background (errors ignored)."""
-    def ping():
-        try:
-            remote.http.get("/healthz", timeout=60)
-        except Exception:
-            pass
-    threading.Thread(target=ping, daemon=True).start()
+def wake_remote(remote, min_gap=300):
+    """The hosted service sleeps on a free plan: ping its public /healthz in the background, at most once per `min_gap` seconds."""
+    return remote.wake(min_gap)
 
 
 GENERATION_PATHS = ("/api/chat", "/api/chat/stream", "/api/generate")
@@ -456,6 +451,18 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             memory.forget(session_key(session_id or visitor(request)))
         return {"forgotten": True}
 
+    search_wake = {"last": 0.0}
+
+    def wake_visit():
+        """Wake the sleeping free services (knowledge + search), each at most every 5 minutes. Only called for page loads: /api/health is polled
+        by Render all day and must not keep them awake (free instance hours are limited)."""
+        if remote is not None:
+            wake_remote(remote)
+        if (isinstance(provider, SearxngProvider) and not is_loopback_host(provider.base_url) and os.environ.get("ELVARN_SEARCH_WAKEUP", "1") != "0"
+                and time.time() - search_wake["last"] > 300):
+            search_wake["last"] = time.time()
+            wake_up(provider.base_url)
+
     @app.get("/api/health")
     def health():
         return service.health()
@@ -491,6 +498,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
         @app.get("/")
         def index():
+            wake_visit()                       # someone opened the page: start waking the free services now, ready by the time they type
             return FileResponse(FRONTEND_DIR / "index.html")
 
     return app

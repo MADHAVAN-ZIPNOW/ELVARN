@@ -97,8 +97,10 @@ def _number(env, name, default, cast):
 
 
 class SearchService:
-    def __init__(self, provider: SearchProvider = None, max_results=5, timeout=5.0, max_snippet=220, retry_delay=0.8):
+    def __init__(self, provider: SearchProvider = None, max_results=5, timeout=5.0, max_snippet=220, retry_delay=0.8, cold_timeout=None, idle_seconds=600):
         self.provider = provider
+        # The free hosted search service sleeps when idle and needs ~30-60 s to wake: if it has not answered lately, the first search waits for it.
+        self.cold_timeout, self.idle_seconds, self._last_ok = (min(float(cold_timeout), 90.0) if cold_timeout else None), idle_seconds, None
         self.retry_delay = max(0.0, min(float(retry_delay), 3.0))      # pause before the single retry when a search returns nothing
         self.max_results = max(1, min(int(max_results), 8))
         self.timeout = max(0.5, min(float(timeout), 15.0))
@@ -110,7 +112,8 @@ class SearchService:
         return cls(get_provider(environ=env),
                    max_results=_number(env, "SEARCH_RESULT_LIMIT", 5, int),
                    timeout=_number(env, "SEARXNG_TIMEOUT_SECONDS", 5.0, float),
-                   max_snippet=_number(env, "MAX_SNIPPET_LENGTH", 220, int))
+                   max_snippet=_number(env, "MAX_SNIPPET_LENGTH", 220, int),
+                   cold_timeout=_number(env, "SEARCH_COLD_TIMEOUT_SECONDS", 70.0, float))
 
     @property
     def available(self):
@@ -134,7 +137,10 @@ class SearchService:
         if not self.available:
             return UNAVAILABLE, []
         try:
-            raw = self.provider.search(query, self.max_results, self.timeout)
+            stale = self._last_ok is None or time.monotonic() - self._last_ok > self.idle_seconds
+            raw = self.provider.search(query, self.max_results, max(self.timeout, self.cold_timeout or 0) if stale else self.timeout)
+            if raw:
+                self._last_ok = time.monotonic()
             if not raw:                                  # the search engines behind SearXNG are flaky from cloud servers: try once more
                 time.sleep(self.retry_delay)
                 raw = self.provider.search(query, self.max_results, self.timeout)

@@ -36,7 +36,7 @@ CASE_FIELDS = ("case_number", "year_registered", "fir_ecr_number", "department",
 LEVEL_WORDS = {"alleged": "alleged", "reported": "reported", "court_finding": "court finding"}
 STAGE_ORDER = {s: i for i, s in enumerate(STAGES)}
 NOT_FOUND = "Not found in my data."
-UNAVAILABLE = "The knowledge base is unavailable right now, so I can't answer this reliably."
+UNAVAILABLE = "The knowledge base is unavailable right now (it may be waking up: please try again in a minute), so I can't answer this reliably."
 CORRUPTION_WORDS = re.compile(r"corrupt|scam|bribe|\bfir\b|dvac|\bcbi\b|vigilance|disproportionate|charge ?sheet|convict|acquit|"
                               r"money.?laundering|\bed case\b|judgment|embezzle|graft", re.I)
 

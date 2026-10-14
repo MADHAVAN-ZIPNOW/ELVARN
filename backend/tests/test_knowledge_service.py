@@ -230,3 +230,47 @@ def test_a_misconfigured_url_never_crashes_the_site_and_still_refuses_corruption
     site = TestClient(app)
     assert "unavailable" in ask(site, "List the corruption cases of Test Person")["text"]
     assert ask(site, "hii").get("stop_reason") != "knowledge_base"
+
+
+# ---- a sleeping free service: wait longer when idle, wake on a page visit ------------------------------
+def test_an_idle_service_gets_a_long_timeout_and_a_recently_answering_one_a_short_one():
+    timeouts = []
+
+    def handler(request):
+        timeouts.append(request.extensions["timeout"]["read"])
+        return httpx.Response(200, json={"items": [], "notes": [], "u": {"question": "q", "resolved": "q", "entities": [], "intent": "general", "terms": [], "followup": False}, "populated": True})
+    client = RemoteKnowledge("https://k.example.com", TOKEN, timeout=15, cold_timeout=80, transport=httpx.MockTransport(handler))
+    client.context("a bribe case")                    # never heard from it: allow for a cold start
+    client.context("a bribe case")                    # it just answered: it is awake
+    assert timeouts == [80, 15]
+
+
+def test_wake_pings_healthz_at_most_once_per_gap():
+    pings = []
+
+    def handler(request):
+        pings.append(request.url.path)
+        return httpx.Response(200, json={"ok": True})
+    client = RemoteKnowledge("https://k.example.com", TOKEN, transport=httpx.MockTransport(handler))
+    assert client.wake(background=False) is True and client.wake(background=False) is False
+    assert pings == ["/healthz"] and not client._stale()
+
+
+def test_opening_the_page_wakes_the_service_but_the_health_check_does_not(site_for):
+    pings = []
+
+    def handler(request):
+        pings.append(request.url.path)
+        return httpx.Response(200, json={})
+    site = site_for(transport=httpx.MockTransport(handler))
+    site.get("/api/health")
+    assert pings == []
+    site.get("/")
+    import time as _t
+    _t.sleep(0.3)
+    assert pings == ["/healthz"]
+
+
+def test_the_unavailable_message_says_it_may_be_waking_up():
+    from knowledge.kb import UNAVAILABLE
+    assert "unavailable" in UNAVAILABLE and "waking up" in UNAVAILABLE
