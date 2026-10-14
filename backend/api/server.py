@@ -24,12 +24,21 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 from files.routes import install_file_routes  # noqa: E402
+from knowledge.kb import CORRUPTION_WORDS, NOT_FOUND, UNAVAILABLE, KnowledgeBase  # noqa: E402
+from knowledge import graphrag  # noqa: E402
+from knowledge.vectorstore import RagStore  # noqa: E402
+from knowledge.remote import KnowledgeUnavailable, RemoteKnowledge  # noqa: E402
+from usermemory.store import Memory, session_key  # noqa: E402
 from files.service import FileService  # noqa: E402
 from api.model_service import ModelNotReady, ModelService  # noqa: E402
 from model.generation import MAX_NO_REPEAT_NGRAM, MAX_REPETITION_PENALTY, MODES  # noqa: E402
-from search.orchestrate import WEB_SEARCH_MODES, plan_search, run_search  # noqa: E402
+from search.orchestrate import WEB_SEARCH_MODES, SearchResult, plan_search, run_search  # noqa: E402
+from search.prompt import build_evidence_text  # noqa: E402
 from search.providers.searxng import SearxngProvider, is_loopback_host, wake_up  # noqa: E402
-from search.service import SearchService  # noqa: E402
+from search.service import USED, USED_NO_EVIDENCE_MESSAGE, SearchService, Source  # noqa: E402
+
+KB_RAG_MESSAGE = ("Answer written from verified knowledge-graph facts and stored documents (judgments, press releases, reference pages); "
+                  "every note is cited and labelled alleged / reported / court finding. The small model can still be wrong, so check the sources.")
 
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
 
@@ -52,6 +61,8 @@ class GenerateRequest(BaseModel):
     # Repetition controls. None = "not set by the client": off normally, WEB_REPETITION defaults when web evidence is in the prompt.
     # ids returned by POST /api/files; lets the server answer "convert this to pdf" itself (the model is not used for that)
     file_ids: Optional[List[str]] = Field(default=None, max_length=5)
+    # optional id that ties a user's turns together for the memory store (default: derived from the visitor)
+    session_id: Optional[str] = Field(default=None, max_length=64)
     repetition_penalty: Optional[float] = Field(default=None, ge=1.0, le=MAX_REPETITION_PENALTY)
     no_repeat_ngram_size: Optional[int] = Field(default=None, ge=0, le=MAX_NO_REPEAT_NGRAM)
 
@@ -88,6 +99,16 @@ def sampling_settings(req, evidence_in_prompt):
     return req.temperature, req.top_k, "client"
 
 
+def wake_remote(remote):
+    """The hosted service sleeps on a free plan: ping its public /healthz once at start-up, in the background (errors ignored)."""
+    def ping():
+        try:
+            remote.http.get("/healthz", timeout=60)
+        except Exception:
+            pass
+    threading.Thread(target=ping, daemon=True).start()
+
+
 GENERATION_PATHS = ("/api/chat", "/api/chat/stream", "/api/generate")
 
 
@@ -95,7 +116,7 @@ def env_flag(name):
     return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None):
+def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None):
     """public=True (or ELVARN_PUBLIC=1) is for a website anyone can reach: it turns on a per-visitor rate limit,
     a cap on simultaneous generations, and disables the reload endpoint."""
     public = env_flag("ELVARN_PUBLIC") if public is None else public
@@ -124,6 +145,39 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             and os.environ.get("ELVARN_SEARCH_WAKEUP", "1") != "0"):
         wake_up(provider.base_url)
     files = file_service if file_service is not None else FileService()
+    kb, kb_expected = kb_service, kb_service is not None
+    if kb is None and os.environ.get("NEO4J_URI"):
+        kb_expected = True
+        try:
+            kb = KnowledgeBase.from_env()
+        except Exception as exc:  # the chat still starts; corruption questions are refused until the graph is back
+            print(f"WARNING: knowledge graph unavailable ({exc}); corruption questions will be refused", flush=True)
+    app.state.kb = kb
+    rag_store, rag_expected = rag_service, rag_service is not None
+    if rag_store is None and (os.environ.get("CHROMA_HOST") or os.environ.get("CHROMA_API_KEY")):
+        rag_expected = True
+        try:
+            rag_store = RagStore.from_env()
+        except Exception as exc:  # the graph branch still works without the vector branch
+            print(f"WARNING: RAG vector store unavailable ({exc}); answers will use the knowledge graph only", flush=True)
+    app.state.rag = rag_store
+    memory = memory_service
+    if memory is None and os.environ.get("REDIS_URL"):
+        try:
+            memory = Memory.from_env()
+        except Exception as exc:  # no memory is fine: the chat just does not remember
+            print(f"WARNING: memory store unavailable ({exc}); the chat will not remember earlier turns", flush=True)
+    app.state.memory = memory
+    # A hosted knowledge service (knowledge_service/) replaces local stores: the chat site only asks it for the context.
+    remote, remote_expected = remote_service, remote_service is not None
+    if remote is None and os.environ.get("KNOWLEDGE_URL"):
+        remote_expected = True
+        try:
+            remote = RemoteKnowledge.from_env()
+            wake_remote(remote)
+        except Exception as exc:  # a wrong address or token: corruption questions are refused, the rest of the chat still works
+            print(f"WARNING: knowledge service not usable ({exc}); corruption questions will be refused", flush=True)
+    app.state.remote = remote
     app.state.files = files
 
     # ---- per-visitor rate limit (in memory; one server process) ----
@@ -202,6 +256,74 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             return None
         return files.handle_chat(req.text, req.file_ids, visitor(request))
 
+    def kb_reply(req, text, found=False):
+        """A fixed reply written by plain code (a refusal or an 'unavailable' notice); the model is not used."""
+        return {"text": text, "raw_text": text, "mode": req.mode, "files": [], "file_action": None,
+                "model_used": False, "generated_tokens": 0, "prompt_tokens": 0, "seconds": 0,
+                "stop_reason": "knowledge_base", "kb_found": found, "kb_sources": []}
+
+    def session_of(req, request):
+        return session_key(req.session_id or visitor(request))
+
+    def has_data():
+        try:
+            return bool(kb.populated()) if kb is not None else bool(rag_store is not None and rag_store.count() > 0)
+        except Exception:
+            return False
+
+    def graph_step(req, request):
+        """GraphRAG: Chroma vector search and Neo4j graph traversal run in parallel, then merge into one ranked, cited context.
+        Returns (SearchResult | None, Context | None, early reply | None). An early reply is a refusal or an 'unavailable'
+        notice for a corruption question: the model is never asked to guess those."""
+        if req.file_ids or not (kb_expected or rag_expected or remote_expected):
+            return None, None, None
+        corruption = bool(CORRUPTION_WORDS.search(req.text))
+        if remote_expected:                                   # hosted knowledge service: it does the retrieval, we only get the context
+            if remote is None:
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+            try:
+                ctx, populated = remote.context(req.text, session_of(req, request))
+            except Exception:
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+        else:
+            if kb is None and rag_store is None:
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+            try:
+                ctx = graphrag.build_context(kb, rag_store, req.text, memory, session_of(req, request))
+            except Exception:
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+            populated = None
+        if not ctx.items:
+            if corruption and (populated if populated is not None else has_data()):
+                return None, None, kb_reply(req, NOT_FOUND)
+            return None, ctx, None
+        sources = [Source(title=i["source"]["title"], url=i["source"]["url"], domain=i["source"]["label"], snippet=i["text"]) for i in ctx.items]
+        res = SearchResult(status=USED, searched=True, sources=[s.as_dict() for s in sources], message=KB_RAG_MESSAGE)
+        try:
+            count, limit = service.prompt_budget()
+            model_text, used = build_evidence_text(req.text, sources, count, limit, req.max_new_tokens)
+        except Exception:
+            model_text, used = None, []
+        if used:
+            res.model_text, res.evidence_in_prompt = model_text, len(used)
+        else:
+            res.message = USED_NO_EVIDENCE_MESSAGE
+        return res, ctx, None
+
+    def kb_extra(ctx):
+        """Extra response fields: the exact graph facts used (with their level and citation), the entities found, any failed branch."""
+        return {"kb_facts": [{"text": i["text"], "level": i["level"], "source": i["source"]} for i in ctx.facts()],
+                "kb_entities": [e["name"] for e in ctx.understanding.entities], "kb_notes": ctx.notes,
+                "kb_followup": ctx.understanding.followup}
+
+    def remember(req, request, answer, ctx):
+        """Keep the user's latest turn (and the people / cases it was about) in the memory store."""
+        entities = ctx.understanding.entities if ctx is not None else []
+        if remote is not None:
+            remote.remember(session_of(req, request), req.text, answer or "", entities)
+        elif memory is not None:
+            memory.remember(session_of(req, request), req.text, answer or "", entities)
+
     def file_result(handled, req):
         return {"text": handled["text"], "raw_text": handled["text"], "mode": req.mode, "files": handled["files"],
                 "file_action": handled["file_action"], "model_used": False, "generated_tokens": 0, "prompt_tokens": 0,
@@ -215,12 +337,18 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         handled = file_turn(req, request)
         if handled is not None:
             return file_result(handled, req)
+        rag, ctx, early = graph_step(req, request)
+        if early is not None:
+            return early
         check_web_search(req)
         history = [(t.user, t.assistant) for t in req.history] if req.history else None
         take_slot()
         try:
-            plan = plan_search(req.text, history, req.mode, req.web_search)
-            found = search_step(plan, req, request)
+            if rag is not None:
+                found = rag
+            else:
+                plan = plan_search(req.text, history, req.mode, req.web_search)
+                found = search_step(plan, req, request)
             text, hist = model_input(req, found, history)
             rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
             temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
@@ -230,8 +358,11 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                 greedy=req.greedy, history=hist, **rep,
             )
             result.update(found.fields())
+            if rag is not None:
+                result.update(kb_extra(ctx))
             result["repetition_source"] = rep_source
             result["sampling_source"] = sampling_source
+            remember(req, request, result.get("text", ""), ctx)
             return result
         except ModelNotReady as exc:
             raise HTTPException(503, str(exc))
@@ -269,6 +400,10 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
             return StreamingResponse(file_events(), media_type="application/x-ndjson",
                                      headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+        rag, ctx, early = graph_step(req, request)
+        if early is not None:
+            return StreamingResponse(iter([json.dumps({"event": "done", **early}) + "\n"]), media_type="application/x-ndjson",
+                                     headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
         if not service.ready:
             raise HTTPException(503, service.last_error or "Model is not loaded. Train ELVARN first.")
         check_web_search(req)
@@ -277,13 +412,17 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
         def events():
             try:
-                plan = plan_search(req.text, history, req.mode, req.web_search)
-                if plan.query:
-                    yield json.dumps({"event": "status", "status": "searching",
-                                      "message": "Searching the web..."}) + "\n"
-                found = search_step(plan, req, request)
-                if plan.query:
-                    yield json.dumps({"event": "sources", **found.fields()}) + "\n"
+                if rag is not None:
+                    found = rag
+                    yield json.dumps({"event": "sources", **found.fields(), **kb_extra(ctx)}) + "\n"
+                else:
+                    plan = plan_search(req.text, history, req.mode, req.web_search)
+                    if plan.query:
+                        yield json.dumps({"event": "status", "status": "searching",
+                                          "message": "Searching the web..."}) + "\n"
+                    found = search_step(plan, req, request)
+                    if plan.query:
+                        yield json.dumps({"event": "sources", **found.fields()}) + "\n"
                 text, hist = model_input(req, found, history)
                 rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
                 temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
@@ -294,8 +433,11 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                 ):
                     if event["event"] == "done":
                         event.update(found.fields())
+                        if rag is not None:
+                            event.update(kb_extra(ctx))
                         event["repetition_source"] = rep_source
                         event["sampling_source"] = sampling_source
+                        remember(req, request, event.get("text", ""), ctx)
                     yield json.dumps(event) + "\n"
             except Exception as exc:  # reported to the UI instead of a broken stream
                 yield json.dumps({"event": "error", "message": str(exc)}) + "\n"
@@ -304,6 +446,15 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
         return StreamingResponse(events(), media_type="application/x-ndjson",
                                  headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+
+    @app.delete("/api/memory")
+    def forget_memory(request: Request, session_id: Optional[str] = None):
+        """Delete this user's remembered turns and entities right away (privacy)."""
+        if remote is not None:
+            remote.forget(session_key(session_id or visitor(request)))
+        elif memory is not None:
+            memory.forget(session_key(session_id or visitor(request)))
+        return {"forgotten": True}
 
     @app.get("/api/health")
     def health():

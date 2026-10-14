@@ -1,0 +1,9 @@
+# Build context for images built from the repo root (knowledge_service/Dockerfile and the pipeline images):
+# an ALLOWLIST - nothing is sent to Docker (and so nothing can end up inside an image) unless it is listed here.
+# In particular .env, .venv, .git, model weights and the collected data never enter an image.
+*
+!knowledge_service/
+!backend/knowledge/
+!backend/usermemory/
+**/__pycache__
+**/*.pyc

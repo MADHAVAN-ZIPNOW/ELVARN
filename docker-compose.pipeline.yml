@@ -1,0 +1,120 @@
+# Data-engineering stack for collecting Tamil Nadu corruption sources:
+#   Airflow (schedule collectors) -> Kafka (document stream) -> Spark (extract, chunk, propose facts) -> Neo4j (the graph)
+#
+#   docker compose --env-file .env -f docker-compose.pipeline.yml up -d --build
+#   Airflow UI: http://localhost:8088   (user "admin"; the generated password is in the airflow container logs / standalone_admin_password.txt)
+#
+# Neo4j runs separately (docker-compose.neo4j.yml); containers reach it at host.docker.internal:7687.
+# Every port is bound to this machine only. NEO4J_PASSWORD comes from .env.
+name: elvarn-pipeline
+
+x-elvarn-env: &elvarn-env
+  NEO4J_URI: bolt://host.docker.internal:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: ${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
+  KAFKA_BOOTSTRAP: kafka:9092
+  KAFKA_TOPIC: kb.raw_documents
+  CHROMA_HOST: host.docker.internal
+  CHROMA_PORT: 8001
+  REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}@host.docker.internal:6379/0
+  PYTHONPATH: /opt/elvarn
+
+services:
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: elvarn-kafka
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9094:9094"        # for collectors run from the host
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_RETENTION_HOURS: -1          # keep every collected document message (replayable)
+      KAFKA_HEAP_OPTS: "-Xmx512m -Xms256m"
+    volumes:
+      - elvarn_kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  kafka-init:
+    image: apache/kafka:3.9.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic kb.raw_documents --partitions 3 --replication-factor 1
+
+  spark:
+    build:
+      context: .
+      dockerfile: docker/spark.Dockerfile
+    container_name: elvarn-spark
+    restart: unless-stopped
+    user: root
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      <<: *elvarn-env
+      SPARK_CHECKPOINT: /checkpoints/kb
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend:/opt/elvarn/backend:ro      # code + archived raw files (read-only); .env and .venv are NOT mounted
+      - elvarn_spark_checkpoints:/checkpoints
+      - elvarn_spark_ivy:/tmp/ivy
+    command: >
+      /opt/spark/bin/spark-submit
+      --master local[2]
+      --driver-memory 1g
+      --conf spark.jars.ivy=/tmp/ivy
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3
+      /opt/elvarn/backend/pipeline/spark_job.py
+
+  airflow:
+    build:
+      context: .
+      dockerfile: docker/airflow.Dockerfile
+    container_name: elvarn-airflow
+    restart: unless-stopped
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8088:8080"
+    environment:
+      <<: *elvarn-env
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/elvarn/dags
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      COLLECT_DELAY: "3"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend:/opt/elvarn/backend         # collectors write the raw archive + state under backend/data
+      - ./dags:/opt/elvarn/dags:ro
+      - elvarn_embed_model_airflow:/home/airflow/.cache/chroma
+      - elvarn_airflow_home:/opt/airflow
+    command: standalone
+
+volumes:
+  elvarn_kafka_data:
+  elvarn_spark_checkpoints:
+  elvarn_spark_ivy:
+  elvarn_airflow_home:
+  elvarn_embed_model_airflow:

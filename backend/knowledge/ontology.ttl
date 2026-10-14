@@ -1,0 +1,225 @@
+# ELVARN knowledge base ontology (v0.1, draft)
+# Domain: Tamil Nadu / India government, law and administration, plus general knowledge.
+# Every fact must trace back to a Passage, and every Passage to a Source (with licence).
+
+@prefix elv:  <https://elvarn.local/kb#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://elvarn.local/kb> a owl:Ontology ;
+    rdfs:label "ELVARN Knowledge Base Ontology" ;
+    owl:versionInfo "0.1" .
+
+# ---------------------------------------------------------------- provenance
+elv:Source a owl:Class ;
+    rdfs:comment "Where text came from: a Wikipedia article, a dataset, a user file, a web page." .
+elv:Passage a owl:Class ;
+    rdfs:comment "A short chunk of text (sized for the 128-token model window). The retrievable unit." .
+elv:Licence a owl:Class .
+
+elv:hasText      a owl:DatatypeProperty ; rdfs:domain elv:Passage ; rdfs:range xsd:string .
+elv:hasTokenCount a owl:DatatypeProperty ; rdfs:domain elv:Passage ; rdfs:range xsd:integer .
+elv:position     a owl:DatatypeProperty ; rdfs:domain elv:Passage ; rdfs:range xsd:integer .
+elv:url          a owl:DatatypeProperty ; rdfs:domain elv:Source ; rdfs:range xsd:anyURI .
+elv:retrievedAt  a owl:DatatypeProperty ; rdfs:domain elv:Source ; rdfs:range xsd:dateTime .
+elv:verified     a owl:DatatypeProperty ; rdfs:domain elv:Passage ; rdfs:range xsd:boolean ;
+    rdfs:comment "False until a person has checked it (the corpus is marked 'Unverified - pending source check')." .
+
+elv:fromSource   a owl:ObjectProperty ; rdfs:domain elv:Passage ; rdfs:range elv:Source .
+elv:licensedUnder a owl:ObjectProperty ; rdfs:domain elv:Source ; rdfs:range elv:Licence .
+elv:mentions     a owl:ObjectProperty ; rdfs:domain elv:Passage ; rdfs:range elv:Entity ;
+    rdfs:comment "Passage -> the entities it talks about. Used to pull evidence for an entity." .
+elv:inTopic      a owl:ObjectProperty ; rdfs:domain elv:Passage ; rdfs:range elv:Topic .
+
+# ---------------------------------------------------------------- topics
+elv:Topic a owl:Class ;
+    rdfs:comment "Subject area; mirrors the Wikipedia categories used for collection." .
+elv:subTopicOf a owl:ObjectProperty, owl:TransitiveProperty ; rdfs:domain elv:Topic ; rdfs:range elv:Topic .
+
+elv:GovernanceTopic a owl:Class ; rdfs:subClassOf elv:Topic .
+elv:LawTopic        a owl:Class ; rdfs:subClassOf elv:Topic .
+elv:HistoryTopic    a owl:Class ; rdfs:subClassOf elv:Topic .
+elv:ScienceTopic    a owl:Class ; rdfs:subClassOf elv:Topic .
+elv:GeneralTopic    a owl:Class ; rdfs:subClassOf elv:Topic .
+
+# ---------------------------------------------------------------- entities
+elv:Entity a owl:Class ;
+    rdfs:comment "Anything the KB can describe." .
+elv:name  a owl:DatatypeProperty ; rdfs:domain elv:Entity ; rdfs:range xsd:string .
+elv:alias a owl:DatatypeProperty ; rdfs:domain elv:Entity ; rdfs:range xsd:string .
+elv:sameAs a owl:ObjectProperty, owl:SymmetricProperty ; rdfs:domain elv:Entity ; rdfs:range elv:Entity .
+elv:wikipediaTitle a owl:DatatypeProperty ; rdfs:domain elv:Entity ; rdfs:range xsd:string .
+
+# People
+elv:Person a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Politician   a owl:Class ; rdfs:subClassOf elv:Person .
+elv:ChiefMinister a owl:Class ; rdfs:subClassOf elv:Politician .
+elv:Governor     a owl:Class ; rdfs:subClassOf elv:Person .
+elv:Judge        a owl:Class ; rdfs:subClassOf elv:Person .
+elv:CivilServant a owl:Class ; rdfs:subClassOf elv:Person .
+elv:Scientist    a owl:Class ; rdfs:subClassOf elv:Person .
+
+# Organisations
+elv:Organisation a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:GovernmentBody a owl:Class ; rdfs:subClassOf elv:Organisation .
+elv:Ministry     a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:Department   a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:Legislature  a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:Court        a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:AuditBody    a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:AntiCorruptionAgency a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:LocalBody    a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:PoliticalParty a owl:Class ; rdfs:subClassOf elv:Organisation .
+elv:Institution  a owl:Class ; rdfs:subClassOf elv:Organisation .
+
+# Law
+elv:LegalInstrument a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Constitution a owl:Class ; rdfs:subClassOf elv:LegalInstrument .
+elv:Act          a owl:Class ; rdfs:subClassOf elv:LegalInstrument .
+elv:Article      a owl:Class ; rdfs:subClassOf elv:LegalInstrument ;
+    rdfs:comment "An article of the Constitution." .
+elv:Section      a owl:Class ; rdfs:subClassOf elv:LegalInstrument .
+elv:Judgment     a owl:Class ; rdfs:subClassOf elv:LegalInstrument .
+elv:Right        a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Offence      a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Scheme       a owl:Class ; rdfs:subClassOf elv:Entity ;
+    rdfs:comment "Government welfare or development scheme." .
+
+# Places and time
+elv:Place a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Country a owl:Class ; rdfs:subClassOf elv:Place .
+elv:State   a owl:Class ; rdfs:subClassOf elv:Place .
+elv:District a owl:Class ; rdfs:subClassOf elv:Place .
+elv:City    a owl:Class ; rdfs:subClassOf elv:Place .
+elv:River   a owl:Class ; rdfs:subClassOf elv:Place .
+elv:Event a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Election a owl:Class ; rdfs:subClassOf elv:Event .
+elv:Movement a owl:Class ; rdfs:subClassOf elv:Event .
+
+# General knowledge
+elv:Concept a owl:Class ; rdfs:subClassOf elv:Entity ;
+    rdfs:comment "Abstract idea: federalism, democracy, photosynthesis, ..." .
+elv:Language a owl:Class ; rdfs:subClassOf elv:Entity .
+elv:Species  a owl:Class ; rdfs:subClassOf elv:Entity .
+
+# Disjointness (a thing cannot be a person and a place)
+[] a owl:AllDisjointClasses ;
+   owl:members ( elv:Person elv:Organisation elv:LegalInstrument elv:Place elv:Event elv:Concept ) .
+
+# ---------------------------------------------------------------- relations between entities
+elv:partOf a owl:ObjectProperty, owl:TransitiveProperty ; rdfs:domain elv:Entity ; rdfs:range elv:Entity ;
+    rdfs:comment "District partOf State partOf Country; Department partOf Ministry." .
+elv:hasPart a owl:ObjectProperty ; owl:inverseOf elv:partOf .
+
+elv:headOf a owl:ObjectProperty ; rdfs:domain elv:Person ; rdfs:range elv:Organisation .
+elv:memberOf a owl:ObjectProperty ; rdfs:domain elv:Person ; rdfs:range elv:Organisation .
+elv:foundedBy a owl:ObjectProperty ; rdfs:domain elv:Organisation ; rdfs:range elv:Person .
+elv:successorOf a owl:ObjectProperty, owl:TransitiveProperty ; rdfs:domain elv:Entity ; rdfs:range elv:Entity .
+elv:locatedIn a owl:ObjectProperty ; rdfs:domain elv:Entity ; rdfs:range elv:Place .
+elv:capitalOf a owl:ObjectProperty ; rdfs:domain elv:City ; rdfs:range elv:Place .
+
+elv:establishedBy a owl:ObjectProperty ; rdfs:domain elv:GovernmentBody ; rdfs:range elv:LegalInstrument .
+elv:enactedBy   a owl:ObjectProperty ; rdfs:domain elv:Act ; rdfs:range elv:Legislature .
+elv:amends      a owl:ObjectProperty ; rdfs:domain elv:LegalInstrument ; rdfs:range elv:LegalInstrument .
+elv:repeals     a owl:ObjectProperty ; rdfs:domain elv:LegalInstrument ; rdfs:range elv:LegalInstrument .
+elv:guarantees  a owl:ObjectProperty ; rdfs:domain elv:LegalInstrument ; rdfs:range elv:Right .
+elv:definesOffence a owl:ObjectProperty ; rdfs:domain elv:LegalInstrument ; rdfs:range elv:Offence .
+elv:interprets  a owl:ObjectProperty ; rdfs:domain elv:Judgment ; rdfs:range elv:LegalInstrument .
+elv:decidedBy   a owl:ObjectProperty ; rdfs:domain elv:Judgment ; rdfs:range elv:Court .
+elv:hasJurisdictionOver a owl:ObjectProperty ; rdfs:domain elv:GovernmentBody ; rdfs:range elv:Place .
+elv:administers a owl:ObjectProperty ; rdfs:domain elv:GovernmentBody ; rdfs:range elv:Scheme .
+elv:auditedBy   a owl:ObjectProperty ; rdfs:domain elv:GovernmentBody ; rdfs:range elv:AuditBody .
+
+elv:contestedIn a owl:ObjectProperty ; rdfs:domain elv:PoliticalParty ; rdfs:range elv:Election .
+elv:wonElection a owl:ObjectProperty ; rdfs:domain elv:PoliticalParty ; rdfs:range elv:Election .
+
+# ---------------------------------------------------------------- facts with dates
+elv:startDate a owl:DatatypeProperty ; rdfs:range xsd:date .
+elv:endDate   a owl:DatatypeProperty ; rdfs:range xsd:date .
+elv:Tenure a owl:Class ;
+    rdfs:comment "Reified role: person holds an office for a period (e.g. a Chief Minister's term)." .
+elv:holder   a owl:ObjectProperty ; rdfs:domain elv:Tenure ; rdfs:range elv:Person .
+elv:office   a owl:ObjectProperty ; rdfs:domain elv:Tenure ; rdfs:range elv:Organisation .
+elv:supportedBy a owl:ObjectProperty ;
+    rdfs:comment "Links any extracted fact/Tenure to the Passage that supports it (provenance)." ;
+    rdfs:range elv:Passage .
+
+# ================================================================ corruption cases (v0.2)
+# Rule: nothing is stored without a citation. Every Claim, CaseEvent and CaseParty points to a Passage.
+
+elv:Case a owl:Class ; rdfs:subClassOf elv:Entity ;
+    rdfs:comment "A corruption / disproportionate-assets / money-laundering case, from FIR to final judgment." .
+elv:caseNumber  a owl:DatatypeProperty ; rdfs:domain elv:Case ; rdfs:range xsd:string .
+elv:yearRegistered a owl:DatatypeProperty ; rdfs:domain elv:Case ; rdfs:range xsd:gYear .
+elv:investigatedBy a owl:ObjectProperty ; rdfs:domain elv:Case ; rdfs:range elv:InvestigatingAgency .
+elv:heardBy     a owl:ObjectProperty ; rdfs:domain elv:Case ; rdfs:range elv:Court .
+elv:relatedCase a owl:ObjectProperty, owl:SymmetricProperty ; rdfs:domain elv:Case ; rdfs:range elv:Case ;
+    rdfs:comment "E.g. the predicate offence case and the PMLA case built on it." .
+elv:chargedUnder a owl:ObjectProperty ; rdfs:domain elv:Case ; rdfs:range elv:Section .
+
+elv:InvestigatingAgency a owl:Class ; rdfs:subClassOf elv:GovernmentBody .
+elv:DVAC a owl:Class ; rdfs:subClassOf elv:InvestigatingAgency ; rdfs:label "Directorate of Vigilance and Anti-Corruption" .
+elv:CBI  a owl:Class ; rdfs:subClassOf elv:InvestigatingAgency .
+elv:ED   a owl:Class ; rdfs:subClassOf elv:InvestigatingAgency ; rdfs:label "Enforcement Directorate" .
+elv:CBCID a owl:Class ; rdfs:subClassOf elv:InvestigatingAgency .
+elv:Lokayukta a owl:Class ; rdfs:subClassOf elv:InvestigatingAgency .
+
+# Lifecycle stages (a Case moves through these in order)
+elv:Stage a owl:Class .
+elv:FIR a elv:Stage ; rdfs:label "FIR registered" .
+elv:Investigation a elv:Stage .
+elv:Arrest a elv:Stage .
+elv:Chargesheet a elv:Stage .
+elv:Trial a elv:Stage .
+elv:HighCourt a elv:Stage .
+elv:SupremeCourt a elv:Stage .
+elv:FinalJudgment a elv:Stage .
+
+# Status of a person in a case (never inferred; copied from a cited document)
+elv:Status a owl:Class .
+elv:StatusFIRRegistered a elv:Status ; rdfs:label "named in FIR" .
+elv:StatusAccused a elv:Status ; rdfs:label "accused" .
+elv:StatusArrested a elv:Status .
+elv:StatusOnBail a elv:Status .
+elv:StatusCharged a elv:Status .
+elv:StatusConvicted a elv:Status .
+elv:StatusAcquitted a elv:Status .
+elv:StatusDischarged a elv:Status .
+elv:StatusQuashed a elv:Status ; rdfs:label "proceedings quashed" .
+elv:StatusAppealPending a elv:Status .
+
+# Role of a person in a case
+elv:CaseParty a owl:Class ;
+    rdfs:comment "Reified link: person + case + role + status + date + supporting passage." .
+elv:party   a owl:ObjectProperty ; rdfs:domain elv:CaseParty ; rdfs:range elv:Person .
+elv:inCase  a owl:ObjectProperty ; rdfs:domain elv:CaseParty ; rdfs:range elv:Case .
+elv:role    a owl:DatatypeProperty ; rdfs:domain elv:CaseParty ;
+    rdfs:comment "accused | complainant | investigating_officer | judge | witness | prosecutor | counsel" .
+elv:hasStatus a owl:ObjectProperty ; rdfs:domain elv:CaseParty ; rdfs:range elv:Status .
+elv:statusDate a owl:DatatypeProperty ; rdfs:domain elv:CaseParty ; rdfs:range xsd:date .
+
+elv:CaseEvent a owl:Class ; rdfs:subClassOf elv:Event .
+elv:atStage a owl:ObjectProperty ; rdfs:domain elv:CaseEvent ; rdfs:range elv:Stage .
+elv:eventDate a owl:DatatypeProperty ; rdfs:domain elv:CaseEvent ; rdfs:range xsd:date .
+elv:ofCase  a owl:ObjectProperty ; rdfs:domain elv:CaseEvent ; rdfs:range elv:Case .
+
+# How much weight a statement carries
+elv:AssertionLevel a owl:Class .
+elv:Alleged a elv:AssertionLevel ; rdfs:comment "Allegation by agency/complainant/press; not proven." .
+elv:Reported a elv:AssertionLevel ; rdfs:comment "Reliable report of a fact (e.g. an arrest, a filing)." .
+elv:CourtFinding a elv:AssertionLevel ; rdfs:comment "Established by a court order or judgment." .
+elv:assertionLevel a owl:ObjectProperty ; rdfs:range elv:AssertionLevel .
+
+# Document types (what a Source is)
+elv:DocumentType a owl:Class .
+elv:FIRDocument a elv:DocumentType . elv:ChargesheetDocument a elv:DocumentType .
+elv:JudgmentDocument a elv:DocumentType . elv:OrderDocument a elv:DocumentType .
+elv:CommissionReport a elv:DocumentType . elv:AssemblyProceedings a elv:DocumentType .
+elv:NewsReport a elv:DocumentType . elv:ReferenceWork a elv:DocumentType .
+
+# Assembly link: what was said about a case, by whom, when
+elv:AssemblyDiscussion a owl:Class ; rdfs:subClassOf elv:Event .
+elv:speaker a owl:ObjectProperty ; rdfs:domain elv:AssemblyDiscussion ; rdfs:range elv:Person .
+elv:aboutCase a owl:ObjectProperty ; rdfs:domain elv:AssemblyDiscussion ; rdfs:range elv:Case .

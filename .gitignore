@@ -38,3 +38,15 @@ backend/file_store/
 # console logs of long runs and the generated RAG training data (rebuild with backend/data_tools/build_rag_dataset.py)
 *.out
 backend/data/rag_v1/
+
+
+# knowledge graph: ingest logs and the inbox of downloaded official documents (Neo4j holds the data)
+backend/data/kb_ingest.*
+backend/data/kb_inbox/
+
+# collected raw documents (court / DVAC PDFs), collector state and run logs: large, regenerable, and not ours to republish
+backend/data/kb_raw/
+backend/data/kb_state/
+backend/data/collect_logs/
+backend/data/train_logs/
+backend/data/rag_kb_*/
