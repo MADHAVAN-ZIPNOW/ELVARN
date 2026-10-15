@@ -25,7 +25,7 @@ sys.path.insert(0, str(BACKEND_DIR))
 
 from files.routes import install_file_routes  # noqa: E402
 from knowledge.kb import CORRUPTION_WORDS, NOT_FOUND, UNAVAILABLE, KnowledgeBase  # noqa: E402
-from knowledge import graphrag  # noqa: E402
+from knowledge import graphrag, groundcheck  # noqa: E402
 from knowledge.vectorstore import RagStore  # noqa: E402
 from knowledge.remote import KnowledgeUnavailable, RemoteKnowledge  # noqa: E402
 from usermemory.store import Memory, session_key  # noqa: E402
@@ -307,6 +307,18 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             res.message = USED_NO_EVIDENCE_MESSAGE
         return res, ctx, None
 
+    def check_grounding(result, found, question):
+        """An answer written from notes must match the notes: otherwise the stored record text itself is shown (and the model's own
+        wording stays in raw_text). Chat without notes is untouched."""
+        if not (getattr(found, "model_text", None) and found.evidence_in_prompt):
+            return
+        shown, grounding, why = groundcheck.guard(result.get("text", ""), found.model_text, question)
+        result["grounding"] = grounding
+        if grounding == "extractive":
+            result["model_text_replaced"] = result.get("text", "")
+            result["text"] = shown
+            result["grounding_reasons"] = why
+
     def kb_extra(ctx):
         """Extra response fields: the exact graph facts used (with their level and citation), the entities found, any failed branch."""
         return {"kb_facts": [{"text": i["text"], "level": i["level"], "source": i["source"]} for i in ctx.facts()],
@@ -357,6 +369,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             result.update(found.fields())
             if rag is not None:
                 result.update(kb_extra(ctx))
+            check_grounding(result, found, req.text)
             result["repetition_source"] = rep_source
             result["sampling_source"] = sampling_source
             remember(req, request, result.get("text", ""), ctx)
@@ -432,6 +445,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                         event.update(found.fields())
                         if rag is not None:
                             event.update(kb_extra(ctx))
+                        check_grounding(event, found, req.text)
                         event["repetition_source"] = rep_source
                         event["sampling_source"] = sampling_source
                         remember(req, request, event.get("text", ""), ctx)

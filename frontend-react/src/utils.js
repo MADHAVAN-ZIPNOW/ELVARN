@@ -64,7 +64,7 @@ export function searchInfo(e) {
 export const compact = (e) => ({
   generated_tokens: e.generated_tokens, prompt_tokens: e.prompt_tokens, seconds: e.seconds, tokens_per_second: e.tokens_per_second,
   mean_token_probability: e.mean_token_probability, stop_reason: e.stop_reason, checkpoint: e.checkpoint,
-  weights_from_step: e.weights_from_step, raw_text: e.raw_text,
+  weights_from_step: e.weights_from_step, raw_text: e.raw_text, grounding: e.grounding || "", model_text_replaced: e.model_text_replaced || "",
 });
 
 /** Where did this answer come from? (text only, shown under the reply) */
@@ -73,6 +73,8 @@ export function originInfo(meta) {
   const s = meta.search;
   if (meta.stop_reason === "knowledge_base")
     return { cls: "refused", label: "Answered from: nothing.", text: " The stored records have no match for this (or the knowledge base is unavailable), so no answer was written." };
+  if (meta.grounding === "extractive")
+    return { cls: "kb", label: "Answered from: the sources, word for word.", text: " The small model's own wording did not match the sources (a number, a name or a repeat), so the source text is shown as it is. Check the source cards." };
   if (s && s.kb && s.searched)
     return { cls: "kb", label: "Answered from: stored records.", text: " Knowledge-graph facts and documents are cited below; the small model wrote the wording, which can still be wrong." };
   if (s && s.searched)
