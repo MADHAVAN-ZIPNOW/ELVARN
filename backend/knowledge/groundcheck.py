@@ -67,6 +67,11 @@ def check_answer(answer, notes, question=""):
         reasons.append("names not in the notes: " + ", ".join(sorted(set(unknown))[:4]))
 
     words = re.findall(r"[A-Za-z0-9']+", bare.lower())
+    if any(words[i] == words[i + 1] and len(words[i]) > 3 for i in range(len(words) - 1)):
+        reasons.append("a word is doubled")
+    pairs = [tuple(words[i:i + 2]) for i in range(len(words) - 1)]
+    if any(pairs.count(g) >= 2 and len(g[0]) > 2 and len(g[1]) > 2 for g in set(pairs)):
+        reasons.append("a word pair repeats")
     if any(words[i] == words[i + 1] == words[i + 2] for i in range(len(words) - 2)):
         reasons.append("a word repeats three times in a row")
     grams = [tuple(words[i:i + 3]) for i in range(len(words) - 2)]

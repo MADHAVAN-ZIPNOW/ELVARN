@@ -56,3 +56,10 @@ def test_no_notes_means_no_change():
 def test_the_extractive_answer_cites_each_note_and_keeps_the_text():
     out = extractive_answer(parse_notes(PROMPT), max_notes=2)
     assert out.startswith("From the sources: [1] ") and "[2] DVAC press release dated 2018-12-12" in out and "Rs.3,50,800/-" in out
+
+
+def test_a_doubled_word_or_repeated_pair_is_caught_but_a_clean_sentence_is_not():
+    notes = {1: "The Prevention of Corruption Act, 1988 deals with offences by public servants under Section 13."}
+    q = "What is the Prevention of Corruption Act?"
+    assert not check_answer("The Prevention of Corruption Act, 1988 offences offences under Section 13 of the Prevention of Corruption deal with corruption with corruption.", notes, q)[0]
+    assert check_answer("The Prevention of Corruption Act, 1988 deals with offences by public servants under Section 13. [1]", notes, q)[0]
