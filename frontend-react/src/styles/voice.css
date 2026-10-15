@@ -3,7 +3,14 @@
 .talkbtn svg.i{stroke:#fff;width:22px;height:22px}
 .talkpanel{position:fixed;z-index:28;right:22px;top:calc(78px + env(safe-area-inset-top));width:min(380px,calc(100vw - 24px));min-height:210px;
   display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:14px 16px 16px;border-radius:26px;color:var(--ink);
-  background:radial-gradient(circle at 50% 0%,rgba(71,166,255,.22),transparent 62%),var(--bg);box-shadow:var(--raise)}
+  background:radial-gradient(circle at 50% 0%,rgba(128,24,52,.16),transparent 62%),var(--bg);box-shadow:var(--raise)}
+/* burgundy + blush beige theme for the voice card (local overrides, rest of the app unchanged) */
+.talkpanel{--bg:#f3e3d8;--ink:#5a0f26;--ink2:#7a2a40;--ink3:#a35a6b;
+  --raise:9px 9px 22px rgba(120,40,55,.28),-9px -9px 20px rgba(255,248,242,.95);
+  --raise-sm:4px 4px 10px rgba(120,40,55,.26),-4px -4px 9px rgba(255,248,242,.95);
+  --inset:inset 3px 3px 7px rgba(120,40,55,.3),inset -3px -3px 7px rgba(255,248,242,.9)}
+.talkpanel svg.i,.talkpanel svg.i[class]{stroke:#800020!important}
+.talkpanel svg.i.fill{fill:#800020!important}
 @media (max-width:600px){.talkpanel{right:12px;left:12px;width:auto}}
 .icon-btn.talkhdr.on{box-shadow:var(--inset)}
 .tp-top{display:flex;align-items:center;justify-content:space-between}
@@ -11,7 +18,7 @@
 .tp-btn:active{box-shadow:var(--inset)}
 .tp-btn svg.i{width:18px;height:18px}
 .talkpanel .wave{display:inline-flex;align-items:center;gap:4px;height:26px}
-.talkpanel .wave i{width:5px;height:8px;border-radius:3px;background:linear-gradient(180deg,#2cc4d1,#2f7dff);animation:wavebar .9s ease-in-out infinite}
+.talkpanel .wave i{width:5px;height:8px;border-radius:3px;background:linear-gradient(180deg,#c2536b,#6e0f2b);animation:wavebar .9s ease-in-out infinite}
 .talkpanel .wave i:nth-child(2){animation-delay:.1s}.talkpanel .wave i:nth-child(3){animation-delay:.2s}.talkpanel .wave i:nth-child(4){animation-delay:.3s}.talkpanel .wave i:nth-child(5){animation-delay:.4s}
 .talkpanel.thinking .wave i{animation-duration:1.6s}
 .tp-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:10px 8px}
