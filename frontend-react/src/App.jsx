@@ -21,6 +21,7 @@ import { FilePanel } from "./components/FileParts";
 import { TalkBar } from "./components/TalkBar";
 import { continuing, greeting, rememberName } from "./talkHelpers";
 import { cue } from "./sounds";
+import { notifyNewChat } from "./ownerKey";
 import { LeadCard, shouldAskForEmail } from "./components/LeadCard";
 
 export default function App() {
@@ -187,6 +188,7 @@ export default function App() {
     setEpoch((e) => e + 1);
     closeAll();
     setTimeout(focusInput, 0);
+    if (latest.current.settings.emailOnNew !== false) notifyNewChat();          // owner only: a colourful greeting email
     if (latest.current.settings.voiceOnNew && voice.supported && speech.supported) { stopTalk(); setTimeout(startTalk, 250); }
   };
   const openMode = (id) => {
@@ -197,6 +199,7 @@ export default function App() {
       const n = { ...newConv(), mode: id };
       setConvs((cs) => [n, ...cs]);
       setCurrentId(n.id);
+      if (latest.current.settings.emailOnNew !== false) notifyNewChat();          // a new chat: the owner's greeting email
     } else updateConv(c.id, (x) => ({ ...x, mode: id }));
     setView("chat");
     setEpoch((e) => e + 1);

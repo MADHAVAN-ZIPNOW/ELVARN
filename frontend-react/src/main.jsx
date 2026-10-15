@@ -1,6 +1,9 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { startAnimatedTabIcon } from "./components/Logo";
+import { captureOwnerKey } from "./ownerKey";
+
+captureOwnerKey();                       // ?owner=KEY in the address: remember it once
 
 // The stylesheets are loaded in this order on purpose: later files override earlier ones, exactly as in the single-file version.
 import "./styles/base.css";

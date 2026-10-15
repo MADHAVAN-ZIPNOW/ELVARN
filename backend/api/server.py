@@ -4,6 +4,7 @@ Run from the project root:
     python -m uvicorn backend.api.server:app --port 8000
 then open http://127.0.0.1:8000
 """
+import hmac
 import json
 import os
 import sys
@@ -29,6 +30,7 @@ from knowledge import graphrag, groundcheck  # noqa: E402
 from knowledge.vectorstore import RagStore  # noqa: E402
 from knowledge.remote import KnowledgeUnavailable, RemoteKnowledge  # noqa: E402
 from notify.mailer import MailError, Mailer, clean_address, one_line  # noqa: E402
+from notify.templates import new_chat_email  # noqa: E402
 from telephony.routes import install_call_routes  # noqa: E402
 from usermemory.store import Memory, session_key  # noqa: E402
 from files.service import FileService  # noqa: E402
@@ -124,7 +126,7 @@ Thanks for trying ELVARN, a small AI model that answers questions about Tamil Na
 You are getting this mail because you left your address on the site and agreed to it. Reply STOP and we will delete it.
 """
 
-def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None, call_config=None):
+def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None, call_config=None, owner_key=None):
     """public=True (or ELVARN_PUBLIC=1) is for a website anyone can reach: it turns on a per-visitor rate limit,
     a cap on simultaneous generations, and disables the reload endpoint."""
     public = env_flag("ELVARN_PUBLIC") if public is None else public
@@ -301,6 +303,8 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             except Exception:
                 return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
             populated = None
+        # headings, bare links and one-line fragments scraped from web pages are not answers: drop them before the model or the user sees them
+        ctx.items = [i for i in ctx.items if i["kind"] == "fact" or groundcheck.usable_note(i.get("text", ""))]
         if not ctx.items:
             if corruption and (populated if populated is not None else has_data()):
                 return None, None, kb_reply(req, NOT_FOUND)
@@ -506,6 +510,36 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         except MailError as exc:
             raise HTTPException(502, str(exc))
         lead_state["seen"].add(address)
+        return {"ok": True, "sent": True}
+
+    # ---- the owner gets a colourful greeting email each time they open a new chat (owner key from the browser, address from the server's settings)
+    owner_secret = owner_key if owner_key is not None else os.environ.get("OWNER_KEY", "")
+    new_chat_mail = {"last": 0.0, "sent": []}
+
+    def owner_request(request):
+        got = request.headers.get("x-owner-key", "")
+        return len(owner_secret) >= 16 and hmac.compare_digest(got.encode(), owner_secret.encode())
+
+    @app.get("/api/notify/status")
+    def notify_status():
+        return {"enabled": bool(mailer is not None and mailer.owner and len(owner_secret) >= 16)}
+
+    @app.post("/api/notify/newchat")
+    def notify_new_chat(request: Request, hour: Optional[int] = None):
+        if mailer is None or not mailer.owner or not owner_request(request):
+            raise HTTPException(403, "Not allowed.")
+        now = time.time()
+        new_chat_mail["sent"] = [t for t in new_chat_mail["sent"] if now - t < 86400]
+        if now - new_chat_mail["last"] < 20 or len(new_chat_mail["sent"]) >= 40:
+            return {"ok": True, "sent": False}              # opened chats in quick succession (or very many today): one mail is enough
+        base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/") or str(request.base_url).rstrip("/")
+        subject, text, html = new_chat_email(os.environ.get("OWNER_NAME", ""), hour if hour is not None and 0 <= hour <= 23 else time.localtime().tm_hour, base)
+        try:
+            mailer.send(mailer.owner, subject, text, html=html)
+        except MailError as exc:
+            raise HTTPException(502, str(exc))
+        new_chat_mail["last"] = now
+        new_chat_mail["sent"].append(now)
         return {"ok": True, "sent": True}
 
     @app.delete("/api/memory")

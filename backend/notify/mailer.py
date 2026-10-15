@@ -60,15 +60,17 @@ class Mailer:
             return None                                   # not set up: the feature stays off
         return cls(host, e.get("SMTP_PORT") or 587, user, password, e.get("MAIL_FROM") or user, clean_address(e.get("OWNER_EMAIL")), smtp_factory)
 
-    def send(self, to, subject, body):
+    def send(self, to, subject, body, html=None):
         to = clean_address(to)
         if to is None:
             raise MailError("that email address does not look right")
         if self.webhook:
-            return self._send_by_webhook(to, subject, body)
+            return self._send_by_webhook(to, subject, body, html)
         msg = EmailMessage()
         msg["From"], msg["To"], msg["Subject"] = self.sender, to, one_line(subject, 120)
         msg.set_content(str(body)[:5000])
+        if html:
+            msg.add_alternative(str(html)[:60000], subtype="html")
         try:
             if self._factory:
                 server = self._factory(self.host, self.port)
@@ -84,10 +86,10 @@ class Mailer:
         except (smtplib.SMTPException, OSError) as exc:
             raise MailError("the mail server did not accept the message") from exc
 
-    def _send_by_webhook(self, to, subject, body):
+    def _send_by_webhook(self, to, subject, body, html=None):
         try:
             with httpx.Client(timeout=30, follow_redirects=True, transport=self._transport) as client:
-                r = client.post(self.webhook, json={"secret": self.webhook_secret, "to": to, "subject": one_line(subject, 120), "body": str(body)[:5000]})
+                r = client.post(self.webhook, json={"secret": self.webhook_secret, "to": to, "subject": one_line(subject, 120), "body": str(body)[:5000], "html": str(html)[:60000] if html else ""})
             ok = r.status_code == 200 and r.json().get("ok") is True
         except (httpx.HTTPError, ValueError) as exc:
             raise MailError("the mail relay could not be reached") from exc

@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "scripts"
 import deploy_render as dr  # noqa: E402
 import push_mail_settings as pm  # noqa: E402
 
-ENV = {"SMTP_HOST": "smtp.example.com", "SMTP_PORT": "587", "SMTP_USER": "me@example.com", "SMTP_PASSWORD": "secret-app-password", "OWNER_EMAIL": "me@example.com"}
+ENV = {"SMTP_HOST": "smtp.example.com", "SMTP_PORT": "587", "SMTP_USER": "me@example.com", "SMTP_PASSWORD": "secret-app-password", "OWNER_EMAIL": "me@example.com", "OWNER_KEY": "k" * 20, "OWNER_NAME": "Me", "PUBLIC_BASE_URL": "https://elvarn.example.com"}
 
 
 def fake(calls):

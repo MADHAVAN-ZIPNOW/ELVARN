@@ -98,3 +98,34 @@ def test_the_relay_mode_posts_to_the_web_app_and_reports_refusals():
     with pytest.raises(MailError):
         bad.send("v@example.com", "s", "b")
     assert Mailer.from_env({"MAIL_WEBHOOK_URL": "http://not-https.example.com", "MAIL_WEBHOOK_SECRET": "x"}) is None        # only https relays
+
+
+def test_the_new_chat_email_is_colourful_html_with_a_plain_text_copy_and_only_the_owner_can_ask_for_it(ckpt_dir):
+    from notify.templates import new_chat_email, part_of_day
+    subject, text, html = new_chat_email("Madhavan <b>", 19, "https://elvarn.example.com")
+    assert subject.startswith("Good evening, Madhavan") and "ELVARN" in html and "linear-gradient" in html and "OPEN ELVARN" in html
+    assert "&lt;b&gt;" in html and "<b>" not in html.split("Good evening")[1].split("</div>")[0]            # a name cannot inject markup
+    assert "https://elvarn.example.com" in text and "Allegations are not proof of guilt" in text
+    assert [part_of_day(h)[0] for h in (6, 13, 19, 2)] == ["Good morning", "Good afternoon", "Good evening", "Hello, night owl"]
+    FakeSMTP.sent = []
+    mailer = Mailer("smtp.example.com", 587, "bot@example.com", "pw", owner="owner@example.com", smtp_factory=FakeSMTP)
+    c = TestClient(create_app(ckpt_dir, load_on_start=False, max_concurrent=0, mail_service=mailer, owner_key="owner-key-0123456789"))
+    assert c.get("/api/notify/status").json() == {"enabled": True}
+    assert c.post("/api/notify/newchat").status_code == 403 and c.post("/api/notify/newchat", headers={"X-Owner-Key": "wrong"}).status_code == 403
+    assert not FakeSMTP.sent
+    r = c.post("/api/notify/newchat?hour=8", headers={"X-Owner-Key": "owner-key-0123456789"})
+    assert r.json() == {"ok": True, "sent": True}
+    msg = FakeSMTP.sent[0]
+    assert msg["To"] == "owner@example.com" and "Good morning" in msg["Subject"]
+    assert msg.get_body(("html",)).get_content().count("linear-gradient") >= 1 and "Allegations" in msg.get_body(("plain",)).get_content()
+    assert c.post("/api/notify/newchat", headers={"X-Owner-Key": "owner-key-0123456789"}).json() == {"ok": True, "sent": False}          # many new chats in a row: one mail
+
+
+def test_the_relay_carries_the_html_part():
+    import json
+    import httpx
+    seen = []
+    m = Mailer.from_env({"MAIL_WEBHOOK_URL": "https://script.google.com/macros/s/x/exec", "MAIL_WEBHOOK_SECRET": "s", "OWNER_EMAIL": "o@example.com"})
+    m._transport = httpx.MockTransport(lambda r: (seen.append(json.loads(r.content)), httpx.Response(200, json={"ok": True}))[1])
+    m.send("v@example.com", "Hi", "plain", html="<b>colour</b>")
+    assert seen[0]["html"] == "<b>colour</b>" and seen[0]["body"] == "plain"

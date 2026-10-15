@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Icon } from "../icons";
 import { pct } from "../utils";
+import { getOwnerKey } from "../ownerKey";
 
 function Range({ label, id, value, min, max, step, format, onChange }) {
   return (
@@ -75,6 +76,8 @@ export function LabPanel({ open, onClose, settings, setSetting, voices, speechSu
         </select>
       </div>
       <Range label="Speaking speed" id="rate" min={0.6} max={1.6} step={0.1} value={settings.rate} format={(v) => (+v).toFixed(1)} onChange={(v) => setSetting("rate", v)} />
+      {getOwnerKey() && <Switch id="emailOnNew" title="Email me a colourful greeting for every new chat" note="Owner mode: sent to your own address by the server"
+        checked={settings.emailOnNew !== false} onChange={(v) => setSetting("emailOnNew", v)} />}
       <Switch id="voiceSounds" title="Sounds in the voice conversation" note="A chime when you tap Talk, a beep when ELVARN starts listening"
         checked={settings.voiceSounds !== false} onChange={(v) => setSetting("voiceSounds", v)} />
       <Switch id="voiceOnNew" title="Start a voice conversation when I open a new chat" note="ELVARN greets you out loud and listens. Needs Chrome or Edge and microphone permission."

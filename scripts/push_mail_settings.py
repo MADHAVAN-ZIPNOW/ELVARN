@@ -13,8 +13,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import deploy_render as dr  # noqa: E402
 
-SMTP_KEYS = ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "OWNER_EMAIL")
-RELAY_KEYS = ("MAIL_WEBHOOK_URL", "MAIL_WEBHOOK_SECRET", "OWNER_EMAIL")
+COMMON = ("OWNER_EMAIL", "OWNER_KEY", "OWNER_NAME", "PUBLIC_BASE_URL")           # who gets the new-chat greeting, the key that proves it is you, the site address
+SMTP_KEYS = ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD") + COMMON
+RELAY_KEYS = ("MAIL_WEBHOOK_URL", "MAIL_WEBHOOK_SECRET") + COMMON
 KEYS = SMTP_KEYS + ("MAIL_WEBHOOK_URL", "MAIL_WEBHOOK_SECRET")
 
 
