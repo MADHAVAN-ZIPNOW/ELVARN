@@ -9,13 +9,19 @@ import { FileChip, DownloadCard } from "./FileParts";
 import { ProcessCard } from "./ProcessCard";
 import { RichText } from "./RichText";
 
-export function Welcome({ mode, onPick }) {
+export function Welcome({ mode, onPick, onTalk }) {
   const pg = MODE_PAGES[mode] || MODE_PAGES.chat;
   return (
     <div className="welcome">
       <div className="homelogo"><Logo /></div>
       <h2>{mode === "chat" ? <>Hi, I'm <em>ELVARN</em>.</> : <em>{pg.h}</em>}</h2>
       <p>{pg.blurb || "A small language model running on your own computer. Type, or tap the mic and talk — then tap Listen to hear the reply."}</p>
+      {onTalk && (
+        <button className="talkbtn gloss c-blue" type="button" onClick={onTalk} aria-label="Talk to ELVARN with your voice">
+          <Icon name="mic" />
+          Talk to ELVARN
+        </button>
+      )}
       <div className="cards">
         {pg.tips.map((s) => (
           <button key={s.t} className="card" type="button" onClick={() => onPick(s.t)}>

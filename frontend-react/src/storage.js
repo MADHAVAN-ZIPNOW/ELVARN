@@ -30,6 +30,11 @@ export function loadState() {
     const d = JSON.parse(localStorage.getItem(KEY) || "null");
     if (d) {
       Object.assign(out.settings, d.s || {});
+      if (out.settings.settingsVersion !== DEFAULT_SETTINGS.settingsVersion) {        // older saved settings: take the steadier sampling once
+        out.settings.temp = DEFAULT_SETTINGS.temp;
+        out.settings.topk = DEFAULT_SETTINGS.topk;
+        out.settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
+      }
       out.mode = d.mode || "chat";
       out.convs = Array.isArray(d.convs) ? d.convs.filter((c) => c && Array.isArray(c.messages)) : [];
       out.currentId = d.currentId;

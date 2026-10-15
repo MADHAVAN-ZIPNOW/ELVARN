@@ -18,6 +18,8 @@ import { LabPanel } from "./components/LabPanel";
 import { SourcesPanel } from "./components/SourcesPanel";
 import { DownloadMenu } from "./components/DownloadMenu";
 import { FilePanel } from "./components/FileParts";
+import { TalkBar } from "./components/TalkBar";
+import { LeadCard, shouldAskForEmail } from "./components/LeadCard";
 
 export default function App() {
   const [boot] = useState(initialState);
@@ -39,11 +41,13 @@ export default function App() {
   const [status, setStatus] = useState({ dot: "", text: "Connecting…" });
   const [lastReply, setLastReply] = useState(null);
   const [srText, setSrText] = useState("");
+  const [lead, setLead] = useState(null);                // the question shown with the optional email card
+  const [talk, setTalk] = useState(null);                // voice conversation: null | greeting | listening | thinking | speaking
   const [epoch, setEpoch] = useState(0);                   // bumped when the thread must jump to the bottom (switching chats)
 
   const chatRef = useRef(null), threadRef = useRef(null), spacerRef = useRef(null), inputRef = useRef(null);
   const abortRef = useRef(null), busyRef = useRef(false);
-  const pinRequest = useRef(false), autoSendOnce = useRef(false);
+  const pinRequest = useRef(false), autoSendOnce = useRef(false), talkRef = useRef(null), silent = useRef(0);
   const latest = useRef({});
 
   const conv = useMemo(() => convs.find((c) => c.id === currentId) || convs[0], [convs, currentId]);
@@ -309,10 +313,15 @@ export default function App() {
     }
     updateConv(c.id, (x) => ({ ...x, updated: Date.now(), messages: [...x.messages, botMsg] }));
     setLive(null);
+    if (userIndex === 0 && shownMeta) shouldAskForEmail().then((yes) => { if (yes) setLead(text); });          // after a visitor's first answer
     if (shownMeta) {
       setLastReply(shownMeta);
-      if (settings.autoSpeak && replyText && !aborted) speech.speak(replyText, c.id + ":" + index);
+      if (talkRef.current && replyText && !aborted) {
+        setTalk("speaking"); talkRef.current = "speaking";
+        speech.speak(speakable(replyText), c.id + ":" + index, () => { silent.current = 0; listenAgain(); });
+      } else if (settings.autoSpeak && replyText && !aborted) speech.speak(replyText, c.id + ":" + index);
     }
+    if (talkRef.current && !shownMeta) stopTalk("Sorry, I could not get an answer. Voice conversation stopped.");
     busyRef.current = false;
     abortRef.current = null;
     setBusy(false);
@@ -325,11 +334,38 @@ export default function App() {
     setText: setInput,
     onBanner: showBanner,
     beforeStart: speech.stop,
-    onFinished: (valid) => {
+    onFinished: (valid, heard) => {
       focusInput();
+      if (talkRef.current === "listening") {                // voice conversation: what you said is sent at once; silence listens again, twice
+        if (valid && heard && heard.trim() && !busyRef.current) { setTalk("thinking"); talkRef.current = "thinking"; send(heard); }
+        else if (++silent.current <= 2) setTimeout(listenAgain, 300);
+        else stopTalk("I did not hear anything, so I stopped listening. Tap Talk to ELVARN to start again.");
+        return;
+      }
       if (valid && latest.current.settings.autoSend && latest.current.input.trim() && !busyRef.current) send();
     },
   });
+
+  // ---------------------------------------------------------------- voice conversation: ELVARN greets you out loud, you speak, it answers on the page and aloud
+  const speakable = (t) => String(t).replace(/\[\d+\]/g, "").replace(/https?:\/\/\S+/g, "").replace(/\s+/g, " ").trim().slice(0, 420);
+  const listenAgain = () => {
+    if (!talkRef.current || busyRef.current) return;
+    setTalk("listening"); talkRef.current = "listening";
+    setInput("");
+    voice.start();
+  };
+  const stopTalk = (message) => {
+    talkRef.current = null; silent.current = 0;
+    setTalk(null); speech.stop(); voice.stop();
+    if (message) showBanner(message, "info");
+  };
+  const startTalk = () => {
+    if (!voice.supported || !speech.supported) { showBanner("Voice conversation needs a browser with speech recognition and speech, such as Chrome or Edge (on Android or computer).", "info"); return; }
+    if (talkRef.current) return;
+    showBanner("");
+    silent.current = 0; talkRef.current = "greeting"; setTalk("greeting");
+    speech.speak("Hi, I am ELVARN. What would you like to know?", "greeting", listenAgain);
+  };
 
   const onSendClick = () => {
     if (busyRef.current) return;
@@ -404,7 +440,8 @@ export default function App() {
           <div className="sr-only" id="srStatus" role="status" aria-live="polite">{srText}</div>
           <main className="chat" id="chat" aria-live="polite" ref={chatRef} hidden={sv}>
             <div className="thread" id="thread" ref={threadRef}>
-              {showWelcome ? <Welcome mode={mode} onPick={(t) => send(t)} /> : rows}
+              {showWelcome ? <Welcome mode={mode} onPick={(t) => send(t)} onTalk={startTalk} /> : rows}
+              {lead && !showWelcome && <LeadCard question={lead} onDone={() => setLead(null)} />}
               <div id="spacer" ref={spacerRef} />
             </div>
           </main>
@@ -420,6 +457,8 @@ export default function App() {
       </div>
 
       <div className={"scrim" + (sideOpen || labOpen ? " show" : "")} id="scrim" onClick={closeAll} />
+      <TalkBar state={talk} heard={voice.live.text} idle={voice.live.idle} answer={talk === "speaking" && conv ? speakable(((([...conv.messages].reverse().find((m) => m.role === "bot" && !m.error)) || {}).text) || "").slice(0, 220) : ""}
+        onStop={() => stopTalk()} onSettings={() => setLabOpen(true)} />
       <SourcesPanel view={sourcesView} onClose={() => setSourcesView(null)} />
       <DownloadMenu menu={dlMenu} onClose={() => setDlMenu(null)}
         onPick={async (fmt) => {

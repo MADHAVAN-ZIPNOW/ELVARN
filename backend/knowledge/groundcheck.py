@@ -80,10 +80,39 @@ def check_answer(answer, notes, question=""):
     return not reasons, reasons
 
 
-def extractive_answer(notes, max_notes=2, max_chars=320, label="the sources"):
-    """The first notes word for word, each with its number: 'From the sources: [1] ... [2] ...'."""
+STOP = {"what", "who", "whom", "when", "where", "which", "how", "why", "the", "and", "for", "are", "was", "were", "did", "does", "tell",
+        "about", "with", "from", "that", "this", "have", "has", "had", "list", "give", "show"}
+
+
+def _terms(text):
+    return {w for w in re.findall(r"[a-z0-9]{3,}", (text or "").lower()) if w not in STOP}
+
+
+def usable_note(text):
+    """Not a bare link, not a one-line heading / question."""
+    t = (text or "").strip()
+    return len(t.split()) >= 6 and not re.match(r"^(https?://|www\.)\S+$", t) and not t.endswith("?")
+
+
+def pick_notes(notes, question, max_notes=2):
+    """Note numbers worth showing: usable ones, best match with the question first; a second note only if it matches nearly as well."""
+    q = _terms(question)
+    scored = []
+    for n in sorted(notes):
+        if usable_note(notes[n]):
+            scored.append((len(q & _terms(notes[n])), -n, n))
+    if not scored:
+        scored = [(0, -n, n) for n in sorted(notes)]
+    scored.sort(reverse=True)
+    best = scored[0][0]
+    keep = [n for s_, _, n in scored if s_ >= max(1, best * 0.7)][:max_notes] if best else [scored[0][2]]
+    return sorted(keep) or [scored[0][2]]
+
+
+def extractive_answer(notes, max_notes=2, max_chars=320, label="the sources", question=""):
+    """The notes that match the question, word for word, each with its number: 'From the sources: [1] ... [2] ...'."""
     parts = []
-    for n in sorted(notes)[:max_notes]:
+    for n in (pick_notes(notes, question, max_notes) if question else sorted(notes)[:max_notes]):
         t = notes[n]
         if len(t) > max_chars:
             t = t[:max_chars].rsplit(" ", 1)[0] + " ..."
@@ -99,4 +128,4 @@ def guard(answer, model_text, question="", label="the sources"):
     ok, reasons = check_answer(answer, notes, question)
     if ok:
         return answer, "model", []
-    return extractive_answer(notes, label=label), "extractive", reasons
+    return extractive_answer(notes, label=label, question=question), "extractive", reasons

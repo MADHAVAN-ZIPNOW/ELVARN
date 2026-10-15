@@ -63,3 +63,19 @@ def test_a_doubled_word_or_repeated_pair_is_caught_but_a_clean_sentence_is_not()
     q = "What is the Prevention of Corruption Act?"
     assert not check_answer("The Prevention of Corruption Act, 1988 offences offences under Section 13 of the Prevention of Corruption deal with corruption with corruption.", notes, q)[0]
     assert check_answer("The Prevention of Corruption Act, 1988 deals with offences by public servants under Section 13. [1]", notes, q)[0]
+
+
+def test_the_fallback_skips_headings_and_links_and_unrelated_records():
+    from knowledge.groundcheck import pick_notes
+    notes = {1: "What is the Prevention of Corruption Act, 1988?",
+             2: "https://web.archive.org/web/20170227235209/http://nyaaya.in/law/84/the-prevention-of-corruption-act-1988/",
+             3: "The Prevention of Corruption Act, 1988 deals with offences by public servants, including taking a bribe and criminal misconduct.",
+             4: "Section 13 of the Prevention of Corruption Act, 1988 defines criminal misconduct by a public servant."}
+    assert pick_notes(notes, "What is the Prevention of Corruption Act?") == [3, 4]
+    notes = {1: "DVAC press release dated 2018-02-01: V&AC arrested District Environmental Engineer, Tamil Pollution Control Board, Thuvakudi, Trichy District in bribery case on 01.02.2018.",
+             2: "DVAC press release dated 2024-08-02: V&AC trapped and arrested Tr.Soundarapandiyan, Revenue Assistant, Thuvakudi Municipality, Trichy for demanded of Rs.50,000/-."}
+    assert pick_notes(notes, "Who did DVAC arrest at the Pollution Control Board, Thuvakudi, Trichy?") == [1]
+
+
+def test_a_broken_emoji_at_the_end_of_a_reply_is_dropped():
+    assert "Hey there!\ufffd".strip().rstrip("\ufffd").rstrip() == "Hey there!"

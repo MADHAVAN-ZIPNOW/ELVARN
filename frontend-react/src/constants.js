@@ -45,6 +45,6 @@ export const WHY = {
 };
 
 export const DEFAULT_SETTINGS = {
-  autoSend: false, collapsed: false, theme: "aurora", greedy: false, temp: 0.8, maxTok: 80, topk: 40,
+  autoSend: false, collapsed: false, theme: "aurora", greedy: false, temp: 0.5, maxTok: 80, topk: 20, settingsVersion: 2,
   autoSpeak: false, voice: "", rate: 1, recLang: "en-IN",
 };

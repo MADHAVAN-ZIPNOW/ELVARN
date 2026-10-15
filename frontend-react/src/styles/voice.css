@@ -1,0 +1,22 @@
+/* ---------- voice conversation ---------- */
+.talkbtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin:22px auto 4px;padding:15px 30px;border-radius:999px;font-size:14px}
+.talkbtn svg.i{stroke:#fff;width:22px;height:22px}
+.talkpanel{position:fixed;z-index:28;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);width:min(560px,calc(100vw - 24px));min-height:230px;
+  display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:14px 16px 16px;border-radius:26px;color:var(--ink);
+  background:radial-gradient(circle at 50% 0%,rgba(71,166,255,.22),transparent 62%),var(--bg);box-shadow:var(--raise)}
+.tp-top{display:flex;align-items:center;justify-content:space-between}
+.tp-btn{border:none;background:var(--bg);box-shadow:var(--raise-sm);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.tp-btn:active{box-shadow:var(--inset)}
+.tp-btn svg.i{width:18px;height:18px}
+.talkpanel .wave{display:inline-flex;align-items:center;gap:4px;height:26px}
+.talkpanel .wave i{width:5px;height:8px;border-radius:3px;background:linear-gradient(180deg,#2cc4d1,#2f7dff);animation:wavebar .9s ease-in-out infinite}
+.talkpanel .wave i:nth-child(2){animation-delay:.1s}.talkpanel .wave i:nth-child(3){animation-delay:.2s}.talkpanel .wave i:nth-child(4){animation-delay:.3s}.talkpanel .wave i:nth-child(5){animation-delay:.4s}
+.talkpanel.thinking .wave i{animation-duration:1.6s}
+.tp-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:10px 8px}
+.tp-head{font-size:clamp(22px,5vw,28px);font-weight:800;color:var(--ink3)}
+.talkpanel.listening .tp-head{color:var(--ink2)}
+.tp-sub{font-size:15px;line-height:1.5;color:var(--ink2);max-height:7.5em;overflow-y:auto;overflow-wrap:anywhere}
+.tp-sub.heard{color:var(--ink);font-weight:700;font-size:18px}
+.talkstop{align-self:center;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;padding:8px 18px;border-radius:999px;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink);font:inherit;font-size:12px;font-weight:800}
+.talkstop:active{box-shadow:var(--inset)}
+.talkstop svg.i{width:14px;height:14px}

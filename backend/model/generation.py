@@ -221,7 +221,7 @@ def generate_stream(model, tokenizer, text, mode="chat", max_new_tokens=80,
     elapsed = time.perf_counter() - started
     yield {
         "event": "done",
-        "text": _trim(raw_text).strip(),
+        "text": _trim(raw_text).strip().rstrip("\ufffd").rstrip(),          # a reply cut inside an emoji ends in U+FFFD: drop it
         "raw_text": raw_text,
         "prompt": prompt,
         "prompt_tokens": prompt_token_count,

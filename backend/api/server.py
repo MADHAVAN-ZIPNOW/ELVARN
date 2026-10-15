@@ -28,6 +28,7 @@ from knowledge.kb import CORRUPTION_WORDS, NOT_FOUND, UNAVAILABLE, KnowledgeBase
 from knowledge import graphrag, groundcheck  # noqa: E402
 from knowledge.vectorstore import RagStore  # noqa: E402
 from knowledge.remote import KnowledgeUnavailable, RemoteKnowledge  # noqa: E402
+from notify.mailer import MailError, Mailer, clean_address, one_line  # noqa: E402
 from usermemory.store import Memory, session_key  # noqa: E402
 from files.service import FileService  # noqa: E402
 from api.model_service import ModelNotReady, ModelService  # noqa: E402
@@ -113,7 +114,16 @@ def env_flag(name):
     return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None):
+WELCOME_TEXT = """Hi!
+
+Thanks for trying ELVARN, a small AI model that answers questions about Tamil Nadu corruption-case records and always shows its sources.
+
+{first}ELVARN is small and can be wrong. Allegations are not proof of guilt: please check the sources it shows.
+
+You are getting this mail because you left your address on the site and agreed to it. Reply STOP and we will delete it.
+"""
+
+def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None):
     """public=True (or ELVARN_PUBLIC=1) is for a website anyone can reach: it turns on a per-visitor rate limit,
     a cap on simultaneous generations, and disables the reload endpoint."""
     public = env_flag("ELVARN_PUBLIC") if public is None else public
@@ -457,6 +467,45 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
         return StreamingResponse(events(), media_type="application/x-ndjson",
                                  headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+
+    # ---- a visitor can leave an email at the first question: a welcome mail goes to them, a note goes to the owner (needs SMTP_* settings)
+    mailer = mail_service if mail_service is not None else Mailer.from_env()
+    lead_state = {"seen": set(), "hits": {}}
+
+    class LeadRequest(BaseModel):
+        email: str = Field(max_length=254)
+        consent: bool = False
+        question: str = Field(default="", max_length=300)
+
+    @app.get("/api/lead")
+    def lead_status():
+        return {"enabled": mailer is not None}
+
+    @app.post("/api/lead")
+    def lead(req: LeadRequest, request: Request):
+        if mailer is None:
+            raise HTTPException(503, "Email is not set up on this server yet.")
+        if not req.consent:
+            raise HTTPException(400, "Please tick the box to agree before we use your email.")
+        address = clean_address(req.email)
+        if address is None:
+            raise HTTPException(422, "That email address does not look right.")
+        who, now = visitor(request), time.time()
+        recent = [t for t in lead_state["hits"].get(who, []) if now - t < 3600]
+        if len(recent) >= 3:
+            raise HTTPException(429, "Too many tries. Please wait a while.")
+        lead_state["hits"][who] = recent + [now]
+        if address in lead_state["seen"]:
+            return {"ok": True, "sent": False}
+        question = one_line(req.question, 200)
+        try:
+            mailer.send(address, "Welcome to ELVARN", WELCOME_TEXT.format(first=(f"Your first question was: {question}" + chr(10) + chr(10)) if question else ""))
+            if mailer.owner:
+                mailer.send(mailer.owner, "ELVARN: a new visitor left an email", f"Email: {address}" + chr(10) + f"First question: {question or '(none)'}" + chr(10))
+        except MailError as exc:
+            raise HTTPException(502, str(exc))
+        lead_state["seen"].add(address)
+        return {"ok": True, "sent": True}
 
     @app.delete("/api/memory")
     def forget_memory(request: Request, session_id: Optional[str] = None):

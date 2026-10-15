@@ -35,7 +35,7 @@ export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, be
     rec.continuous = true;
     rec.maxAlternatives = 1;
     const cur = c.getText();
-    r.current = { rec, on: false, base: cur ? cur.trim() + " " : "", gotWords: false };
+    r.current = { rec, on: false, base: cur ? cur.trim() + " " : "", gotWords: false, lastText: "" };
     rec.onstart = () => {
       r.current.on = true;
       setOn(true);
@@ -50,7 +50,8 @@ export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, be
       }
       r.current.gotWords = true;
       const spoken = (fin + interim).trim();
-      cb.current.setText((r.current.base + spoken).trim());
+      r.current.lastText = (r.current.base + spoken).trim();
+      cb.current.setText(r.current.lastText);
       setLive({ show: true, text: spoken || "Listening… start speaking", idle: !spoken });
     };
     rec.onerror = (ev) => {
@@ -62,7 +63,7 @@ export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, be
       r.current.on = false;
       setOn(false);
       setLive({ show: false, text: "", idle: false });
-      cb.current.onFinished(wasOn && r.current.gotWords);
+      cb.current.onFinished(wasOn && r.current.gotWords, r.current.lastText);          // the heard text is passed along, not read back from screen state
     };
     try { rec.start(); } catch (e) { c.onBanner("Could not start the microphone."); }
   }, []);
