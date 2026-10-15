@@ -19,6 +19,7 @@ import { SourcesPanel } from "./components/SourcesPanel";
 import { DownloadMenu } from "./components/DownloadMenu";
 import { FilePanel } from "./components/FileParts";
 import { TalkBar } from "./components/TalkBar";
+import { greeting, rememberName } from "./talkHelpers";
 import { LeadCard, shouldAskForEmail } from "./components/LeadCard";
 
 export default function App() {
@@ -185,6 +186,7 @@ export default function App() {
     setEpoch((e) => e + 1);
     closeAll();
     setTimeout(focusInput, 0);
+    if (latest.current.settings.voiceOnNew && voice.supported && speech.supported) { stopTalk(); setTimeout(startTalk, 250); }
   };
   const openMode = (id) => {
     speech.stop();
@@ -237,6 +239,8 @@ export default function App() {
     const files = attached ? (c.files || []).concat([{ file_id: attached.file_id, name: attached.name }]).slice(-5) : c.files;
     if (attached) setPending(null);
     const userMsg = { role: "user", text };
+    if (talkRef.current) userMsg.voice = true;                  // said aloud in a voice conversation
+    rememberName(text);
     if (attached) userMsg.file = { name: attached.name, size: attached.size, type: attached.detected_type };
 
     // the last two finished exchanges of this chat, for chat-style modes
@@ -354,6 +358,11 @@ export default function App() {
     setInput("");
     voice.start();
   };
+  const interrupt = () => {                                 // while ELVARN speaks: stop it and listen now
+    if (!talkRef.current) return;
+    speech.stop(); silent.current = 0; talkRef.current = "speaking";
+    listenAgain();
+  };
   const stopTalk = (message) => {
     talkRef.current = null; silent.current = 0;
     setTalk(null); speech.stop(); voice.stop();
@@ -364,7 +373,7 @@ export default function App() {
     if (talkRef.current) return;
     showBanner("");
     silent.current = 0; talkRef.current = "greeting"; setTalk("greeting");
-    speech.speak("Hi, I am ELVARN. What would you like to know?", "greeting", listenAgain);
+    speech.speak(greeting(), "greeting", listenAgain);
   };
 
   const onSendClick = () => {
@@ -458,7 +467,7 @@ export default function App() {
 
       <div className={"scrim" + (sideOpen || labOpen ? " show" : "")} id="scrim" onClick={closeAll} />
       <TalkBar state={talk} heard={voice.live.text} idle={voice.live.idle} answer={talk === "speaking" && conv ? speakable(((([...conv.messages].reverse().find((m) => m.role === "bot" && !m.error)) || {}).text) || "").slice(0, 220) : ""}
-        onStop={() => stopTalk()} onSettings={() => setLabOpen(true)} />
+        onStop={() => stopTalk()} onInterrupt={interrupt} onSettings={() => setLabOpen(true)} />
       <SourcesPanel view={sourcesView} onClose={() => setSourcesView(null)} />
       <DownloadMenu menu={dlMenu} onClose={() => setDlMenu(null)}
         onPick={async (fmt) => {

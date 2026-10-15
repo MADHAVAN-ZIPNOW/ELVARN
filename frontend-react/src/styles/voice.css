@@ -20,3 +20,6 @@
 .talkstop{align-self:center;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;padding:8px 18px;border-radius:999px;background:var(--bg);box-shadow:var(--raise-sm);color:var(--ink);font:inherit;font-size:12px;font-weight:800}
 .talkstop:active{box-shadow:var(--inset)}
 .talkstop svg.i{width:14px;height:14px}
+.tp-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.voicemark{display:inline-grid;vertical-align:-3px;margin-right:7px;opacity:.7}
+.voicemark svg.i{width:15px;height:15px}

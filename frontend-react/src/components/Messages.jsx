@@ -41,6 +41,7 @@ export function UserRow({ message, index }) {
       <div className="msg">
         <div className="bubble" {...tilt}>
           {message.file && <FileChip file={message.file} />}
+          {message.voice && <span className="voicemark" title="Said aloud" aria-label="Said aloud"><Icon name="mic" /></span>}
           {message.text}
         </div>
         <div className="tools utools"><CopyButton text={message.text} /></div>

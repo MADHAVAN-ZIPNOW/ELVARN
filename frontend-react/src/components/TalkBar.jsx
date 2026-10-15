@@ -14,7 +14,7 @@ const HEAD = {
   speaking: "ELVARN is answering…",
 };
 
-export function TalkBar({ state, heard, idle, answer, onStop, onSettings }) {
+export function TalkBar({ state, heard, idle, answer, onStop, onInterrupt, onSettings }) {
   if (!state) return null;
   const spoken = state === "listening" && heard && !idle ? heard : "";
   const sub = spoken || (state === "speaking" && answer ? answer : state === "listening" ? SUGGESTIONS[new Date().getMinutes() % SUGGESTIONS.length] : "");
@@ -29,10 +29,18 @@ export function TalkBar({ state, heard, idle, answer, onStop, onSettings }) {
         <div className="tp-head">{spoken ? "I'm listening" : HEAD[state]}</div>
         <div className={"tp-sub" + (spoken ? " heard" : "")}>{sub}</div>
       </div>
-      <button className="talkstop" type="button" onClick={onStop} aria-label="Stop the voice conversation">
-        <Icon name="stop" />
-        Stop
-      </button>
+      <div className="tp-actions">
+        {state === "speaking" && (
+          <button className="talkstop" type="button" onClick={onInterrupt} aria-label="Interrupt ELVARN and speak">
+            <Icon name="mic" />
+            Interrupt
+          </button>
+        )}
+        <button className="talkstop" type="button" onClick={onStop} aria-label="Stop the voice conversation">
+          <Icon name="stop" />
+          Stop
+        </button>
+      </div>
     </div>
   );
 }
