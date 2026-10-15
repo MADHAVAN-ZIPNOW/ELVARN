@@ -63,3 +63,6 @@ backend/data/rag_v3/
 backend/data/*.log
 backend/data/gpu_install*.log
 backend/data/rag_v*/
+
+# files with your own secrets (e.g. the Google mail relay script with your SECRET filled in)
+scripts/*.local.*
