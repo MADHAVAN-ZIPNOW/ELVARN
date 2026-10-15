@@ -55,6 +55,47 @@ export function Icon({ name }) {
   );
 }
 
+/** Shaded, 3D-looking icons for the header buttons: settings gear (navy), headphones (terracotta), appearance orb (emerald), all with warm ivory. */
+const ICON3D = {
+  gear: (
+    <>
+      <g fill="url(#g3Navy)">
+        <circle cx="12" cy="12" r="7.4" />
+        {[0, 45, 90, 135].map((a) => <rect key={a} x="10.4" y="2.2" width="3.2" height="19.6" rx="1.3" transform={`rotate(${a} 12 12)`} />)}
+      </g>
+      <circle cx="12" cy="12" r="7.4" fill="url(#g3Shine)" />
+      <circle cx="12" cy="12" r="3.5" fill="url(#g3Ivory)" />
+      <circle cx="12" cy="12" r="1.7" fill="#14245c" />
+      <path d="M6.6 9.6A6 6 0 0 1 11 6" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1.1" strokeLinecap="round" />
+    </>
+  ),
+  headphones: (
+    <>
+      <path d="M4.6 15.5v-3.2a7.4 7.4 0 0 1 14.8 0v3.2" fill="none" stroke="url(#g3Terra)" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M6.6 11.6a5.6 5.6 0 0 1 4.6-4" fill="none" stroke="#fff" strokeOpacity=".45" strokeWidth=".9" strokeLinecap="round" />
+      <rect x="2.8" y="13" width="5.6" height="8.4" rx="2.4" fill="url(#g3Terra)" />
+      <rect x="15.6" y="13" width="5.6" height="8.4" rx="2.4" fill="url(#g3Terra)" />
+      <rect x="6" y="14.3" width="1.9" height="5.8" rx=".95" fill="url(#g3Ivory)" />
+      <rect x="16.1" y="14.3" width="1.9" height="5.8" rx=".95" fill="url(#g3Ivory)" />
+      <path d="M4 15.2v2.2M20 15.2v2.2" stroke="#fff" strokeOpacity=".5" strokeWidth=".9" strokeLinecap="round" />
+    </>
+  ),
+  theme: (
+    <>
+      <circle cx="12" cy="12" r="9" fill="url(#g3Emerald)" />
+      <path d="M12 3a9 9 0 0 1 0 18z" fill="url(#g3Ivory)" />
+      <circle cx="12" cy="12" r="9" fill="url(#g3Shine)" />
+      <circle cx="12" cy="12" r="8.6" fill="none" stroke="#05482f" strokeOpacity=".35" strokeWidth=".8" />
+      <circle cx="8.2" cy="12" r="1.5" fill="#f6ecd2" fillOpacity=".9" />
+      <circle cx="15.8" cy="12" r="1.5" fill="#0e8a5f" />
+    </>
+  ),
+};
+
+export function Icon3D({ name }) {
+  return <svg viewBox="0 0 24 24" className={"i3d i3d-" + name} aria-hidden="true">{ICON3D[name]}</svg>;
+}
+
 /** An icon inside the small inline-grid wrapper the layout CSS expects. */
 export function SpanIcon({ name }) {
   return (
@@ -87,6 +128,10 @@ export function GradientDefs() {
         {g("gLogo", "#7a2fd0", "#ff8a3d", "#d0338f")}
         {g("gOrange", "#ffc062", "#ff6f45")}
         {g("gGreen", "#5be37d", "#1da34f")}
+        {[["g3Navy", "#7b93ee", "#1c3180", "#0a1440"], ["g3Terra", "#f2a583", "#c4623f", "#7a3118"], ["g3Emerald", "#6fe8b6", "#0e8a5f", "#04472e"], ["g3Ivory", "#fffbf1", "#f3e7cc", "#d2bf92"]].map(([id, a, b, c]) => (
+          <linearGradient id={id} key={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={a} /><stop offset=".55" stopColor={b} /><stop offset="1" stopColor={c} /></linearGradient>
+        ))}
+        <radialGradient id="g3Shine" cx=".32" cy=".25" r=".75"><stop offset="0" stopColor="#fff" stopOpacity=".5" /><stop offset=".45" stopColor="#fff" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".22" /></radialGradient>
       </defs>
     </svg>
   );

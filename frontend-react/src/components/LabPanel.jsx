@@ -1,6 +1,6 @@
 // The "Model lab" drawer: generation settings, web search, voice, the loaded model and the last reply's numbers.
 import { useState } from "react";
-import { Icon } from "../icons";
+import { Icon, Icon3D } from "../icons";
 import { pct } from "../utils";
 import { getOwnerKey } from "../ownerKey";
 
@@ -54,7 +54,7 @@ export function LabPanel({ open, onClose, settings, setSetting, voices, speechSu
 
   return (
     <aside className={"panel" + (open ? " show" : "")} id="panel" aria-label="Model lab and settings">
-      <h3>Model lab <button className="icon-btn" type="button" aria-label="Close" onClick={onClose}><span style={{ display: "inline-grid" }}><Icon name="x" /></span></button></h3>
+      <h3><span className="ptitle"><Icon3D name="gear" />Model lab</span> <button className="icon-btn" type="button" aria-label="Close" onClick={onClose}><span style={{ display: "inline-grid" }}><Icon name="x" /></span></button></h3>
 
       <h4>Generation</h4>
       <Switch id="greedy" title="Greedy decoding" note="Off = random sampling" checked={settings.greedy} onChange={(v) => setSetting("greedy", v)} />

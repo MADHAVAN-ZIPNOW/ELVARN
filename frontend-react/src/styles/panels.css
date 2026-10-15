@@ -20,6 +20,12 @@ select option{color:#1f2a44}
 .stat b{font-size:14px;overflow-wrap:anywhere}
 .btn{width:100%;padding:13px;margin-top:12px;border-radius:999px;font-size:12px}
 .note{font-size:12px;color:var(--ink3);margin-top:8px;line-height:1.45}
+/* Model lab / settings panel: warm ivory with royal navy text (light); royal navy with ivory text (dark) */
+.panel{--bg:#f8f0df;--ink:#14245c;--ink2:#38488a;--ink3:#76809f;--hi:#fffaf0;--lo:#d8cbaf;--line:rgba(20,36,92,.12)}
+:root[data-theme="dusk"] .panel{--bg:#14245c;--ink:#faf3e3;--ink2:#e4dcc6;--ink3:#aeb6d6;--hi:#23377f;--lo:#0b1640;--line:rgba(250,243,227,.16)}
+.panel input[type=range],.panel .switch input{accent-color:#14245c}
+:root[data-theme="dusk"] .panel input[type=range],:root[data-theme="dusk"] .panel .switch input{accent-color:#f1dfae}
+.panel select option{color:#14245c}
 
 
 [hidden]{display:none!important}

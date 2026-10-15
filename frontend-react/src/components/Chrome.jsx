@@ -1,5 +1,5 @@
 // The frame around the chat: sidebar, top bar and the error / info banner.
-import { Icon, SpanIcon } from "../icons";
+import { Icon, Icon3D, SpanIcon } from "../icons";
 import { MODES, MODE_PAGES } from "../constants";
 import { useTilt } from "../hooks/useTilt";
 import { Logo } from "./Logo";
@@ -70,10 +70,10 @@ export function Header({ view, mode, convTitle, hasMessages, talking, onToggleSi
       </div>
       <div className="hdricons">
         <button className={"icon-btn talkhdr" + (talking ? " on" : "")} id="talkBtn" type="button" title={talking ? "Stop the voice conversation" : "Talk to ELVARN (works on every page)"}
-          aria-label={talking ? "Stop the voice conversation" : "Talk to ELVARN"} aria-pressed={!!talking} onClick={onTalk}><SpanIcon name="headphones" /></button>
-        <button className="icon-btn" id="themeBtn" type="button" title="Switch theme" aria-label="Switch theme" onClick={onTheme}><SpanIcon name="theme" /></button>
+          aria-label={talking ? "Stop the voice conversation" : "Talk to ELVARN"} aria-pressed={!!talking} onClick={onTalk}><Icon3D name="headphones" /></button>
+        <button className="icon-btn" id="themeBtn" type="button" title="Switch theme" aria-label="Switch theme" onClick={onTheme}><Icon3D name="theme" /></button>
         <button className="icon-btn" id="clearBtn" type="button" title="Clear this chat" aria-label="Clear this chat" hidden={sv} onClick={onClear}><SpanIcon name="trash" /></button>
-        <button className="icon-btn" id="labBtn" type="button" title="Model lab and settings" aria-label="Open model lab and settings" onClick={onLab}><SpanIcon name="sliders" /></button>
+        <button className="icon-btn" id="labBtn" type="button" title="Model lab and settings" aria-label="Open model lab and settings" onClick={onLab}><Icon3D name="gear" /></button>
       </div>
     </header>
   );

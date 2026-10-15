@@ -13,12 +13,13 @@
 .talkpanel svg.i.fill{fill:#800020!important}
 @media (max-width:600px){.talkpanel{right:12px;left:12px;width:auto}}
 .icon-btn.talkhdr.on{box-shadow:var(--inset)}
-/* header buttons: warm ivory face + coloured icon and outer ring (settings navy, headphones terracotta, appearance emerald) */
-#labBtn,#talkBtn,#themeBtn{--ring:#16296b;background:#fbf3e4;box-shadow:var(--raise-sm),0 0 0 2px var(--ring)}
-#talkBtn{--ring:#c4623f}
-#themeBtn{--ring:#0e8a5f}
-#labBtn svg.i,#talkBtn svg.i,#themeBtn svg.i{stroke:var(--ring)}
-#labBtn:active,#talkBtn:active,#themeBtn:active,#talkBtn.on{box-shadow:var(--inset),0 0 0 2px var(--ring)}
+/* header buttons: warm ivory face with shaded 3D icons (gear navy, headphones terracotta, appearance emerald); no outline, same in light and dark */
+#labBtn,#talkBtn,#themeBtn{background:linear-gradient(145deg,#fffaf0,#efe3c8)}
+svg.i3d{width:26px;height:26px;flex:none;filter:drop-shadow(0 2px 1.5px rgba(40,25,10,.38));transition:transform .15s}
+.icon-btn:hover svg.i3d{transform:scale(1.08) rotate(-4deg)}
+.icon-btn:active svg.i3d,#talkBtn.on svg.i3d{transform:scale(.94)}
+.ptitle{display:inline-flex;align-items:center;gap:10px}
+.ptitle svg.i3d{width:28px;height:28px}
 .tp-top{display:flex;align-items:center;justify-content:space-between}
 .tp-btn{border:none;background:var(--bg);box-shadow:var(--raise-sm);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
 .tp-btn:active{box-shadow:var(--inset)}
