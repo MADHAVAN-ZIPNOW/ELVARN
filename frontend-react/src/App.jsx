@@ -339,6 +339,7 @@ export default function App() {
     setText: setInput,
     onBanner: showBanner,
     beforeStart: speech.stop,
+    autoStopMs: () => (talkRef.current === "listening" ? 1500 : 0),          // in a voice conversation: send when you stop speaking
     onFinished: (valid, heard) => {
       focusInput();
       if (talkRef.current === "listening") {                // voice conversation: what you said is sent at once; silence listens again, twice

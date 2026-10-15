@@ -15,12 +15,12 @@ const ERRORS = {
  * getText / setText read and write the message box. onFinished(text) is called when listening ends after real words
  * (the caller decides whether to send it). onBanner(message) shows an error.
  */
-export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, beforeStart }) {
+export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, beforeStart, autoStopMs }) {
   const [on, setOn] = useState(false);
   const [live, setLive] = useState({ show: false, text: "", idle: false });
   const r = useRef({ rec: null, on: false, base: "", gotWords: false });
   const cb = useRef({});
-  cb.current = { lang, getText, setText, onFinished, onBanner, beforeStart };
+  cb.current = { lang, getText, setText, onFinished, onBanner, beforeStart, autoStopMs };
 
   const stop = useCallback(() => {
     try { r.current.rec && r.current.rec.stop(); } catch (e) { /* already stopped */ }
@@ -52,6 +52,10 @@ export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, be
       const spoken = (fin + interim).trim();
       r.current.lastText = (r.current.base + spoken).trim();
       cb.current.setText(r.current.lastText);
+      // the browser keeps listening for ever: when no new words come for a moment, stop here, which ends this turn
+      clearTimeout(r.current.timer);
+      const wait = cb.current.autoStopMs ? cb.current.autoStopMs() : 0;
+      if (wait && spoken) r.current.timer = setTimeout(() => { try { rec.stop(); } catch (e) { /* already stopped */ } }, wait);
       setLive({ show: true, text: spoken || "Listening… start speaking", idle: !spoken });
     };
     rec.onerror = (ev) => {
@@ -59,6 +63,7 @@ export function useVoiceInput({ lang, getText, setText, onFinished, onBanner, be
       cb.current.onBanner(ERRORS[ev.error] || "Voice input error: " + ev.error);
     };
     rec.onend = () => {
+      clearTimeout(r.current.timer);
       const wasOn = r.current.on;
       r.current.on = false;
       setOn(false);
