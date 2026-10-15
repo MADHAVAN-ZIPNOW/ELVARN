@@ -30,6 +30,8 @@ Redis keeps per-session memory (follow-ups like "what was the outcome?") and a r
 
 Every answer carries an **"Answered from"** label (stored records / live web search / the model alone / nothing) and clickable **source cards**.
 
+**Full project description (architecture, data, model, results, limits): [docs/ELVARN_PROJECT.md](docs/ELVARN_PROJECT.md)**
+
 ### Parts
 
 | Part | What it does |
