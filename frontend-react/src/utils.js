@@ -73,8 +73,11 @@ export function originInfo(meta) {
   const s = meta.search;
   if (meta.stop_reason === "knowledge_base")
     return { cls: "refused", label: "Answered from: nothing.", text: " The stored records have no match for this (or the knowledge base is unavailable), so no answer was written." };
-  if (meta.grounding === "extractive")
-    return { cls: "kb", label: "Answered from: the sources, word for word.", text: " The small model's own wording did not match the sources (a number, a name or a repeat), so the source text is shown as it is. Check the source cards." };
+  if (meta.grounding === "extractive") {
+    const kb = s && s.kb;
+    return { cls: kb ? "kb" : "web", label: kb ? "Answered from: stored records, word for word." : "Answered from: web results, word for word.",
+      text: " The small model's own wording did not match " + (kb ? "the records" : "the results") + " (a number, a name or a repeat), so the original text is shown as it is. Check the source cards." };
+  }
   if (s && s.kb && s.searched)
     return { cls: "kb", label: "Answered from: stored records.", text: " Knowledge-graph facts and documents are cited below; the small model wrote the wording, which can still be wrong." };
   if (s && s.searched)

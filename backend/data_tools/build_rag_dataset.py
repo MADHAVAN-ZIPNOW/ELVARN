@@ -42,7 +42,7 @@ sys.path.insert(0, str(BACKEND_DIR / "data_tools"))
 
 import corpus  # noqa: E402
 from model.generation import build_prompt  # noqa: E402
-from search.prompt import FOOTER, HEADER  # noqa: E402
+from search.prompt import FOOTER, HEADER, KB_HEADER  # noqa: E402
 from tokenizer.bpe_tokenizer import BPETokenizer  # noqa: E402
 
 RAW_V2 = BACKEND_DIR / "data" / "raw_v2"
@@ -158,10 +158,10 @@ def key_groups(answer_notes, question, limit=3):
     return groups
 
 
-def evidence_text(notes, question):
+def evidence_text(notes, question, header=HEADER):
     """The live prompt body. Same layout as search.prompt.build_evidence_text."""
     lines = [f"[{i + 1}] {n}" for i, n in enumerate(notes)]
-    return f"{HEADER}\n" + "\n".join(lines) + f"\n{FOOTER} {question}"
+    return f"{header}\n" + "\n".join(lines) + f"\n{FOOTER} {question}"
 
 
 def render(mode, body, answer):
@@ -365,7 +365,7 @@ def make_example(rng, kind, passage, pool, mode):
 
 
 def example_text(ex):
-    body = evidence_text(ex["notes"], ex["question"]) if ex["notes"] else ex["question"]
+    body = evidence_text(ex["notes"], ex["question"], KB_HEADER if ex.get("kb") else HEADER) if ex["notes"] else ex["question"]
     return render(ex["mode"], body, ex["answer"])
 
 
@@ -394,12 +394,17 @@ def build_split(passages, dolly, plain_qa, rng, target, dolly_share=0.12):
     for text in plain_extra[:int(target * 0.05)]:               # plain Q/A without notes (context-free Dolly)
         q, a = text
         examples.append(dict(type="plain", mode="english", topic="dolly", notes=[], question=q, answer=a, answerable=True, sub="qa"))
+    # stored-records (knowledge-base) passages are drawn three times as often: that is the header the model must learn well
+    kb_passages = [q for q in passages if q["source"].startswith("kb_")]
+    drawn = passages + kb_passages * 2
     while len(examples) < target and attempts < target * 40 and passages:
         kind, mode = pick(rng, TYPE_WEIGHTS), pick(rng, MODE_WEIGHTS)
         for _ in range(40):                        # keep the chosen type (some passages cannot make some types): try others
             attempts += 1
-            ex = make_example(rng, kind, passages[rng.randrange(len(passages))], pool, mode)
+            p = drawn[rng.randrange(len(drawn))]
+            ex = make_example(rng, kind, p, pool, mode)
             if ex:
+                ex["kb"] = p["source"].startswith("kb_")          # notes from the knowledge base use the stored-records header
                 examples.append(ex)
                 break
     rng.shuffle(examples)

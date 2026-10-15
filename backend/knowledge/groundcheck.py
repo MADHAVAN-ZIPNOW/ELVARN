@@ -75,7 +75,7 @@ def check_answer(answer, notes, question=""):
     return not reasons, reasons
 
 
-def extractive_answer(notes, max_notes=2, max_chars=320):
+def extractive_answer(notes, max_notes=2, max_chars=320, label="the sources"):
     """The first notes word for word, each with its number: 'From the sources: [1] ... [2] ...'."""
     parts = []
     for n in sorted(notes)[:max_notes]:
@@ -83,10 +83,10 @@ def extractive_answer(notes, max_notes=2, max_chars=320):
         if len(t) > max_chars:
             t = t[:max_chars].rsplit(" ", 1)[0] + " ..."
         parts.append(f"[{n}] {t}")
-    return "From the sources: " + " ".join(parts) if parts else ""
+    return f"From {label}: " + " ".join(parts) if parts else ""
 
 
-def guard(answer, model_text, question=""):
+def guard(answer, model_text, question="", label="the sources"):
     """What to show: the model's answer when it passes the checks, else the notes themselves."""
     notes = parse_notes(model_text)
     if not notes:
@@ -94,4 +94,4 @@ def guard(answer, model_text, question=""):
     ok, reasons = check_answer(answer, notes, question)
     if ok:
         return answer, "model", []
-    return extractive_answer(notes), "extractive", reasons
+    return extractive_answer(notes, label=label), "extractive", reasons

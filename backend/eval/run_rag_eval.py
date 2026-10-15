@@ -147,9 +147,11 @@ def load_model(path):
 
 
 def case_body(case):
-    from search.prompt import FOOTER, HEADER
+    import os
+    from search.prompt import FOOTER, HEADER, KB_HEADER
+    header = KB_HEADER if os.environ.get("ELVARN_EVAL_HEADER") == "kb" else HEADER          # kb = the stored-records header
     lines = [f"[{i + 1}] {n}" for i, n in enumerate(case["notes"])]
-    return f"{HEADER}\n" + "\n".join(lines) + f"\n{FOOTER} {case['question']}"
+    return f"{header}\n" + "\n".join(lines) + f"\n{FOOTER} {case['question']}"
 
 
 def evaluate_model(path, cases, max_new_tokens=80, repetition_penalty=1.15, no_repeat_ngram_size=4):

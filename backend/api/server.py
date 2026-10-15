@@ -33,7 +33,7 @@ from files.service import FileService  # noqa: E402
 from api.model_service import ModelNotReady, ModelService  # noqa: E402
 from model.generation import MAX_NO_REPEAT_NGRAM, MAX_REPETITION_PENALTY, MODES  # noqa: E402
 from search.orchestrate import WEB_SEARCH_MODES, SearchResult, plan_search, run_search  # noqa: E402
-from search.prompt import build_evidence_text  # noqa: E402
+from search.prompt import KB_HEADER, build_evidence_text  # noqa: E402
 from search.providers.searxng import SearxngProvider, is_loopback_host, wake_up  # noqa: E402
 from search.service import USED, USED_NO_EVIDENCE_MESSAGE, SearchService, Source  # noqa: E402
 
@@ -298,7 +298,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         res = SearchResult(status=USED, searched=True, sources=[s.as_dict() for s in sources], message=KB_RAG_MESSAGE)
         try:
             count, limit = service.prompt_budget()
-            model_text, used = build_evidence_text(req.text, sources, count, limit, req.max_new_tokens)
+            model_text, used = build_evidence_text(req.text, sources, count, limit, req.max_new_tokens, header=KB_HEADER)
         except Exception:
             model_text, used = None, []
         if used:
@@ -307,12 +307,12 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             res.message = USED_NO_EVIDENCE_MESSAGE
         return res, ctx, None
 
-    def check_grounding(result, found, question):
+    def check_grounding(result, found, question, label="the web results"):
         """An answer written from notes must match the notes: otherwise the stored record text itself is shown (and the model's own
         wording stays in raw_text). Chat without notes is untouched."""
         if not (getattr(found, "model_text", None) and found.evidence_in_prompt):
             return
-        shown, grounding, why = groundcheck.guard(result.get("text", ""), found.model_text, question)
+        shown, grounding, why = groundcheck.guard(result.get("text", ""), found.model_text, question, label=label)
         result["grounding"] = grounding
         if grounding == "extractive":
             result["model_text_replaced"] = result.get("text", "")
@@ -369,7 +369,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             result.update(found.fields())
             if rag is not None:
                 result.update(kb_extra(ctx))
-            check_grounding(result, found, req.text)
+            check_grounding(result, found, req.text, "the stored records" if rag is not None else "the web results")
             result["repetition_source"] = rep_source
             result["sampling_source"] = sampling_source
             remember(req, request, result.get("text", ""), ctx)
@@ -445,7 +445,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                         event.update(found.fields())
                         if rag is not None:
                             event.update(kb_extra(ctx))
-                        check_grounding(event, found, req.text)
+                        check_grounding(event, found, req.text, "the stored records" if rag is not None else "the web results")
                         event["repetition_source"] = rep_source
                         event["sampling_source"] = sampling_source
                         remember(req, request, event.get("text", ""), ctx)
