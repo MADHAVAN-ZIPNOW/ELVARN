@@ -51,7 +51,7 @@ export function Sidebar({ open, mode, view, sessionCount, onToggle, onNewChat, o
   );
 }
 
-export function Header({ view, mode, convTitle, hasMessages, onToggleSide, onTheme, onClear, onLab }) {
+export function Header({ view, mode, convTitle, hasMessages, talking, onToggleSide, onTalk, onTheme, onClear, onLab }) {
   const tiltWord = useTilt(16, 26);
   const tiltOrb = useTilt(20, 26);
   const sv = view === "sessions";
@@ -69,6 +69,8 @@ export function Header({ view, mode, convTitle, hasMessages, onToggleSide, onThe
         <div className="ttl-sub" id="chatSub">{!sv && hasMessages ? convTitle : ""}</div>
       </div>
       <div className="hdricons">
+        <button className={"icon-btn talkhdr" + (talking ? " on" : "")} id="talkBtn" type="button" title={talking ? "Stop the voice conversation" : "Talk to ELVARN (works on every page)"}
+          aria-label={talking ? "Stop the voice conversation" : "Talk to ELVARN"} aria-pressed={!!talking} onClick={onTalk}><SpanIcon name="headphones" /></button>
         <button className="icon-btn" id="themeBtn" type="button" title="Switch theme" aria-label="Switch theme" onClick={onTheme}><SpanIcon name="theme" /></button>
         <button className="icon-btn" id="clearBtn" type="button" title="Clear this chat" aria-label="Clear this chat" hidden={sv} onClick={onClear}><SpanIcon name="trash" /></button>
         <button className="icon-btn" id="labBtn" type="button" title="Model lab and settings" aria-label="Open model lab and settings" onClick={onLab}><SpanIcon name="sliders" /></button>

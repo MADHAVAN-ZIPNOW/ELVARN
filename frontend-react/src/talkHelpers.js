@@ -30,3 +30,6 @@ export function greeting() {
   const list = n ? NAMED : PLAIN;
   return list[Math.floor(Math.random() * list.length)].replace("{n}", n);
 }
+
+const CARRY_ON = ["Go ahead, I am listening.", "I am listening. What next?", "Okay, ask me.", "Yes? Go ahead."];
+export const continuing = () => CARRY_ON[Math.floor(Math.random() * CARRY_ON.length)];

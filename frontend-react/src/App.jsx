@@ -19,7 +19,8 @@ import { SourcesPanel } from "./components/SourcesPanel";
 import { DownloadMenu } from "./components/DownloadMenu";
 import { FilePanel } from "./components/FileParts";
 import { TalkBar } from "./components/TalkBar";
-import { greeting, rememberName } from "./talkHelpers";
+import { continuing, greeting, rememberName } from "./talkHelpers";
+import { cue } from "./sounds";
 import { LeadCard, shouldAskForEmail } from "./components/LeadCard";
 
 export default function App() {
@@ -356,6 +357,7 @@ export default function App() {
     if (!talkRef.current || busyRef.current) return;
     setTalk("listening"); talkRef.current = "listening";
     setInput("");
+    cue("listen", latest.current.settings.voiceSounds !== false);
     voice.start();
   };
   const interrupt = () => {                                 // while ELVARN speaks: stop it and listen now
@@ -364,6 +366,7 @@ export default function App() {
     listenAgain();
   };
   const stopTalk = (message) => {
+    if (talkRef.current) cue("stop", latest.current.settings.voiceSounds !== false);
     talkRef.current = null; silent.current = 0;
     setTalk(null); speech.stop(); voice.stop();
     if (message) showBanner(message, "info");
@@ -372,8 +375,10 @@ export default function App() {
     if (!voice.supported || !speech.supported) { showBanner("Voice conversation needs a browser with speech recognition and speech, such as Chrome or Edge (on Android or computer).", "info"); return; }
     if (talkRef.current) return;
     showBanner("");
+    cue("start", latest.current.settings.voiceSounds !== false);          // the chime on the tap itself
     silent.current = 0; talkRef.current = "greeting"; setTalk("greeting");
-    speech.speak(greeting(), "greeting", listenAgain);
+    const c = latest.current.convs.find((x) => x.id === latest.current.currentId);
+    speech.speak(c && c.messages.length ? continuing() : greeting(), "greeting", listenAgain);          // inside an existing chat: no long hello, just carry on
   };
 
   const onSendClick = () => {
@@ -436,7 +441,7 @@ export default function App() {
 
         <div className={"main" + (attach.dragOver ? " dragover" : "")} {...attach.dropHandlers}>
           <Header view={view} mode={mode} convTitle={conv ? conv.title : ""} hasMessages={!!(conv && conv.messages.length)}
-            onToggleSide={toggleSide} onTheme={() => setSetting("theme", settings.theme === "dusk" ? "aurora" : "dusk")}
+            talking={!!talk} onTalk={() => (talkRef.current ? stopTalk() : startTalk())} onToggleSide={toggleSide} onTheme={() => setSetting("theme", settings.theme === "dusk" ? "aurora" : "dusk")}
             onClear={clearChat} onLab={() => setLabOpen(true)} />
           <Banner banner={banner} />
 

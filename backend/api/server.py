@@ -29,6 +29,7 @@ from knowledge import graphrag, groundcheck  # noqa: E402
 from knowledge.vectorstore import RagStore  # noqa: E402
 from knowledge.remote import KnowledgeUnavailable, RemoteKnowledge  # noqa: E402
 from notify.mailer import MailError, Mailer, clean_address, one_line  # noqa: E402
+from telephony.routes import install_call_routes  # noqa: E402
 from usermemory.store import Memory, session_key  # noqa: E402
 from files.service import FileService  # noqa: E402
 from api.model_service import ModelNotReady, ModelService  # noqa: E402
@@ -123,7 +124,7 @@ Thanks for trying ELVARN, a small AI model that answers questions about Tamil Na
 You are getting this mail because you left your address on the site and agreed to it. Reply STOP and we will delete it.
 """
 
-def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None):
+def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None, call_config=None):
     """public=True (or ELVARN_PUBLIC=1) is for a website anyone can reach: it turns on a per-visitor rate limit,
     a cap on simultaneous generations, and disables the reload endpoint."""
     public = env_flag("ELVARN_PUBLIC") if public is None else public
@@ -544,6 +545,14 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
     @app.post("/api/chat")
     def chat(req: GenerateRequest, request: Request):
         return run(req, request)
+
+    # ---- ELVARN can phone the owner and talk (Twilio); the answers come from the same pipeline as the web chat. Off without TWILIO_* settings.
+    def ask_for_call(text, history, session, request):
+        turns = [Turn(user=u, assistant=a) for u, a in history] or None
+        return run(GenerateRequest(text=text[:1000], mode="chat", max_new_tokens=80, greedy=True, web_search="auto", session_id=session, history=turns),
+                   request).get("text", "")
+
+    install_call_routes(app, ask_for_call, call_config)
 
     @app.post("/api/generate")
     def generate_endpoint(req: GenerateRequest, request: Request):

@@ -29,6 +29,7 @@ const PATHS = {
   sessions: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/>',
   rocket: '<path d="M12 2.4c3.1 2 4.6 5.6 4.6 9.6l-1.9 3.6H9.3L7.4 12c0-4 1.5-7.6 4.6-9.6z"/><circle cx="12" cy="9.2" r="1.7"/><path d="M7.5 12.2L4.4 14.9l1 3.2 3.2-1.6M16.5 12.2l3.1 2.7-1 3.2-3.2-1.6"/><path class="flame" d="M10.4 18.6c.4 1.7.9 2.9 1.6 3.9.7-1 1.2-2.2 1.6-3.9"/>',
   pin: '<path d="M9 4h6l-1 5 3 3v1.5H7V12l3-3zM12 13.5V20"/>',
+  headphones: '<path d="M4 15v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="7" rx="1.6"/><rect x="17" y="14" width="4" height="7" rx="1.6"/>',
   thumbup: '<path d="M7 11v8H4.5a1 1 0 01-1-1v-6a1 1 0 011-1zM7 11l3.5-6.5a1.8 1.8 0 013.2 1.4L13 9.5h5a2 2 0 012 2.4l-1.2 5.8a2.5 2.5 0 01-2.4 2H7"/>',
   thumbdown: '<path d="M7 13V5H4.5a1 1 0 00-1 1v6a1 1 0 001 1zM7 13l3.5 6.5a1.8 1.8 0 003.2-1.4L13 14.5h5a2 2 0 002-2.4l-1.2-5.8a2.5 2.5 0 00-2.4-2H7"/>',
   share: '<circle cx="6.5" cy="12" r="2.3"/><circle cx="17.5" cy="6" r="2.3"/><circle cx="17.5" cy="18" r="2.3"/><path d="M8.5 10.9l7-3.8M8.5 13.1l7 3.8"/>',
@@ -38,7 +39,7 @@ const PATHS = {
 
 const COLOR = {
   upload: "logo", plusb: "blue", file: "blue", download: "blue", rocket: "blue", menu: "blue", plus: "white", x: "pink", search: "blue",
-  trash: "pink", pen: "blue", pin: "blue", sliders: "orange", theme: "blue", mic: "logo", clip: "blue", send: "cyan", speaker: "blue",
+  trash: "pink", pen: "blue", pin: "blue", headphones: "blue", sliders: "orange", theme: "blue", mic: "logo", clip: "blue", send: "cyan", speaker: "blue",
   stop: "orange", copy: "blue", thumbup: "blue", thumbdown: "blue", share: "blue", link: "blue", info: "blue", check: "white",
 };
 const FILLED = new Set(["send", "stop"]);
