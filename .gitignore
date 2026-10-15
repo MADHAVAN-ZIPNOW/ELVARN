@@ -62,3 +62,4 @@ backend/data/rag_v2/
 backend/data/rag_v3/
 backend/data/*.log
 backend/data/gpu_install*.log
+backend/data/rag_v*/
