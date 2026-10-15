@@ -8,6 +8,12 @@ This page records where it came from so the work can be repeated and credited co
 | Wikipedia (English) | About 5,000 articles on law, government and general topics, collected with `backend/data_tools/collect_wikipedia.py` through the public Wikipedia API (cleaned text, one block per passage, each with its source URL) | CC BY-SA 4.0 |
 | Databricks Dolly 15k | Short question/answer pairs (and, for the RAG data, some with a context passage), converted by `backend/data_tools/convert_open_datasets.py` | CC BY-SA 3.0 |
 | OpenAssistant OASST1 | A few hundred short English conversations | Apache 2.0 |
+| HuggingFaceTB everyday-conversations-llama3.1-2k | Short everyday chats and greetings (chat training, `collect_chat_data.py`) | Apache 2.0 |
+| google Synthetic-Persona-Chat | Casual multi-turn chat (chat training) | CC BY 4.0 |
+| allenai SODA (validation split) | Social dialogues (chat training) | CC BY 4.0 |
+| OpenAssistant OASST2 | English assistant conversations (chat training) | Apache 2.0 |
+| ELVARN's own chat examples | Greetings, small talk, who ELVARN is, remembering a name; written from fixed phrase lists in `backend/data_tools/chat_synthetic.py` (no real people) | the owner's own material |
+| Court and agency documents | Madras High Court and Supreme Court judgments (open archives), DVAC and CBI public pages: stored in the knowledge base and exported to `kb_corpus.txt` | public records; each passage keeps its source link |
 | The project's own files | The original domain knowledge and constitution texts the project started with (`backend/data/raw/`) | the owner's own material |
 
 **RAG training examples** (`backend/data_tools/build_rag_dataset.py`) are generated from the passages above: notes, a question and an answer

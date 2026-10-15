@@ -82,6 +82,7 @@ def parse_args(argv=None):
     p.add_argument("--max-epochs-this-run", type=int, default=0, help="stop after this many epochs in THIS invocation (0 = no limit); resume later")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--threads", type=int, default=min(8, os.cpu_count() or 1))
+    p.add_argument("--device", default="auto", help="auto = the GPU when PyTorch can see one, else the CPU; or cpu / cuda")
     p.add_argument("--log-every", type=int, default=20, help="print a progress line every N batches")
     return p.parse_args(argv)
 
@@ -177,12 +178,31 @@ def settings_of(args, seq_len, init_path):
             "patience": args.patience, "seed": args.seed, "init_from": str(Path(init_path).resolve()), "order": args.order}
 
 
+def to_cpu(obj, _memo=None):
+    """Copy tensors (also inside dicts / lists) to the CPU: a checkpoint written on the GPU loads anywhere.
+    Tensors that share memory on the GPU (the tied embedding / output weights) still share one copy, so the file does not grow."""
+    memo = {} if _memo is None else _memo
+    if torch.is_tensor(obj):
+        key = (obj.device, obj.data_ptr(), tuple(obj.shape), obj.dtype) if obj.numel() else None
+        if key is not None and key in memo:
+            return memo[key]
+        out = obj.detach().cpu()
+        if key is not None:
+            memo[key] = out
+        return out
+    if isinstance(obj, dict):
+        return {k: to_cpu(v, memo) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return type(obj)(to_cpu(v, memo) for v in obj)
+    return obj
+
+
 def make_state(model, optimizer, config, tok, rng, *, epoch, step, history, best_val, best_path, bad_epochs, start_val,
                settings, status, init_from):
     """A complete, resumable training state (also loadable by the chat server)."""
     last = history[-1] if history else {}
     return {
-        "model_state_dict": model.state_dict(), "optimizer_state_dict": optimizer.state_dict(),
+        "model_state_dict": to_cpu(model.state_dict()), "optimizer_state_dict": to_cpu(optimizer.state_dict()),
         "config": config, "vocab_size": tok.vocab_size, "tokenizer_sha256": tok.sha256,
         "step": step, "final_step": step, "epoch": epoch, "best_val_loss": best_val,
         "last_train_loss": last.get("train_loss"), "last_val_loss": last.get("val_loss"),
@@ -254,6 +274,8 @@ def run(args):
     def lr_for(step_):
         return original_lr_at(step_, original_ns) if args.optimizer == "restore" else lr_at(step_, total_steps, args)
 
+    device = torch.device("cuda" if args.device == "auto" and torch.cuda.is_available() else ("cpu" if args.device == "auto" else args.device))
+    model.to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=0.01)
     history, best_path, bad_epochs = [], None, 0
     start_epoch = 1
@@ -341,6 +363,7 @@ def run(args):
         t0 = time.time()
         for b0 in range(0, len(starts), args.batch_size):
             x, y = build_batch(train_data, starts[b0:b0 + args.batch_size], lengths[b0:b0 + args.batch_size], seq_len, tok.pad_id)
+            x, y = x.to(device), y.to(device)
             n_targets = int((y != tok.pad_id).sum())
             lr_now = lr_for(step)
             for group in optimizer.param_groups:

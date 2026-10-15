@@ -6,3 +6,5 @@ RUN pip install --no-cache-dir "confluent-kafka>=2.5" "neo4j>=5" "pypdf>=4" "pya
 # (load_wikipedia, check_stores) run there as `python -m backend.knowledge...`.
 RUN python -m venv /home/airflow/venv-rag  && /home/airflow/venv-rag/bin/pip install --no-cache-dir chromadb==1.5.9 "neo4j>=5" "pypdf>=4" redis
 ENV PYTHONPATH=/opt/elvarn
+# Chroma downloads its small embedding model into ~/.cache/chroma the first time; the folder must belong to the airflow user
+RUN mkdir -p /home/airflow/.cache/chroma

@@ -24,9 +24,10 @@ from airflow.operators.python import PythonOperator
 RAG_PY = "cd /opt/elvarn && /home/airflow/venv-rag/bin/python -m"        # the virtualenv that has the Chroma client
 
 
-def collect(site, **kw):
+def collect(site, max_fetch=None, limit=None, **_airflow_context):
+    """Airflow also passes its run context (conf, ds, ...) as keyword arguments: only the two the collectors know are forwarded."""
     from backend.pipeline.run_collectors import run
-    stats = run(site, **kw)
+    stats = run(site, limit=limit, max_fetch=max_fetch)
     print(stats)
     return stats
 

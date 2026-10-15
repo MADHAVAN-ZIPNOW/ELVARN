@@ -86,14 +86,15 @@ def lm_loss(logits, targets, pad_id):
 def evaluate(model, data, seq_len, batch_size, pad_id):
     """Validation loss over the whole split, in non-overlapping windows."""
     model.eval()
+    device = next(model.parameters()).device
     n_windows = (len(data) - 1) // seq_len
     if n_windows < 1:
         raise SystemExit("Validation split is shorter than one sequence.")
     total, count = 0.0, 0
     for i in range(0, n_windows, batch_size):
         idx = range(i, min(i + batch_size, n_windows))
-        x = torch.from_numpy(np.stack([data[j * seq_len:j * seq_len + seq_len] for j in idx]).astype(np.int64))
-        y = torch.from_numpy(np.stack([data[j * seq_len + 1:j * seq_len + seq_len + 1] for j in idx]).astype(np.int64))
+        x = torch.from_numpy(np.stack([data[j * seq_len:j * seq_len + seq_len] for j in idx]).astype(np.int64)).to(device)
+        y = torch.from_numpy(np.stack([data[j * seq_len + 1:j * seq_len + seq_len + 1] for j in idx]).astype(np.int64)).to(device)
         total += lm_loss(model(x), y, pad_id).item() * len(idx)
         count += len(idx)
     model.train()

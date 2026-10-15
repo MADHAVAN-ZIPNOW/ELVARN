@@ -53,3 +53,12 @@ backend/data/rag_kb_*/
 
 # React frontend: dependencies are not committed, the built dist/ is (the Render build has no Node step)
 frontend-react/node_modules/
+.venv-gpu/
+
+# chat / notes training sets and logs built by data_tools (rebuild with collect_chat_data.py, build_rag_dataset.py, build_chat_mix.py)
+backend/data/chat_v1/
+backend/data/chat_mix_*/
+backend/data/rag_v2/
+backend/data/rag_v3/
+backend/data/*.log
+backend/data/gpu_install*.log
