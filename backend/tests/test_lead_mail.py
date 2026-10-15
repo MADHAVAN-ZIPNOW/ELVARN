@@ -79,3 +79,22 @@ def test_a_mail_server_failure_is_reported_not_crashed(ckpt_dir):
     assert r.status_code == 502 and "bad credentials" not in r.text           # the server's reason is not shown to visitors
     with pytest.raises(MailError):
         Mailer("h", 587, "u", "p", smtp_factory=Down).send("a@example.com", "s", "b")
+
+
+def test_the_relay_mode_posts_to_the_web_app_and_reports_refusals():
+    import json
+    import httpx
+    seen = []
+
+    def handler(request):
+        seen.append(json.loads(request.content))
+        return httpx.Response(200, json={"ok": seen[-1]["secret"] == "right"})
+    good = Mailer.from_env({"MAIL_WEBHOOK_URL": "https://script.google.com/macros/s/x/exec", "MAIL_WEBHOOK_SECRET": "right", "OWNER_EMAIL": "o@example.com"}, None)
+    good._transport = httpx.MockTransport(handler)
+    good.send("v@example.com", "Hi\r\nBcc: evil", "body")
+    assert seen[0]["to"] == "v@example.com" and seen[0]["subject"] == "Hi Bcc: evil" and good.owner == "o@example.com"
+    bad = Mailer.from_env({"MAIL_WEBHOOK_URL": "https://script.google.com/macros/s/x/exec", "MAIL_WEBHOOK_SECRET": "wrong"}, None)
+    bad._transport = httpx.MockTransport(handler)
+    with pytest.raises(MailError):
+        bad.send("v@example.com", "s", "b")
+    assert Mailer.from_env({"MAIL_WEBHOOK_URL": "http://not-https.example.com", "MAIL_WEBHOOK_SECRET": "x"}) is None        # only https relays

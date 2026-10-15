@@ -25,7 +25,7 @@ def test_it_sets_each_value_and_restarts_the_site():
     calls = []
     pm.push(fake(calls), ENV, say=lambda m: None)
     puts = [c[1] for c in calls if c[0] == "PUT"]
-    assert sorted(puts) == sorted(f"/v1/services/srv-site/env-vars/{k}" for k in pm.KEYS)
+    assert sorted(puts) == sorted(f"/v1/services/srv-site/env-vars/{k}" for k in pm.SMTP_KEYS)
     assert ("POST", "/v1/services/srv-site/deploys") in [(c[0], c[1]) for c in calls]
 
 

@@ -13,20 +13,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import deploy_render as dr  # noqa: E402
 
-KEYS = ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "OWNER_EMAIL")
+SMTP_KEYS = ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "OWNER_EMAIL")
+RELAY_KEYS = ("MAIL_WEBHOOK_URL", "MAIL_WEBHOOK_SECRET", "OWNER_EMAIL")
+KEYS = SMTP_KEYS + ("MAIL_WEBHOOK_URL", "MAIL_WEBHOOK_SECRET")
 
 
 def push(api, env, dry_run=False, say=print):
-    missing = [k for k in KEYS if not env.get(k)]
+    # the relay (Render free blocks SMTP) when it is filled in, else plain SMTP
+    keys = RELAY_KEYS if env.get("MAIL_WEBHOOK_URL") else SMTP_KEYS
+    missing = [k for k in keys if not env.get(k)]
     if missing:
         raise dr.DeployError("these are empty in .env: " + ", ".join(missing))
     site = next((s for s in api.services() if s["name"] == dr.SITE), None)
     if site is None:
         raise dr.DeployError(f'no service named "{dr.SITE}" on this Render account')
     if dry_run:
-        say("(dry run) would set " + ", ".join(KEYS) + f' on "{dr.SITE}" and restart it')
+        say("(dry run) would set " + ", ".join(keys) + f' on "{dr.SITE}" and restart it')
         return
-    for k in KEYS:
+    for k in keys:
         api.call("PUT", f"/v1/services/{site['id']}/env-vars/{k}", json={"value": env[k]})
     api.call("POST", f"/v1/services/{site['id']}/deploys", json={})
     say("mail settings set on the site; it is restarting (about 2 minutes)")
