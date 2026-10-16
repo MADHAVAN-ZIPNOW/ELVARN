@@ -39,21 +39,51 @@ def _remote(texts, url, timeout=120):
 
 
 def best_embedding_function():
-    """The default Chroma embedding function, answered by the GPU service while it is running.
-    The GPU is tried FIRST on every call (a separate 'are you alive?' check timed out whenever the service was busy and silently sent the work to the
-    CPU); only a real failure moves a call to the CPU, and then the GPU is left alone for 30 seconds before it is tried again."""
+    """The Chroma embedding function of this computer: the GPU service first, the CPU model when the GPU does not answer.
+
+    It must NOT be a subclass of Chroma's DefaultEmbeddingFunction: Chroma then ignores it and quietly uses its own CPU model (that is why the first
+    version, a subclass, never reached the GPU). It is a standalone class that still reports the name "default" with an empty config, so it fits the
+    collections that already exist (same model, same vectors).
+    The GPU is tried FIRST on every call; only a real failure moves a call to the CPU, and the GPU is then left alone for 30 seconds."""
     import time
+    from typing import Any, Dict
+    from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
     from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 
-    class GpuOrCpu(DefaultEmbeddingFunction):
+    class GpuOrCpu(EmbeddingFunction[Documents]):
         down_until = 0.0
+        _cpu = None
 
-        def __call__(self, input):  # noqa: A002 - Chroma's parameter name
+        def __init__(self) -> None:
+            pass
+
+        def __call__(self, input: Documents) -> Embeddings:  # noqa: A002 - Chroma's parameter name
             texts = [str(t) for t in input]
             if URL != "off" and time.time() >= GpuOrCpu.down_until:
                 try:
                     return _remote(texts, URL)
-                except Exception:  # noqa: BLE001 - the service is not running or failed: this call is done on the CPU
+                except Exception as exc:  # noqa: BLE001 - the service is not running or failed: this call is done on the CPU
                     GpuOrCpu.down_until = time.time() + 30
-            return super().__call__(texts)
+                    print(f"gpu embedding unavailable ({exc.__class__.__name__}: {str(exc)[:120]}); using the CPU for 30 s", flush=True)
+            if GpuOrCpu._cpu is None:
+                GpuOrCpu._cpu = DefaultEmbeddingFunction()
+            return GpuOrCpu._cpu(texts)
+
+        @staticmethod
+        def name() -> str:
+            return "default"
+
+        def get_config(self) -> Dict[str, Any]:
+            return {}
+
+        @staticmethod
+        def build_from_config(config: Dict[str, Any]) -> "GpuOrCpu":
+            return GpuOrCpu()
+
+        @staticmethod
+        def validate_config(config: Dict[str, Any]) -> None:
+            return
+
+        def max_tokens(self) -> int:
+            return 256
     return GpuOrCpu()
