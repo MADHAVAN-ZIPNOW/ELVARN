@@ -33,6 +33,18 @@ sys.path.insert(0, str(PROJECT_DIR))
 STATE = BACKEND_DIR / "data" / "kb_state" / "training.json"
 LIVE = PROJECT_DIR / "deploy" / "models" / "17m_rag"
 LIVE_TOKENIZER_SOURCE = BACKEND_DIR / "data" / "v2" / "tokenizer" / "tokenizer.json"
+
+
+def _is_extension_of_live(live_tokenizer):
+    """The main vocabulary grows (vocab_sync.py). That is fine as long as it is the live one with tokens appended: training then adapts the live model."""
+    try:
+        sys.path.insert(0, str(BACKEND_DIR / "training"))
+        import extend_vocab
+        old = json.loads(Path(live_tokenizer).read_text(encoding="utf-8"))
+        new = json.loads(LIVE_TOKENIZER_SOURCE.read_text(encoding="utf-8"))
+        return extend_vocab.is_extension(old, new)
+    except Exception:  # noqa: BLE001
+        return False
 MIN_NEW_BLOCKS = 200
 
 # measure -> (direction, allowed slack in percentage points). "up": higher is better; "down": lower is better.
@@ -110,7 +122,7 @@ def main(argv=None):
     if not train or a.dry_run:
         return 0
 
-    if sha256(a.live / "tokenizer.json") != sha256(LIVE_TOKENIZER_SOURCE):
+    if sha256(a.live / "tokenizer.json") != sha256(LIVE_TOKENIZER_SOURCE) and not _is_extension_of_live(a.live / "tokenizer.json"):
         print("ABORT: the live model's tokenizer differs from the tokenizer the RAG builder uses; a candidate would not match it.")
         return 2
     stamp = datetime.now().strftime("%Y%m%d_%H%M")

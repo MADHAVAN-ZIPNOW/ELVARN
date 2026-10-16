@@ -144,6 +144,9 @@ def lr_at(step, total_steps, args):
     return 0.1 * args.learning_rate + 0.9 * args.learning_rate * 0.5 * (1 + math.cos(math.pi * progress))
 
 
+MAIN_TOKENIZER = BACKEND_DIR / "data" / "v2" / "tokenizer" / "tokenizer.json"      # the vocabulary every dataset builder uses; it only ever grows (vocab_sync.py)
+
+
 def check_checkpoint(ck, ck_path, data_meta):
     """Refuse to train if the checkpoint does not match the tokenizer and dataset. Returns the tokenizer."""
     for key in ("model_state_dict", "config", "vocab_size", "tokenizer_sha256"):
@@ -155,6 +158,17 @@ def check_checkpoint(ck, ck_path, data_meta):
     tok = BPETokenizer(tok_file)
     if ck["tokenizer_sha256"] != tok.sha256 or ck["vocab_size"] != tok.vocab_size:
         raise SystemExit("The checkpoint does not match the tokenizer saved next to it.")
+    if data_meta.get("tokenizer_sha256") != tok.sha256 and MAIN_TOKENIZER.is_file() and BPETokenizer(MAIN_TOKENIZER).sha256 == data_meta.get("tokenizer_sha256"):
+        # the dataset was built with the main vocabulary, which has GROWN since this checkpoint was trained: add the new tokens to the model
+        # (old tokens keep their rows and ids; each new token starts as the average of the two pieces it glues) and train with the main vocabulary
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import extend_vocab
+        try:
+            added = extend_vocab.adapt_checkpoint(ck, tok_file, MAIN_TOKENIZER)
+        except ValueError as exc:
+            raise SystemExit(f"The dataset uses a different vocabulary and the checkpoint cannot be adapted to it: {exc}")
+        print(f"The main vocabulary grew since this checkpoint: {added:,} tokens added to the model (now {ck['vocab_size']:,}).", flush=True)
+        tok = BPETokenizer(MAIN_TOKENIZER)
     if data_meta.get("tokenizer_sha256") != tok.sha256:
         raise SystemExit(
             "The dataset in data/processed was built with a DIFFERENT tokenizer than this checkpoint "

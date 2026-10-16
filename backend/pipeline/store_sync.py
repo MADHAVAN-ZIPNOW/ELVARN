@@ -109,6 +109,9 @@ def run_forever(interval=10, idle_exit=900, say=lambda m: print(m, flush=True)):
     except ImportError:
         pass
     registry = Registry()
+    import threading
+    from backend.pipeline import vocab_sync
+    threading.Thread(target=vocab_sync.run_forever, args=(60, say), daemon=True).start()      # new words -> the main vocabulary, new text -> the training file
     last_embedded, last_work = -1, time.time()
     while True:
         beat()

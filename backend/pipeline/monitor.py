@@ -231,6 +231,18 @@ class Monitor:
         return [{"at": r["at"], "doc_id": r["doc_id"], "title": r["title"], "person": r["person"], "stage": r["stage"], "detail": ""}
                 for r in self.registry.stage_rows(50)]
 
+    def vocab(self):
+        """The main vocabulary: size now, how many times it has grown, the last growth, and the model size that size means (385 numbers per token)."""
+        from backend.pipeline import vocab_sync
+        last = vocab_sync.latest_version()
+        size = last["vocab_after"] if last else None
+        if size is None:
+            try:
+                size = len(json.loads(vocab_sync.MAIN_TOKENIZER.read_text(encoding="utf-8"))["model"]["vocab"])
+            except (OSError, ValueError):
+                return None
+        return {"size": size, "versions": last["version"] if last else 0, "last": last, "model_million": round(17.152 + (size - 16384) * 385 / 1e6, 2)}
+
     # ---- the all-India judgments collection ------------------------------------------------------------------
     def law(self):
         """Judgments stored so far: count, bytes against the disk budget, the busiest courts, and what the last minute brought."""
@@ -290,7 +302,7 @@ class Monitor:
             "scope": {"from_year": 1947, "to_year": 2026}, "message": ctl.get("message", ""), "people": self.people(),
             "stages": {"collector": self.collector(), "raw": _safe(self.raw), "kafka": self.kafka(stats), "spark": self.spark(stats),
                        "corpus": self.corpus(stats), "neo4j": neo, "chroma": self.chroma(neo)},
-            "movement": self.movement(), "law": _safe(self.law), "mode": ctl.get("mode"), "then": ctl.get("then"), "at": now()}
+            "movement": self.movement(), "law": _safe(self.law), "vocab": self.cache.get("vocab", 30, lambda: _safe(self.vocab)), "mode": ctl.get("mode"), "then": ctl.get("then"), "at": now()}
 
     def people_page(self, status=None, q=None, limit=50, offset=0):
         total, rows = self.registry.people(status or None, q or None, max(1, min(int(limit), 200)), max(0, int(offset)))

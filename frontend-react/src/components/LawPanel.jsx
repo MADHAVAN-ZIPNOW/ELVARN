@@ -13,7 +13,7 @@ export function LawPanel({ status, running, offline, busy, onStart, onStop }) {
   const [from, setFrom] = useState(1950), [to, setTo] = useState(2026);
   const [topics, setTopics] = useState([]);
   const [plan, setPlan] = useState("judgments");                                          // "judgments" (A) or "then" (C: the politician collector follows)
-  const law = status && status.law;
+  const law = status && status.law, vocab = status && status.vocab;
   const mine = !!law && law.running;                                                    // this kind of collection is the one running
   const other = running && !mine;                                                       // the politician collector is running instead
   const used = law && isNum(law.bytes) ? law.bytes : null;
@@ -57,6 +57,7 @@ export function LawPanel({ status, running, offline, busy, onStart, onStop }) {
           <div><dt>Judgments</dt><dd>{law ? fmtNum(law.documents) : NA}</dd></div>
           <div><dt>Disk used</dt><dd>{used === null ? NA : fmtBytes(used)}</dd></div>
           <div><dt>Per minute</dt><dd>{law && isNum(law.per_minute) ? law.per_minute.toFixed(1) : NA}</dd></div>
+          <div title={vocab ? "Model size with this vocabulary: about " + vocab.model_million + " million parameters. Grown " + vocab.versions + " times." : ""}><dt>Vocabulary</dt><dd>{vocab ? fmtNum(vocab.size) : NA}</dd></div>
         </dl>
         <div className="pl-bar">
           <div className="pl-barhead"><span>Disk budget</span><b>{p === null ? NA : fmtBytes(used) + " of " + fmtBytes(budget)}</b></div>

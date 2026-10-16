@@ -51,7 +51,8 @@ def passage_blocks(kb):
     """One block per readable passage of an official document. Short press-release lines (one sentence each) are grouped by
     publisher and month into passages of up to GROUP_CHARS, because the RAG builder needs several sentences per passage."""
     seen, groups = set(), {}
-    rows = kb._read("MATCH (p:Passage)-[:FROM]->(s:Source) WHERE s.doc_type IN $types "
+    rows = kb._read("MATCH (p:Passage)-[:FROM]->(s:Source) WHERE s.doc_type IN $types AND s.court IS NULL "      # judgments the pipeline collected go to kb_judgments.txt
+                    
                     "RETURN s.title AS title, s.url AS url, s.published_date AS date, s.doc_type AS doc_type, s.publisher AS publisher, "
                     "p.position AS pos, p.text AS text ORDER BY s.published_date, s.title, p.position", types=list(OFFICIAL))
     for r in rows:
