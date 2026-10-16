@@ -56,6 +56,22 @@ REACT_DIST = BACKEND_DIR.parent / "frontend-react" / "dist"
 FRONTEND_DIR = REACT_DIST if (REACT_DIST / "index.html").is_file() and os.environ.get("ELVARN_LEGACY_UI") != "1" else BACKEND_DIR.parent / "frontend"
 
 
+class StartRequest(BaseModel):
+    """Optional settings of the Start button: none = the politician-by-politician run; mode "judgments" = the all-India court judgments run."""
+    mode: Optional[str] = Field(default=None, max_length=20)
+    scope: Optional[str] = Field(default=None, max_length=10)
+    max_gb: Optional[float] = Field(default=None, ge=1, le=500)
+    from_year: Optional[int] = Field(default=None, ge=1947, le=2026)
+    to_year: Optional[int] = Field(default=None, ge=1947, le=2026)
+    topics: Optional[List[str]] = Field(default=None, max_length=12)
+
+
+def start_args(body):
+    if body is None:
+        return None
+    return body.model_dump() if hasattr(body, "model_dump") else body.dict()
+
+
 class TargetedRequest(BaseModel):
     text: Optional[str] = Field(default=None, max_length=300)
     person: Optional[str] = Field(default=None, max_length=60)
@@ -577,11 +593,11 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             return bridge.status()
 
         @app.post("/api/collect/start")
-        def collect_start(request: Request):
+        def collect_start(request: Request, body: Optional[StartRequest] = None):
             collect_guard(request)
             if not bridge.online():
                 return bridge.status()
-            got = bridge.call("start", wait=ASK)                     # returns once the agent has acted and reported (about a second)
+            got = bridge.call("start", start_args(body), wait=ASK)                     # returns once the agent has acted and reported (about a second)
             note = "Start sent to your collection computer." if got is not None else "Your collection computer has not answered yet; it will start when it does."
             return {**bridge.status(), "message": note}
 
@@ -646,11 +662,11 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             return collect_monitor(request).status()
 
         @app.post("/api/collect/start")
-        def collect_start(request: Request):
+        def collect_start(request: Request, body: Optional[StartRequest] = None):
             from backend.pipeline import remote_ops
             monitor = collect_monitor(request)
-            remote_ops.start(monitor)
-            return monitor.status()
+            got = remote_ops.start(monitor, start_args(body))
+            return {**monitor.status(), **({"message": got["message"]} if isinstance(got, dict) and not got.get("ok", True) else {})}
 
         @app.post("/api/collect/stop")
         def collect_stop(request: Request):

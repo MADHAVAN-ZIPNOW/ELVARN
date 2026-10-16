@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from backend.pipeline import official_index
+from backend.pipeline import law_tags, official_index
 from backend.pipeline.collectors import cbi, court_opendata, dvac
 from backend.pipeline.common import RAW_DIR, FetchError, Fetcher, is_tamil_nadu
 from backend.pipeline.roster import UA
@@ -337,13 +337,13 @@ def official_doc(row, person, s3, fetcher):
         text = court_opendata.pdf_text(data)
         if len(text.strip()) < 500:
             return None                                              # scanned or empty: nothing to learn from it
-        if not (official_index.confirms_text(official_index.norm(text[:80000]), person) and court_opendata.CORRUPTION_TEXT.search(text)
-                and (kind == "hc" or court_opendata.TN_TERMS.search(text))):
-            return None
+        if not (official_index.confirms_text(official_index.norm(text[:80000]), person) and (kind == "hc" or court_opendata.TN_TERMS.search(text))):
+            return None                                                  # every case that names this politician (a petition, an appeal, an election case ...), not only corruption cases
         sc = kind == "sc"
         return Found("court_record", "pdf", "pdf", "application/pdf", row["url"], (row["title"] or "Judgment")[:240], "en",
                      court_opendata.SC_PUBLISHER if sc else court_opendata.HC_PUBLISHER, court_opendata.LICENCE, "judgment" if sc else "order", data,
-                     wikidata_id=person.get("wikidata_id"), tokens=tokens_of(text), extra={"published_date": row.get("date"), **row["meta"]})
+                     wikidata_id=person.get("wikidata_id"), tokens=tokens_of(text),
+                     extra={"published_date": row.get("date"), **row["meta"], "case_stage": law_tags.stage_of(kind, text, row["meta"].get("outcome")), "petitions": law_tags.petitions_of(text[:20000] + " " + (row.get("title") or ""))})
     if kind == "ed":
         data, ctype = fetcher.get(row["url"])
         text = court_opendata.pdf_text(data)
@@ -351,13 +351,13 @@ def official_doc(row, person, s3, fetcher):
             return None                                                                  # the name is only a lookalike
         return Found("agency_record", "pdf", "pdf", ctype or "application/pdf", row["url"], row["title"][:240], "en", ED_PUBLISHER, ED_LICENCE,
                      "press_release", data, wikidata_id=person.get("wikidata_id"), tokens=tokens_of(row["title"] + " " + text),
-                     extra={"published_date": row.get("date"), "text": row["title"], "text_reliable": True})
+                     extra={"published_date": row.get("date"), "text": row["title"], "text_reliable": True, "case_stage": law_tags.stage_of("ed", row["title"] + " " + text[:3000])})
     if kind == "dvac":
         data, ctype = fetcher.get(row["url"])
         text = f"DVAC press release dated {row.get('date')}: {row['title']}"
         return Found("agency_record", "pdf", "pdf", ctype or "application/pdf", row["url"], row["title"][:240], "en", dvac.PUBLISHER, dvac.LICENCE,
                      "press_release", data, wikidata_id=person.get("wikidata_id"), tokens=tokens_of(text),
-                     extra={"published_date": row.get("date"), "text": text, "text_reliable": False})       # the Tamil PDF text is unreliable; the English title is not
+                     extra={"published_date": row.get("date"), "text": text, "text_reliable": False, "case_stage": law_tags.stage_of("dvac", row["title"])})       # the Tamil PDF text is unreliable; the English title is not
     if kind == "cbi":
         raw, ctype = fetcher.get(row["url"])
         detail = cbi.parse_detail(raw.decode("utf-8", "replace"))
@@ -366,5 +366,6 @@ def official_doc(row, person, s3, fetcher):
         if not official_index.confirms_text(official_index.norm(detail["title"] + " " + detail["text"]), person):
             return None
         return Found("agency_record", "web", "html", "text/html", row["url"], detail["title"][:240], "en", cbi.PUBLISHER, cbi.LICENCE, "press_release", raw,
-                     wikidata_id=person.get("wikidata_id"), tokens=tokens_of(detail["text"]), extra={"published_date": detail["date"]})
+                     wikidata_id=person.get("wikidata_id"), tokens=tokens_of(detail["text"]),
+                     extra={"published_date": detail["date"], "case_stage": law_tags.stage_of("cbi", detail["title"] + " " + detail["text"][:3000])})
     return None

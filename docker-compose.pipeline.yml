@@ -81,8 +81,8 @@ services:
       - elvarn_spark_ivy:/tmp/ivy
     command: >
       /opt/spark/bin/spark-submit
-      --master local[2]
-      --driver-memory 1g
+      --master local[8]
+      --driver-memory 3g
       --conf spark.jars.ivy=/tmp/ivy
       --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3
       /opt/elvarn/backend/pipeline/spark_job.py

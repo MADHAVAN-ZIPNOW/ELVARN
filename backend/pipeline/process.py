@@ -167,6 +167,12 @@ def process_document(msg, raw_root=RAW_ROOT):
                  "source": meta["source"], "source_url": meta["source_url"], "language": language, "person_key": msg.get("person_key"),
                  "created_at": msg.get("collected_at"), "published_date": msg.get("published_date"), "publisher": msg.get("publisher"),
                  "licence": msg.get("licence"), "sha256": info["document_sha256"], "raw_sha256": msg.get("sha256")}
+    if msg.get("case_stage"):                                             # a court or agency record of a person's case: where it is in the case lifecycle
+        graph_doc.update(case_stage=msg.get("case_stage"), petitions=msg.get("petitions") or [])
+    if msg.get("topic") == "judgment":                                    # a court judgment: the case, the court, and what the WHOLE text is about
+        from backend.pipeline import law_tags
+        graph_doc.update({k: msg.get(k) for k in ("case_name", "case_type", "case_number", "court", "bench", "year", "judge", "outcome")},
+                         case_ref=msg.get("ref"), subjects=law_tags.subjects_of(text), statutes=law_tags.statutes_of(text, 20))
     return {"skipped": False, "new": True, "doc_id": doc_id, "date": collection_date(msg), "source": meta["source"], "language": language,
             "quality_score": score, "title": graph_doc["title"], "doc_type": graph_doc["doc_type"], "url": meta["source_url"],
             "publisher": msg.get("publisher"), "published_date": msg.get("published_date"), "licence": msg.get("licence"),

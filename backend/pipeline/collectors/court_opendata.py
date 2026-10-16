@@ -82,6 +82,12 @@ class S3Source:
         import pyarrow.parquet as pq
         return pq.read_table(f"{bucket}/{key}", columns=columns, filesystem=self.fs).to_pylist()
 
+    def metadata(self, path, wanted):
+        """The columns of a metadata table that exist in it (the schema differs a little between years), as a list of dicts."""
+        import pyarrow.parquet as pq
+        names = set(pq.read_schema(path, filesystem=self.fs).names)
+        return pq.read_table(path, columns=[c for c in wanted if c in names], filesystem=self.fs).to_pylist()
+
     def children(self, bucket, prefix):
         import pyarrow.fs as pafs
         infos = self.fs.get_file_info(pafs.FileSelector(f"{bucket}/{prefix}", recursive=False, allow_not_found=True))

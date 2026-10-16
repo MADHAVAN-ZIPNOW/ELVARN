@@ -51,6 +51,14 @@ function Trail({ cur }) {
 
 /** Top of the Pipeline page: who is being collected right now and from which source, and what the last run said. */
 export function NowStrip({ current: cur, state, message, onOpen }) {
+  if (cur && cur.kind === "judgments") {                                               // the all-India judgments run: no person, no source steps
+    return (
+      <section className="pl-now live" aria-label="Now collecting" aria-live="polite">
+        <div className="pl-nowwho"><span className="pl-k">Now collecting</span><span className="pl-curname">Court judgments of all India</span><span className="pl-sub">{cur.name}</span></div>
+        <p className="pl-nowmsg">Each judgment is saved with its case name, court and year, then sent through Kafka, Spark, Neo4j and Chroma.</p>
+      </section>
+    );
+  }
   return (
     <section className={"pl-now" + (cur ? " live" : "")} aria-label="Now collecting" aria-live="polite">
       <div className="pl-nowwho">

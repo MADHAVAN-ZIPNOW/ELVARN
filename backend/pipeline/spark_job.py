@@ -141,6 +141,7 @@ def process_batch(batch_df, batch_id):
     from backend.usermemory.store import Memory
     offsets = {str(r["partition"]): int(r["o"]) + 1 for r in batch_df.groupBy("partition").agg(F.max("offset").alias("o")).collect()}
     values = batch_df.selectExpr("CAST(value AS STRING) AS value").rdd.map(lambda r: r.value)
+    values = values.repartition(int(os.environ.get("SPARK_PARALLEL", "8")))        # the topic has 3 partitions: spread the documents over every core
     kb, cache = KnowledgeBase(), Memory.from_env()          # the graph, and the cache (new data clears it)
     try:
         handle_results(values.map(_process).toLocalIterator(), kb, corpus.PassageIndex(CORPUS_DIR), make_parquet_writer(batch_df.sparkSession),
@@ -160,7 +161,7 @@ def main():
               .option("kafka.bootstrap.servers", os.environ.get("KAFKA_BOOTSTRAP", "kafka:9092"))
               .option("subscribe", os.environ.get("KAFKA_TOPIC", "kb.raw_documents"))
               .option("startingOffsets", "earliest").option("failOnDataLoss", "false")
-              .option("maxOffsetsPerTrigger", 200).load())
+              .option("maxOffsetsPerTrigger", int(os.environ.get("SPARK_BATCH", "400"))).load())
     writer = (stream.writeStream.foreachBatch(process_batch)
               .option("checkpointLocation", os.environ.get("SPARK_CHECKPOINT", "/checkpoints/kb")))
     query = (writer.trigger(availableNow=True) if a.once else writer.trigger(processingTime=a.interval)).start()

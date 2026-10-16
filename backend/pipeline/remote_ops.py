@@ -5,7 +5,32 @@ from backend.pipeline import collect_request, control
 ANSWER_WAIT = 12.0
 
 
-def start(monitor):
+def judgments_args(args):
+    """The settings of a judgments run from the dashboard -> command line words. Everything is checked: this is what the site may ask the computer to run."""
+    from backend.pipeline import judgments
+    args = args or {}
+    scope = args.get("scope") if args.get("scope") in judgments.SCOPES else "all"
+    try:
+        gb = min(500.0, max(1.0, float(args.get("max_gb") or judgments.DEFAULT_GB)))
+        first = min(2026, max(judgments.FIRST_YEAR, int(args.get("from_year") or judgments.FIRST_YEAR)))
+        last = min(2026, max(first, int(args.get("to_year") or 2026)))
+    except (TypeError, ValueError):
+        gb, first, last = float(judgments.DEFAULT_GB), judgments.FIRST_YEAR, 2026
+    topics = [t for t in (args.get("topics") or []) if t in judgments.SUBJECT_NAMES][:12] if isinstance(args.get("topics"), list) else []
+    words = ["--max-gb", f"{gb:g}", "--scope", scope, "--from-year", str(first), "--to-year", str(last)]
+    if topics:
+        words += ["--topics", ",".join(topics)]
+    return words, f"Collecting court judgments from all of India ({scope}, {first}-{last}, up to {gb:g} GB" + (f", about {', '.join(topics)}" if topics else "") + ") ..."
+
+
+def start(monitor, args=None):
+    """No settings: the politician-by-politician collector. {"mode": "judgments", ...}: the all-India judgments collector."""
+    if isinstance(args, dict) and args.get("mode") == "judgments":
+        if control.is_running(monitor.control_path):
+            return {"ok": False, "message": "A collection is running. Stop it first."}
+        words, message = judgments_args(args)
+        control.start(monitor.control_path, extra=tuple(words), message=message, module=control.JUDGMENTS_MODULE, check_stack=True)
+        return {"ok": True}
     control.start(monitor.control_path)
     return {"ok": True}
 
@@ -50,6 +75,6 @@ def run(monitor, action, args):
     if fn is None:
         return {"error": f"unknown command {action!r}"}
     try:
-        return fn(monitor, args or {}) if action in ("targeted", "people", "person") else fn(monitor)
+        return fn(monitor, args or {}) if action in ("targeted", "people", "person", "start") else fn(monitor)
     except Exception as exc:  # noqa: BLE001
         return {"error": f"{exc.__class__.__name__}: {str(exc)[:160]}"}

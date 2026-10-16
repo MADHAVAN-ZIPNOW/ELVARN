@@ -32,7 +32,7 @@ def count_raw_files(raw_dir=RAW_DIR):
     skip = {"checksums.txt"}
     root = Path(raw_dir)
     return sum(1 for p in root.rglob("*") if p.is_file() and p.name not in skip and not p.name.endswith((".part", ".tmp"))
-               and p.relative_to(root).parts[0] != "people")                   # people/ holds links to the same files
+               and p.relative_to(root).parts[0] not in ("people", "courts"))                   # people/ holds links to the same files
 
 
 def embed_rows(rag, rows):

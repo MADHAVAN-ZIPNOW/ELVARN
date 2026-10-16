@@ -95,7 +95,7 @@ class Monitor:
         def walk():
             by_source, files, size = dict.fromkeys(SOURCES, 0), 0, 0
             for path in self.raw_dir.rglob("*"):
-                if not path.is_file() or path.name == "checksums.txt" or path.suffix == ".part" or path.relative_to(self.raw_dir).parts[0] == "people":
+                if not path.is_file() or path.name == "checksums.txt" or path.suffix == ".part" or path.relative_to(self.raw_dir).parts[0] in ("people", "courts"):
                     continue                                          # people/ holds links to the same files: counted once, under their source folder
                 files += 1
                 size += path.stat().st_size
@@ -211,6 +211,17 @@ class Monitor:
         return [{"at": r["at"], "doc_id": r["doc_id"], "title": r["title"], "person": r["person"], "stage": r["stage"], "detail": ""}
                 for r in self.registry.stage_rows(50)]
 
+    # ---- the all-India judgments collection ------------------------------------------------------------------
+    def law(self):
+        """Judgments stored so far: count, bytes against the disk budget, the busiest courts, and what the last minute brought."""
+        one = self.registry._one("SELECT COUNT(*) AS n, COALESCE(SUM(bytes),0) AS b FROM documents WHERE topic='judgment'")
+        courts = self.registry._all("SELECT publisher AS court, COUNT(*) AS n FROM documents WHERE topic='judgment' GROUP BY publisher ORDER BY n DESC LIMIT 6")
+        minute_ago = datetime.fromtimestamp(time.time() - 120, timezone.utc).isoformat(timespec="seconds")
+        recent = self.registry._one("SELECT COUNT(*) AS n FROM documents WHERE topic='judgment' AND collected_at>=?", minute_ago)["n"]
+        ctl = control.read(self.control_path)
+        return {"documents": one["n"], "bytes": one["b"], "budget_bytes": ctl.get("budget_bytes"), "per_minute": round(recent / 2, 1),
+                "courts": [{"court": c["court"], "documents": c["n"]} for c in courts], "running": ctl.get("mode") == "judgments" and ctl.get("state") in ("running", "stopping")}
+
     # ---- the person being collected: where each of THEIR documents is now ------------------------------------
     def person_live(self, key):
         """Real numbers for one person: documents by topic, and how many reached Kafka, Spark, Neo4j (with passages) and Chroma."""
@@ -239,7 +250,8 @@ class Monitor:
         if cur:                                                  # what the collector itself says it is doing (also for a one-person request)
             p = self.registry.person(cur["key"]) or {}
             current = {"key": cur["key"], "name": cur.get("name"), "party": cur.get("party"), "stage": cur.get("stage"), "docs": p.get("docs", 0),
-                       "since": cur.get("since"), "done": p.get("sources_done", []), "wanted": cur.get("wanted"), "live": _safe(lambda: self.person_live(cur["key"]))}
+                       "since": cur.get("since"), "done": p.get("sources_done", []), "wanted": cur.get("wanted"), "kind": cur.get("kind"),
+                       "live": None if cur.get("kind") == "judgments" else _safe(lambda: self.person_live(cur["key"]))}
         row = self.registry._one("SELECT key, name, party, stage, docs, started_at FROM people WHERE status='in_progress' ORDER BY updated_at DESC LIMIT 1")
         if not current and row and running:
             current = {"key": row["key"], "name": row["name"], "party": row["party"], "stage": row["stage"] or "finishing", "docs": row["docs"],
@@ -258,7 +270,7 @@ class Monitor:
             "scope": {"from_year": 1947, "to_year": 2026}, "message": ctl.get("message", ""), "people": self.people(),
             "stages": {"collector": self.collector(), "raw": _safe(self.raw), "kafka": self.kafka(stats), "spark": self.spark(stats),
                        "corpus": self.corpus(stats), "neo4j": neo, "chroma": self.chroma(neo)},
-            "movement": self.movement(), "at": now()}
+            "movement": self.movement(), "law": _safe(self.law), "mode": ctl.get("mode"), "at": now()}
 
     def people_page(self, status=None, q=None, limit=50, offset=0):
         total, rows = self.registry.people(status or None, q or None, max(1, min(int(limit), 200)), max(0, int(offset)))
@@ -271,4 +283,11 @@ class Monitor:
         if p is None:
             return None
         item = {k: p[k] for k in ("key", "name", "party", "first_year", "last_year", "positions", "status", "docs", "tokens", "corruption_docs", "updated_at")}
-        return {"person": item, "documents": self.registry.documents_of(key)}
+        from backend.pipeline import law_tags
+        docs = self.registry.documents_of(key)
+        for d in docs:                                                            # the case lifecycle: FIR -> investigation -> chargesheet -> trial -> High Court -> Supreme Court -> final judgment
+            who = (d.get("source") or "") + " " + (d.get("title") or "")
+            kind = "sc" if "Supreme Court" in who else "hc" if "High Court" in who or "Madras" in who else "ed" if "Enforcement" in who else "dvac" if "DVAC" in who or "Vigilance" in who else "cbi" if "CBI" in who or "Central Bureau" in who else None
+            d["case_stage"] = law_tags.stage_of(kind, who) if (kind and d.get("topic") in ("court_record", "agency_record")) else None
+        docs.sort(key=lambda d: (d["case_stage"] is None, law_tags.stage_rank(d["case_stage"]), d.get("collected_at") or ""))
+        return {"person": item, "documents": docs}

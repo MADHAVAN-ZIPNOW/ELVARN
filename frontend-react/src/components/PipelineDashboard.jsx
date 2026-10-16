@@ -8,10 +8,11 @@ import { usePipelineStatus } from "../hooks/usePipelineStatus";
 import { NA as NA_TEXT, fmtBytes, fmtDuration, fmtNum, isNum, pct, runState } from "../pipeline/format";
 import { PipelineFlow, MovementFeed } from "./PipelineFlow";
 import { TargetedPanel } from "./TargetedPanel";
+import { LawPanel } from "./LawPanel";
 import { Lists, NowStrip, PersonDrawer, Progress, Roster } from "./PeoplePanel";
 
 const LABEL = { idle: "Idle", running: "Collecting", stopping: "Stopping", error: "Error", offline: "Computer offline" };
-const TABS = [["pipeline", "Pipeline"], ["person", "Collect one person"], ["people", "People"], ["move", "On the move"]];
+const TABS = [["pipeline", "Pipeline"], ["person", "Collect one person"], ["law", "Law judgments"], ["people", "People"], ["move", "On the move"]];
 const TAB_KEY = "elvarn.collectTab";
 
 function readTab() {
@@ -60,11 +61,11 @@ export function PipelineDashboard({ ownerKey, onClose }) {
         <div className="pl-ctrl">
           <span className={"pl-state " + state}><i aria-hidden="true" />{LABEL[state]}</span>
           {running || stopping ? (
-            <button type="button" className="pl-go stop" onClick={stop} disabled={!!busy || stopping} aria-busy={busy === "stop"}>
+            <button type="button" className="pl-go stop" onClick={() => stop()} disabled={!!busy || stopping} aria-busy={busy === "stop"}>
               {busy === "stop" || stopping ? "Stopping…" : "Stop collecting"}
             </button>
           ) : (
-            <button type="button" className="pl-go start" onClick={start} disabled={!!busy || !status || offline} aria-busy={busy === "start"}>
+            <button type="button" className="pl-go start" onClick={() => start()} disabled={!!busy || !status || offline} aria-busy={busy === "start"}>
               {busy === "start" ? "Starting…" : "Start collecting"}
             </button>
           )}
@@ -91,6 +92,7 @@ export function PipelineDashboard({ ownerKey, onClose }) {
           </>
         )}
         {tab === "person" && <TargetedPanel running={!!status && (status.running === true || running || stopping)} offline={offline} busy={!!busy} onSubmit={targeted} />}
+        {tab === "law" && <LawPanel status={status} running={!!status && (status.running === true || running || stopping)} offline={offline} busy={!!busy} onStart={start} onStop={stop} />}
         {tab === "people" && (
           <div className="pl-people">
             <aside className="pl-panel pl-side" aria-label="Progress">

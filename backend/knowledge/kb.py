@@ -373,6 +373,9 @@ class KnowledgeBase:
                  "sha256": doc.get("sha256"), "raw_sha256": doc.get("raw_sha256"), "source": doc.get("source"),
                  "source_url": doc.get("source_url"), "created_at": created_at, "language": doc.get("language"),
                  "person_key": doc.get("person_key")}
+        for k in ("case_name", "case_type", "case_number", "court", "bench", "year", "judge", "outcome", "case_ref", "subjects", "statutes", "case_stage", "petitions"):      # court judgments and case records
+            if doc.get(k) not in (None, "", []):
+                props[k] = doc[k]
         props = {k: v for k, v in props.items() if v is not None}
         full_doc = {**doc, "created_at": created_at}
 

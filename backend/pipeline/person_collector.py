@@ -59,7 +59,7 @@ def build_message(found, person, doc_id, sha, raw_path, size, labels_path=None):
             "mime_type": found.mime, "file_size_bytes": size, "sha256": sha, "language": found.language, "collected_at": now(), "status": "NEW",
             "url": found.url, "title": found.title, "doc_type": found.doc_type, "publisher": found.publisher, "licence": found.licence,
             "published_date": found.extra.get("published_date"), "site": "politician", "person_key": person["key"], "person_name": person["name"], "topic": found.topic,
-            "wikidata_id": found.wikidata_id, "aliases": aliases_of(person), **{k: found.extra[k] for k in ("text", "text_reliable", "judge", "outcome", "ref", "bench") if k in found.extra},
+            "wikidata_id": found.wikidata_id, "aliases": aliases_of(person), **{k: found.extra[k] for k in ("text", "text_reliable", "judge", "outcome", "ref", "bench", "case_stage", "petitions") if k in found.extra},
             **({"labels_path": labels_path} if labels_path else {})}
 
 

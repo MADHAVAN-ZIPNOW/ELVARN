@@ -25,6 +25,8 @@ CREATE INDEX candidate_state IF NOT EXISTS FOR (n:Candidate) ON (n.state)
 // (:Entity)-[:RELATION {type, method, confidence, doc_id, passage_id, assertion_level, start, end}]->(:Entity)
 CREATE CONSTRAINT document_doc_id IF NOT EXISTS FOR (n:Document) REQUIRE n.doc_id IS UNIQUE
 CREATE INDEX passage_doc IF NOT EXISTS FOR (n:Passage) ON (n.doc_id)
+CREATE INDEX source_court IF NOT EXISTS FOR (n:Source) ON (n.court)
+CREATE INDEX source_case_name IF NOT EXISTS FOR (n:Source) ON (n.case_name)
 CREATE INDEX entity_person_key IF NOT EXISTS FOR (n:Entity) ON (n.person_key)
 CREATE INDEX entity_wikidata IF NOT EXISTS FOR (n:Entity) ON (n.wikidata_id)
 CREATE INDEX relation_key IF NOT EXISTS FOR ()-[r:RELATION]-() ON (r.rel_key)

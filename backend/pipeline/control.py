@@ -144,7 +144,11 @@ def hidden_process_options():
     return {"creationflags": subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP, "startupinfo": info}
 
 
-def _launch(path, python, check_stack, extra=()):
+PERSON_MODULE = "backend.pipeline.person_collector"
+JUDGMENTS_MODULE = "backend.pipeline.judgments"
+
+
+def _launch(path, python, check_stack, extra=(), module=PERSON_MODULE):
     if check_stack and not ensure_stack(say=lambda m: write({"message": m}, path)):
         write({"state": "error", "pid": None, "message": "Kafka is not reachable and could not be started. Start Docker Desktop, then press Start again "
                                                          "(scripts/start_stack.ps1 starts everything)."}, path)
@@ -154,21 +158,21 @@ def _launch(path, python, check_stack, extra=()):
         return
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     with open(LOG_PATH, "ab") as log:
-        proc = subprocess.Popen([python or sys.executable, "-m", "backend.pipeline.person_collector", "run", *extra], cwd=str(REPO), stdout=log, stderr=log,
+        proc = subprocess.Popen([python or sys.executable, "-m", module, "run", *extra], cwd=str(REPO), stdout=log, stderr=log,
                                 stdin=subprocess.DEVNULL, close_fds=True, **hidden_process_options())
     write({"pid": proc.pid, "message": "Collecting politician by politician."}, path)
 
 
-def start(path=CONTROL_PATH, python=None, check_stack=True, background=True, extra=(), message=None):
+def start(path=CONTROL_PATH, python=None, check_stack=True, background=True, extra=(), message=None, module=PERSON_MODULE):
     """Start the collector process unless one is running. Returns the control state at once; with `background` the work of bringing
     Kafka and Spark up and launching the process happens in a thread (the dashboard shows the message meanwhile)."""
     data = state(path)
     if data["state"] in ("running", "stopping"):
         return data
-    data = write({"state": "running", "pid": None, "started_at": _now(), "stop_requested": False,
+    data = write({"state": "running", "pid": None, "started_at": _now(), "stop_requested": False, "mode": "judgments" if module == JUDGMENTS_MODULE else "people",
                   "message": message or ("Starting ..." if check_stack else "Collecting politician by politician.")}, path)
     if background:
-        threading.Thread(target=_launch, args=(path, python, check_stack, extra), daemon=True).start()
+        threading.Thread(target=_launch, args=(path, python, check_stack, extra, module), daemon=True).start()
     else:
-        _launch(path, python, check_stack, extra)
+        _launch(path, python, check_stack, extra, module)
     return data

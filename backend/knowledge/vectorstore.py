@@ -44,7 +44,11 @@ class RagStore:
             client = make_client(prefix)
         if embedding_function is None:
             from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
-            embedding_function = DefaultEmbeddingFunction()
+            if os.environ.get("ELVARN_PUBLIC") == "1":
+                embedding_function = DefaultEmbeddingFunction()
+            else:                                                      # this computer: the GPU service while it runs (same model, ten times faster), else the CPU
+                from backend.knowledge.gpu_embed import best_embedding_function
+                embedding_function = best_embedding_function()
         self.col = client.get_or_create_collection(collection, embedding_function=embedding_function, metadata={"hnsw:space": "cosine"})
 
     @classmethod

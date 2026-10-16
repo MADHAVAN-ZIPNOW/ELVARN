@@ -276,3 +276,16 @@ dd.na{font-size:13px;font-weight:600;font-style:italic;color:var(--ink3)}
 @media (max-height:780px){.pl-nowmsg{display:none}.pl-trail small{display:none}.pl-now{padding:8px 14px}.pl-now .pl-sub{display:none}}
 @media (max-height:680px){.pl-summary{display:none}.pl-move.compact{display:none}.pl-trail li{padding:4px 8px}}
 @media (max-height:560px){.pl-steps{display:none}.pl-trail{grid-template-columns:repeat(5,minmax(0,1fr))}.pl-ctitle small{display:none}}
+
+/* Law judgments page */
+.pl-lawpage{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;flex:1;min-height:0}
+.pl-lawset,.pl-lawlive{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+.pl-lawrow{display:flex;gap:10px;flex-wrap:wrap}
+.pl-lawrow .fld{flex:1;min-width:110px}
+.pl-lawsum{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pl-lawcourts{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.pl-lawcourts div{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px solid var(--line)}
+.pl-lawcourts span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-lawgo{display:flex;gap:10px;align-items:center;margin-top:auto;flex-wrap:wrap}
+@media (max-width:900px){.pl-lawpage{grid-template-columns:minmax(0,1fr);overflow:hidden}.pl-lawlive{display:none}}
+@media (max-height:700px){.pl-lawset>.pl-sub,.pl-lawcourts{display:none}}

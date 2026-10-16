@@ -53,10 +53,10 @@ export function usePipelineStatus(ownerKey) {
   // after a request that changes the state, check again soon (fast interval) instead of waiting for the idle timer
   const soon = useCallback(() => { const c = ctl.current; clearTimeout(c.timer); if (c.alive) c.timer = setTimeout(poll, 700); }, [poll]);
 
-  const control = useCallback(async (what) => {
+  const control = useCallback(async (what, settings) => {
     if (busy) return;
     setBusy(what);
-    try { take(await collectCall(ownerKey, "/" + what, { method: "POST", body: "{}" })); soon(); }
+    try { take(await collectCall(ownerKey, "/" + what, { method: "POST", body: JSON.stringify(settings || {}) })); soon(); }
     catch (e) { setError(e.message || "Request failed."); }
     finally { setBusy(""); }
   }, [busy, ownerKey, take, soon]);
@@ -75,5 +75,5 @@ export function usePipelineStatus(ownerKey) {
     finally { setBusy(""); }
   }, [busy, ownerKey, take, soon]);
 
-  return { status, rates, error, busy, start: () => control("start"), stop: () => control("stop"), targeted };
+  return { status, rates, error, busy, start: (settings) => control("start", settings), stop: () => control("stop"), targeted };
 }
