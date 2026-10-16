@@ -126,7 +126,7 @@ class Monitor:
                     ext = path.suffix.lower()
                     by_source["pdf" if ext == ".pdf" else "web" if ext in (".html", ".htm") else "dataset"] += 1
             return files, size, by_source
-        files, size, by_source = self.cache.get("raw", 5, walk)
+        files, size, by_source = self.cache.get("raw", 30, walk)
         return {"files": files, "bytes": size, "by_source": by_source, "free_disk_bytes": shutil.disk_usage(self.raw_dir.anchor or str(self.raw_dir)).free}
 
     def stats_lines(self):

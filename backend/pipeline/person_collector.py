@@ -317,24 +317,11 @@ class StoreSync(threading.Thread):
         self.interval, self.say, self.done, self.lock, self.registry = interval, say, threading.Event(), threading.Lock(), registry
 
     def once(self):
+        from backend.pipeline import store_sync
         with self.lock:                                      # never two passes at the same time: they rewrite the same Parquet files
-            try:
-                from backend.knowledge import check_stores
-                from backend.knowledge.kb import KnowledgeBase
-                from backend.knowledge.vectorstore import RagStore
-                kb = KnowledgeBase.from_env()
-                if kb is None:
-                    raise RuntimeError("Neo4j is not configured (NEO4J_URI / NEO4J_PASSWORD)")
-                try:
-                    report = check_stores.run(kb=kb, rag=RagStore.from_env())
-                    pairs = self.registry.unlinked_in_graph() if self.registry is not None else []
-                    if pairs:
-                        self.registry.mark_graph_linked(kb.link_person_documents(pairs))
-                finally:
-                    kb.close()
-                self.say(f"stores synced: {report['passages']} passages, {report['embedded_passages']} in Chroma, {report['neo4j_indexed_passages']} in Neo4j")
-            except Exception as exc:  # noqa: BLE001 - a store being down must not stop the collector; the next pass tries again
-                self.say(f"store sync skipped: {exc.__class__.__name__}: {str(exc)[:120]}")
+            if store_sync.alive():
+                return                                       # the separate sync program does this work (and holds the cross-program lock while it does)
+            store_sync.do_pass(self.registry, self.say)
 
     def run(self):
         self.once()
@@ -380,6 +367,8 @@ def run_process(limit=None, only=None, stages=None):
         except Exception:  # noqa: BLE001 - no pyarrow / no network: court records are skipped, the rest still works
             s3 = None
         control.write({"message": "Collecting politician by politician." if not stages else "Collecting " + ", ".join(stages) + " for one person."})
+        from backend.pipeline import store_sync
+        store_sync.ensure_running()                           # Chroma / Neo4j catch-up in its own program, not inside this busy process
         sync = StoreSync(say=lambda m: print(m, flush=True), registry=registry)
         docs_before = registry.document_totals()["documents"]
         began = {}

@@ -329,6 +329,8 @@ def run_process(max_gb=DEFAULT_GB, scope="all", from_year=FIRST_YEAR, to_year=20
     try:
         from backend.pipeline.kafka_io import KafkaSink
         s3 = co.S3Source()
+        from backend.pipeline import store_sync
+        store_sync.ensure_running()                           # Chroma / Neo4j catch-up in its own program, so this process keeps its CPU for downloads
         sync = StoreSync(say=lambda m: print(m, flush=True), registry=registry)
         sync.start()
         before = registry._one("SELECT COUNT(*) AS n FROM documents WHERE topic='judgment'")["n"]

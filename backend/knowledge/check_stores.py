@@ -21,7 +21,7 @@ from backend.pipeline import corpus, entities
 from backend.pipeline.common import RAW_DIR
 
 CORPUS_DIR = corpus.CORPUS_DIR
-EMBED_BATCH = 64
+EMBED_BATCH = 256                     # one GPU call and one Chroma upsert per 256 passages (64 left the GPU waiting)
 
 
 def parquet_files(corpus_dir=CORPUS_DIR):

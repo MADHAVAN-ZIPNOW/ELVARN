@@ -103,6 +103,12 @@ def main(argv=None):
     local = site.startswith(("http://127.0.0.1", "http://localhost"))              # a copy of the site on this computer (for testing)
     if not (site.startswith("https://") or local):
         raise SystemExit("Give the https address of the deployed site: --site https://... (or PUBLIC_BASE_URL in .env). The owner key is only sent over https.")
+    if os.name == "nt":                                  # while a big collection uses every core, the dashboard must still be answered quickly
+        try:
+            import ctypes
+            ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00008000)      # ABOVE_NORMAL_PRIORITY_CLASS
+        except Exception:  # noqa: BLE001 - a nicety, never a reason to stop
+            pass
     from backend.pipeline.monitor import Monitor
     agent = Agent(site, os.environ.get("OWNER_KEY", ""), Monitor())
     print(f"agent running for {site}; press Ctrl+C to stop", flush=True)
