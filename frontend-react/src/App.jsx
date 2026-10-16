@@ -15,13 +15,15 @@ import { Welcome, UserRow, BotRow } from "./components/Messages";
 import { SessionsView } from "./components/SessionsView";
 import { Composer } from "./components/Composer";
 import { LabPanel } from "./components/LabPanel";
+import { PipelineDashboard } from "./components/PipelineDashboard";
 import { SourcesPanel } from "./components/SourcesPanel";
 import { DownloadMenu } from "./components/DownloadMenu";
 import { FilePanel } from "./components/FileParts";
 import { TalkBar } from "./components/TalkBar";
 import { continuing, greeting, rememberName } from "./talkHelpers";
 import { cue } from "./sounds";
-import { notifyNewChat } from "./ownerKey";
+import { getOwnerKey, notifyNewChat } from "./ownerKey";
+import { collectCall } from "./pipeline/collectApi";
 import { LeadCard, shouldAskForEmail } from "./components/LeadCard";
 
 export default function App() {
@@ -55,6 +57,17 @@ export default function App() {
 
   const conv = useMemo(() => convs.find((c) => c.id === currentId) || convs[0], [convs, currentId]);
   const sv = view === "sessions";
+  const cv = view === "collect";                          // the owner-only data collection dashboard
+  const owner = !!getOwnerKey();
+  // The collection button needs a server that can collect: only the owner's own machine answers /api/collect/status. The public site has no such
+  // routes (404), so visitors never see the button, and neither does the owner on the public site.
+  const [canCollect, setCanCollect] = useState(false);
+  useEffect(() => {
+    if (!owner) return undefined;
+    let live = true;
+    collectCall(getOwnerKey(), "/status").then(() => { if (live) setCanCollect(true); }).catch(() => { if (live) setCanCollect(false); });
+    return () => { live = false; };
+  }, [owner]);
 
   // ---------------------------------------------------------------- small helpers
   const showBanner = useCallback((msg, kind) => setBanner({ msg: msg || "", kind: kind || "" }), []);
@@ -446,7 +459,8 @@ export default function App() {
         <div className={"main" + (attach.dragOver ? " dragover" : "")} {...attach.dropHandlers}>
           <Header view={view} mode={mode} convTitle={conv ? conv.title : ""} hasMessages={!!(conv && conv.messages.length)}
             talking={!!talk} onTalk={() => (talkRef.current ? stopTalk() : startTalk())} onToggleSide={toggleSide} onTheme={() => setSetting("theme", settings.theme === "dusk" ? "aurora" : "dusk")}
-            onClear={clearChat} onLab={() => setLabOpen(true)} />
+            onClear={clearChat} onLab={() => setLabOpen(true)}
+            owner={owner && canCollect} onCollect={() => { setView(cv ? "chat" : "collect"); closeAll(); }} />
           <Banner banner={banner} />
 
           <SessionsView hidden={!sv} convs={convs} onOpen={switchTo} onNew={startNew}
@@ -455,8 +469,10 @@ export default function App() {
             onDownload={(anchor, c) => setDlMenu({ anchor, title: c.title, getMsgs: () => c.messages })}
             onDelete={deleteConv} />
 
+          {cv && owner && canCollect && <PipelineDashboard ownerKey={getOwnerKey()} onClose={() => setView("chat")} />}
+
           <div className="sr-only" id="srStatus" role="status" aria-live="polite">{srText}</div>
-          <main className="chat" id="chat" aria-live="polite" ref={chatRef} hidden={sv}>
+          <main className="chat" id="chat" aria-live="polite" ref={chatRef} hidden={sv || cv}>
             <div className="thread" id="thread" ref={threadRef}>
               {showWelcome ? <Welcome mode={mode} onPick={(t) => send(t)} onTalk={startTalk} /> : rows}
               {lead && !showWelcome && <LeadCard question={lead} onDone={() => setLead(null)} />}
@@ -464,7 +480,7 @@ export default function App() {
             </div>
           </main>
 
-          <Composer hidden={sv} input={input} setInput={setInput} busy={busy} pending={pending}
+          <Composer hidden={sv || cv} input={input} setInput={setInput} busy={busy} pending={pending}
             accept=".txt,.md,.markdown,.csv,.json,.html,.htm,.docx" live={voice.live} voice={voice} micSupported={voice.supported}
             inputRef={inputRef} onSend={onSendClick} onStop={() => { if (abortRef.current) abortRef.current.abort(); }} onMic={onMic}
             onPickFile={attach.upload} onRemoveFile={() => attach.remove(false)} onCancelUpload={attach.cancelUpload}

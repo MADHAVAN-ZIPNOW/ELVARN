@@ -66,3 +66,6 @@ backend/data/rag_v*/
 
 # files with your own secrets (e.g. the Google mail relay script with your SECRET filled in)
 scripts/*.local.*
+
+# collected text (Parquet corpus, id index, batch stats): large, and it includes news articles that belong to their publishers
+backend/data/corpus/

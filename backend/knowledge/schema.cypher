@@ -21,3 +21,11 @@ CREATE CONSTRAINT candidate_uid IF NOT EXISTS FOR (n:Candidate) REQUIRE n.uid IS
 CREATE FULLTEXT INDEX passage_text IF NOT EXISTS FOR (n:Passage) ON EACH [n.text]
 CREATE INDEX entity_type IF NOT EXISTS FOR (n:Entity) ON (n.type)
 CREATE INDEX candidate_state IF NOT EXISTS FOR (n:Candidate) ON (n.state)
+// Processing pipeline (additive): Source nodes are also :Document; (:Source)-[:HAS_PASSAGE]->(:Passage); (:Passage)-[:MENTIONS]->(:Entity);
+// (:Entity)-[:RELATION {type, method, confidence, doc_id, passage_id, assertion_level, start, end}]->(:Entity)
+CREATE CONSTRAINT document_doc_id IF NOT EXISTS FOR (n:Document) REQUIRE n.doc_id IS UNIQUE
+CREATE INDEX passage_doc IF NOT EXISTS FOR (n:Passage) ON (n.doc_id)
+CREATE INDEX entity_person_key IF NOT EXISTS FOR (n:Entity) ON (n.person_key)
+CREATE INDEX entity_wikidata IF NOT EXISTS FOR (n:Entity) ON (n.wikidata_id)
+CREATE INDEX relation_key IF NOT EXISTS FOR ()-[r:RELATION]-() ON (r.rel_key)
+CREATE INDEX source_url IF NOT EXISTS FOR (n:Source) ON (n.url)

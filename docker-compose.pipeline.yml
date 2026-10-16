@@ -76,6 +76,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./backend:/opt/elvarn/backend:ro      # code + archived raw files (read-only); .env and .venv are NOT mounted
+      - ./backend/data/corpus:/opt/elvarn/backend/data/corpus      # read-write: the Parquet corpus, its id index and the batch stats (kb_raw stays read-only)
       - elvarn_spark_checkpoints:/checkpoints
       - elvarn_spark_ivy:/tmp/ivy
     command: >

@@ -1,45 +1,83 @@
 """Turn one collected document message into something loadable: text -> passages -> proposed facts.
 
 Pure Python (no Spark, no Neo4j), so it is unit-tested directly and Spark just maps it over the stream.
+
+Two kinds of message: the old collectors' (no event_type: text -> chunks -> proposed facts, loaded by KnowledgeBase.add_document) and
+the politician-wise collector's `document_ingested` (clean corpus: HTML/PDF/DOCX/JSON -> corpus.py -> passage records, entities and
+relations, loaded by KnowledgeBase.add_document_graph; the records are also the rows of the Parquet corpus).
 """
+import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 from backend.knowledge import review
 from backend.knowledge.ingest_wikipedia import chunk
+from backend.pipeline import corpus, entities
 
 RAW_ROOT = Path(__file__).resolve().parent.parent / "data" / "kb_raw"
+MIN_STRUCTURED_CHARS = 100          # a Wikidata record is a short summary: the 1,000 character rule is for articles
+
+looks_garbled = corpus.looks_garbled          # extended in corpus.py (Tamil vowel signs count as letters, legacy-font patterns); old name kept
 
 
-def looks_garbled(text):
-    """Legacy-font Tamil PDFs extract as symbol soup. Real English/Unicode text is mostly letters, digits, spaces and punctuation."""
-    sample = text[:4000]
-    if not sample.strip():
-        return True
-    good = sum(1 for ch in sample if ch.isalnum() or ch in " \n\t.,;:()-/'\"%&₹")
-    return "�" in sample or good / len(sample) < 0.85 or sum(1 for ch in sample if ord(ch) > 0xFFF0) > 0
+def resolve_raw(raw_root, raw_path):
+    """The archived file for a message's raw_path, with or without the leading 'kb_raw/' (contract section 2)."""
+    rel = str(raw_path).replace(chr(92), "/").lstrip("/")
+    for prefix in ("backend/data/kb_raw/", "kb_raw/"):
+        if rel.startswith(prefix):
+            rel = rel[len(prefix):]
+    return Path(raw_root) / rel
 
 
-def raw_pages(msg, raw_root):
-    """[(locator, text)] from the archived raw file (PDF, HTML, text). PDFs with unreadable text return []."""
-    path = Path(raw_root) / msg["raw_path"]
+def read_raw(msg, raw_root):
+    """-> {"pages": [(locator, text)], "link_ratio": float, "json": parsed JSON or None}. PDFs with unreadable text give no pages."""
+    path = resolve_raw(raw_root, msg["raw_path"])
     data = path.read_bytes()
     ext = path.suffix.lower()
-    if ext == ".pdf":
+    mime = msg.get("mime_type") or ""
+    out = {"pages": [], "link_ratio": 0.0, "json": None}
+    if ext == ".json" or "json" in mime:
+        out["json"] = json.loads(data.decode("utf-8-sig"))
+        if isinstance(out["json"], dict) and msg.get("labels_path"):                     # Special:EntityData holds ids only: the collector archives the
+            try:                                                                          # resolved names as a second file, the original is never edited
+                labels = json.loads(resolve_raw(raw_root, msg["labels_path"]).read_bytes().decode("utf-8-sig")).get("labels") or {}
+                out["json"]["labels"] = {**(out["json"].get("labels") or {}), **labels}
+            except (OSError, ValueError):
+                pass
+    elif ext == ".pdf":
         from io import BytesIO
         from pypdf import PdfReader
         pages = [(f"page {i + 1}", (p.extract_text() or "").strip()) for i, p in enumerate(PdfReader(BytesIO(data)).pages)]
         pages = [(loc, t) for loc, t in pages if t]
-        return [] if looks_garbled(" ".join(t for _, t in pages)) else pages
-    from backend.files import readers
-    from backend.knowledge.ingest_folder import doc_text
-    kind = {".html": "html", ".htm": "html", ".txt": "txt", ".md": "md", ".docx": "docx"}.get(ext, "txt")
-    return [(None, doc_text(readers.read(kind, data)))]
+        out["pages"] = [] if looks_garbled(" ".join(t for _, t in pages)) else pages
+    elif ext in (".html", ".htm") or "html" in mime:
+        text, out["link_ratio"] = corpus.html_to_text_info(data)
+        out["pages"] = [(None, text)]
+    else:
+        from backend.files import readers
+        from backend.knowledge.ingest_folder import doc_text
+        kind = {".txt": "txt", ".md": "md", ".docx": "docx"}.get(ext, "txt")
+        out["pages"] = [(None, doc_text(readers.read(kind, data)))]
+    return out
+
+
+def raw_pages(msg, raw_root):
+    """[(locator, text)] from the archived raw file (PDF, HTML, text). PDFs with unreadable text return []."""
+    return read_raw(msg, raw_root)["pages"]
+
+
+def is_ingest_event(msg):
+    """Messages from the politician-wise collector (contract section 3); the older collectors send no event_type."""
+    return msg.get("event_type") == "document_ingested"
 
 
 def process_message(msg, raw_root=RAW_ROOT):
     """-> {"title", "doc_type", "url", "publisher", "published_date", "licence", "text", "passages": [...], "notes": [...]}
-    or None when there is no usable text (the raw file is still archived)."""
+    or {"skipped": True, ...} when there is no usable text (the raw file is still archived).
+    A document_ingested message goes through process_document; the others keep the old path."""
+    if is_ingest_event(msg):
+        return process_document(msg, raw_root)
     notes = []
     if msg.get("text"):
         pages = [(msg.get("locator") or "listing", msg["text"])]
@@ -65,10 +103,91 @@ def process_message(msg, raw_root=RAW_ROOT):
             "text": "\n\n".join(t for _, t in pages), "passages": passages, "notes": notes}
 
 
+def collection_date(msg):
+    """yyyy-mm-dd the document was collected: the folder date of its raw_path, else collected_at, else today."""
+    m = re.search(r"/(\d{4}-\d{2}-\d{2})/", "/" + str(msg.get("raw_path") or "").replace(chr(92), "/"))
+    return m.group(1) if m else (str(msg.get("collected_at") or "")[:10] or datetime.now(timezone.utc).date().isoformat())
+
+
+def news_text(item):
+    """One sentence from a news-index record: the headline, who published it and when. Nothing beyond what the record says."""
+    seen = str(item.get("seendate") or "")
+    date = f"{seen[0:4]}-{seen[4:6]}-{seen[6:8]}" if len(seen) >= 8 and seen[:8].isdigit() else None
+    where = item.get("domain") or "a news site"
+    country = f" ({item['sourcecountry']})" if item.get("sourcecountry") else ""
+    return f"{str(item['title']).strip().rstrip('.')}. Reported by {where}{country}" + (f" on {date}." if date else ".")
+
+
+def process_document(msg, raw_root=RAW_ROOT):
+    """A collected document -> clean text, quality gate, passage records, entities and relations (no store is touched).
+    -> {"skipped": True, "reasons": [...], ...} or {"skipped": False, "doc": {...}, "records": [...], "entities": [...],
+    "relations": [...], "passages": [...], "text", ...}. `records` are the Parquet rows (plus per-passage entities and relations);
+    `passages` keeps the old shape so load_result / load_many accept the result too."""
+    doc_id, notes = msg["doc_id"], []
+
+    def skip(reasons):
+        return {"skipped": True, "new": True, "doc_id": doc_id, "url": msg.get("url") or msg.get("source_url"), "title": msg.get("title"),
+                "reasons": reasons, "notes": notes + [f"rejected: {', '.join(reasons)}"]}
+
+    raw = read_raw(msg, raw_root) if msg.get("raw_path") else {"pages": [(None, msg.get("text") or "")], "link_ratio": 0.0, "json": None}
+    person = {"name": msg.get("person_name"), "person_key": msg.get("person_key"), "wikidata_id": msg.get("wikidata_id"),
+              "aliases": msg.get("aliases") or []}
+    doc_entities, doc_relations, min_chars = [], [], corpus.MIN_DOC_CHARS
+    if raw["json"] is not None and msg.get("topic") == "news" and isinstance(raw["json"], dict) and raw["json"].get("title"):
+        text, min_chars = news_text(raw["json"]), MIN_STRUCTURED_CHARS               # a headline record: the article itself is not copied
+    elif raw["json"] is not None:
+        if not isinstance(raw["json"], dict) or "entities" not in raw["json"]:
+            return skip(["unsupported_json"])
+        text = entities.wikidata_summary(raw["json"])
+        doc_entities, doc_relations = entities.relations_from_wikidata(raw["json"], msg.get("person_key"))
+        min_chars = MIN_STRUCTURED_CHARS
+        if not person["name"]:
+            person["name"] = next((e["name"] for e in doc_entities if e["type"] == "Person"), None)
+    else:
+        text = "\n\n".join(corpus.unwrap_lines(t) if (loc or "").startswith("page") else t for loc, t in raw["pages"])
+        if not raw["pages"]:
+            notes.append("no reliable text in the raw file (scanned or legacy-encoded)")
+    text = corpus.normalize(text)
+    language = corpus.detect_language(text)
+    if language == "unknown":
+        return skip(["language_unknown"])
+    score, reasons = corpus.quality(text, raw["link_ratio"], min_chars)
+    if reasons:
+        return skip(reasons)
+    meta = {"doc_id": doc_id, "source": msg.get("source") or "web", "source_url": msg.get("source_url") or msg.get("url"), "title": msg.get("title"),
+            "person_key": msg.get("person_key"), "person_name": person["name"], "topic": msg.get("topic"), "created_at": msg.get("collected_at")}
+    records, info = corpus.build_passages(meta, text, language, score)
+    roster = [person] if person["name"] else []
+    for rec in records:
+        rec["entities"] = entities.extract_entities(rec["text"], roster)
+        rec["relations"] = entities.cooccurrence_relations(rec["entities"])
+    first_pid = records[0]["passage_id"] if records else None
+    doc_relations = [{**r, "passage_id": first_pid} for r in doc_relations]
+    graph_doc = {"doc_id": doc_id, "title": msg.get("title") or doc_id, "doc_type": msg.get("doc_type") or "reference",
+                 "source": meta["source"], "source_url": meta["source_url"], "language": language, "person_key": msg.get("person_key"),
+                 "created_at": msg.get("collected_at"), "published_date": msg.get("published_date"), "publisher": msg.get("publisher"),
+                 "licence": msg.get("licence"), "sha256": info["document_sha256"], "raw_sha256": msg.get("sha256")}
+    return {"skipped": False, "new": True, "doc_id": doc_id, "date": collection_date(msg), "source": meta["source"], "language": language,
+            "quality_score": score, "title": graph_doc["title"], "doc_type": graph_doc["doc_type"], "url": meta["source_url"],
+            "publisher": msg.get("publisher"), "published_date": msg.get("published_date"), "licence": msg.get("licence"),
+            "text": text, "passages": [{"locator": f"passage {r['position'] + 1}", "text": r["text"], "candidates": []} for r in records],
+            "doc": graph_doc, "records": records, "entities": doc_entities, "relations": doc_relations,
+            "duplicates": info["duplicates"], "rejected_passages": info["rejected"], "notes": notes}
+
+
+def load_document_graph(kb, result):
+    """Neo4j part of a processed document (Document, Passages, entities, mentions, relations). 'loaded' or 'duplicate'; idempotent."""
+    _, created = kb.add_document_graph(result["doc"], result["records"], result["entities"], result["relations"])
+    return "loaded" if created else "duplicate"
+
+
 def load_result(kb, result, rag=None, cache=None):
-    """Store a processed document in BOTH stores (Neo4j graph + Chroma vectors). Returns 'loaded', 'duplicate' or 'skipped'."""
+    """Store a processed document in BOTH stores (Neo4j graph + Chroma vectors). Returns 'loaded', 'duplicate' or 'skipped'.
+    A document_ingested result goes to Neo4j only: its Chroma vectors are written by the nightly check_stores."""
     if result.get("skipped"):
         return "skipped"
+    if result.get("records") is not None:
+        return load_document_graph(kb, result)
     from backend.knowledge.store import store_document
     return store_document(kb, rag, title=result["title"], doc_type=result["doc_type"], text=result["text"], passages=result["passages"],
                           url=result["url"], publisher=result["publisher"], published_date=result["published_date"],

@@ -37,7 +37,7 @@ export function Sidebar({ open, mode, view, sessionCount, onToggle, onNewChat, o
         </button>
         <div className="modelist" id="modes" role="tablist" aria-label="Prompt style">
           {MODES.filter((m) => !m.hidden).map((m) => (
-            <ModeKey key={m.id} mode={m} active={view !== "sessions" && m.id === mode} onOpen={onOpenMode} />
+            <ModeKey key={m.id} mode={m} active={view === "chat" && m.id === mode} onOpen={onOpenMode} />
           ))}
         </div>
       </div>
@@ -51,10 +51,10 @@ export function Sidebar({ open, mode, view, sessionCount, onToggle, onNewChat, o
   );
 }
 
-export function Header({ view, mode, convTitle, hasMessages, talking, onToggleSide, onTalk, onTheme, onClear, onLab }) {
+export function Header({ view, mode, convTitle, hasMessages, talking, onToggleSide, onTalk, onTheme, onClear, onLab, owner, onCollect }) {
   const tiltWord = useTilt(16, 26);
   const tiltOrb = useTilt(20, 26);
-  const sv = view === "sessions";
+  const sv = view === "sessions" || view === "collect";
   return (
     <header>
       <button className="orbbtn menu-btn" id="menuBtn" type="button" aria-label="Toggle sidebar" title="Toggle sidebar" onClick={onToggleSide} {...tiltOrb}>
@@ -69,6 +69,10 @@ export function Header({ view, mode, convTitle, hasMessages, talking, onToggleSi
         <div className="ttl-sub" id="chatSub">{!sv && hasMessages ? convTitle : ""}</div>
       </div>
       <div className="hdricons">
+        {owner && (
+          <button className={"icon-btn collecthdr" + (view === "collect" ? " on" : "")} id="collectBtn" type="button" title="Data collection dashboard (owner)"
+            aria-label="Data collection dashboard" aria-pressed={view === "collect"} onClick={onCollect}><Icon3D name="pipeline" /></button>
+        )}
         <button className={"icon-btn talkhdr" + (talking ? " on" : "")} id="talkBtn" type="button" title={talking ? "Stop the voice conversation" : "Talk to ELVARN (works on every page)"}
           aria-label={talking ? "Stop the voice conversation" : "Talk to ELVARN"} aria-pressed={!!talking} onClick={onTalk}><Icon3D name="headphones" /></button>
         <button className="icon-btn" id="themeBtn" type="button" title="Switch theme" aria-label="Switch theme" onClick={onTheme}><Icon3D name="theme" /></button>

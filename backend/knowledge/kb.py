@@ -24,7 +24,7 @@ DOC_TYPES = ("fir", "chargesheet", "judgment", "order", "commission_report", "as
              "press_release", "audit_report", "affidavit", "rti_response", "court_record")
 COURT_DOC_TYPES = ("judgment", "order")
 ENTITY_TYPES = ("Person", "Organisation", "InvestigatingAgency", "Court", "PoliticalParty", "Case", "Act", "Section",
-                "Place", "Event", "Concept", "Scheme")
+                "Place", "Event", "Concept", "Scheme", "Date", "Reference", "Position")
 ROLES = ("accused", "complainant", "investigating_officer", "judge", "witness", "prosecutor", "counsel")
 STATUSES = ("allegation_only", "registered", "named_in_fir", "accused", "arrested", "on_bail", "charged", "convicted",
             "acquitted", "discharged", "quashed", "appeal_pending")
@@ -59,6 +59,19 @@ def _now():
 
 def _key(type_, name):
     return f"{type_}:{' '.join(name.lower().split())}"
+
+
+def assertion_level(doc_type, method):
+    """The strongest level a relation may carry. 'court_finding' only for a judgment or an order; a reference work is 'reported' at
+    most; news only 'alleges'; co-occurrence (two names in one passage) is never above 'reported' because it states no link at all."""
+    if method == "cooccurrence":
+        return "alleged" if doc_type == "news" else "reported"
+    if doc_type in COURT_DOC_TYPES:
+        return "court_finding"
+    return "alleged" if doc_type == "news" else "reported"
+
+
+RELATION_TYPE = re.compile(r"[A-Z][A-Z_]{2,40}")
 
 
 def passage_id(digest, position):
@@ -124,8 +137,8 @@ class KnowledgeBase:
             if found:
                 return found[0]["id"]
         sid = _uid()
-        self._run("CREATE (s:Source {id:$id, title:$title, url:$url, publisher:$publisher, doc_type:$doc_type, "
-                  "published_date:$pd, retrieved_at:$now, licence:$licence, sha256:$h})",
+        self._run("CREATE (s:Source:Document {id:$id, title:$title, url:$url, publisher:$publisher, doc_type:$doc_type, "
+                  "published_date:$pd, created_at:$now, retrieved_at:$now, licence:$licence, sha256:$h})",
                   id=sid, title=title, url=url, publisher=publisher, doc_type=doc_type, pd=published_date,
                   now=_now(), licence=licence, h=h)
         return sid
@@ -151,8 +164,8 @@ class KnowledgeBase:
                                        "sentence": c["sentence"], "level": c["level"], "sections": c.get("sections"), "fir": c.get("fir_no")})
 
         def work(tx):
-            tx.run("CREATE (s:Source {id:$id, title:$title, url:$url, publisher:$publisher, doc_type:$doc_type, "
-                   "published_date:$pd, retrieved_at:$now, licence:$licence, sha256:$h})",
+            tx.run("CREATE (s:Source:Document {id:$id, title:$title, url:$url, publisher:$publisher, doc_type:$doc_type, "
+                   "published_date:$pd, created_at:$now, retrieved_at:$now, licence:$licence, sha256:$h})",
                    id=sid, title=title, url=url, publisher=publisher, doc_type=doc_type, pd=published_date,
                    now=_now(), licence=licence, h=h)
             if rows:
@@ -262,6 +275,141 @@ class KnowledgeBase:
                     raise ValueError("unknown object entity")
             return cid
         return self._tx(work)
+
+    # ---- processing pipeline: Document / Passage / Entity / RELATION (every write is a MERGE, so a reload never duplicates) ----
+    @staticmethod
+    def _entity_rows(entities, doc_id, source, source_url, created_at, first_pid=None):
+        """Validated entity rows grouped by type: {type: {key: row}}; an entity seen twice keeps the union of its aliases."""
+        by_type = {}
+        for e in entities:
+            _one_of(e["type"], ENTITY_TYPES, "entity type")
+            if not e.get("name") or not e["name"].strip():
+                continue
+            key = _key(e["type"], e["name"])
+            props = {k: e[k] for k in ("person_key", "wikidata_id", "birth_date", "death_date") if e.get(k)}
+            row = by_type.setdefault(e["type"], {}).setdefault(key, {
+                "key": key, "name": e["name"].strip(), "aliases": set(), "props": {}, "pid": e.get("passage_id") or first_pid})
+            row["aliases"] |= {a for a in (e["name"].strip(), *e.get("aliases", ())) if a}
+            row["props"].update(props)
+        return {t: [{**r, "aliases": sorted(r["aliases"])} for r in rows.values()] for t, rows in by_type.items()}
+
+    def _entities_tx(self, tx, entities, doc_id=None, source=None, source_url=None, created_at=None, first_pid=None):
+        """MERGE entities by their key; first_doc_id / first_passage_id / source / created_at are set only when the node is created."""
+        for type_, rows in self._entity_rows(entities, doc_id, source, source_url, created_at, first_pid).items():
+            tx.run(f"UNWIND $rows AS r MERGE (e:Entity:{type_} {{key:r.key}}) "
+                   "ON CREATE SET e.type=$type, e.name=r.name, e.aliases=[], e.first_doc_id=$doc, e.first_passage_id=r.pid, "
+                   "e.source=$source, e.source_url=$url, e.created_at=$created "
+                   "SET e.aliases = coalesce(e.aliases, []) + [a IN r.aliases WHERE NOT a IN coalesce(e.aliases, [])], e += r.props",
+                   rows=rows, type=type_, doc=doc_id, source=source, url=source_url, created=created_at or _now())
+
+    def add_entities(self, entities, doc_id=None, source=None, source_url=None, created_at=None):
+        """Get or create entities ({type, name, aliases, person_key, wikidata_id, ...}); returns their keys."""
+        self._tx(lambda tx: self._entities_tx(tx, entities, doc_id, source, source_url, created_at))
+        return [_key(e["type"], e["name"]) for e in entities if e.get("name")]
+
+    @staticmethod
+    def _mentions_tx(tx, mentions):
+        """mentions = [{passage_id, type, name}]: (Passage)-[:MENTIONS]->(Entity)."""
+        rows = [{"pid": m["passage_id"], "key": _key(m["type"], m["name"])} for m in mentions]
+        if rows:
+            tx.run("UNWIND $rows AS r MATCH (p:Passage {id:r.pid}), (e:Entity {key:r.key}) MERGE (p)-[:MENTIONS]->(e)", rows=rows)
+
+    def add_mentions(self, mentions):
+        self._tx(lambda tx: self._mentions_tx(tx, mentions))
+
+    def _relations_tx(self, tx, relations, doc):
+        """relations = [{type, from:{type,name}, to:{type,name}, method, confidence, start, end, kind, passage_id}]. The endpoints are created
+        if missing. Each relation carries its doc_id / passage_id / source and an assertion_level that the document type allows."""
+        rows, ends = [], []
+        for r in relations:
+            if not RELATION_TYPE.fullmatch(r["type"]):
+                raise ValueError(f"bad relation type {r['type']!r}")
+            _one_of(r["method"], ("wikidata", "cooccurrence", "rule"), "method")
+            _one_of(r.get("confidence", "low"), CONFIDENCE, "confidence")
+            level = r.get("assertion_level") or assertion_level(doc["doc_type"], r["method"])
+            _one_of(level, LEVELS, "level")
+            if level == "court_finding" and (doc["doc_type"] not in COURT_DOC_TYPES or r["method"] == "cooccurrence"):
+                raise ValueError("a court_finding must come from a judgment or order, never from co-occurrence")
+            ends += [r["from"], r["to"]]
+            a, b = _key(r["from"]["type"], r["from"]["name"]), _key(r["to"]["type"], r["to"]["name"])
+            pid = r.get("passage_id") or ""
+            rk = hashlib.sha1("|".join(str(x or "") for x in (r["type"], r["method"], a, b, doc["doc_id"], pid, r.get("start"), r.get("end"), r.get("kind"))).encode("utf-8")).hexdigest()
+            rows.append({"a": a, "b": b, "rk": rk, "type": r["type"], "method": r["method"], "conf": r.get("confidence", "low"), "pid": pid,
+                         "level": level, "start": r.get("start"), "end": r.get("end"), "kind": r.get("kind")})
+        if not rows:
+            return
+        self._entities_tx(tx, ends, doc["doc_id"], doc.get("source"), doc.get("source_url"), doc.get("created_at"))
+        tx.run("UNWIND $rows AS r MATCH (a:Entity {key:r.a}), (b:Entity {key:r.b}) MERGE (a)-[x:RELATION {rel_key:r.rk}]->(b) "
+               "SET x.type=r.type, x.method=r.method, x.confidence=r.conf, x.doc_id=$doc, x.passage_id=r.pid, x.source=$source, "
+               "x.source_url=$url, x.created_at=$created, x.assertion_level=r.level, x.`start`=r.start, x.`end`=r.end, x.kind=r.kind",
+               rows=rows, doc=doc["doc_id"], source=doc.get("source"), url=doc.get("source_url"), created=doc.get("created_at") or _now())
+
+    def add_relations(self, relations, doc):
+        """`doc` = {doc_id, doc_type, source, source_url, created_at}: the document the relations were read from."""
+        _one_of(doc["doc_type"], DOC_TYPES, "doc_type")
+        self._tx(lambda tx: self._relations_tx(tx, relations, doc))
+
+    def add_document_graph(self, doc, records, entities=(), relations=()):
+        """Load one processed document in ONE transaction, idempotently (MERGE on stable keys: re-loading it changes nothing).
+        doc = {doc_id, title, doc_type, source, source_url, language, person_key, created_at, published_date, publisher, licence,
+        sha256 (of the clean text), raw_sha256}. records = passage dicts as in the Parquet corpus plus optional "entities" (mentions) and
+        "relations" (found in that passage). `entities` / `relations` are document-level extras (e.g. from a Wikidata record).
+        Returns (document_id, created). If another document with the same clean text exists, nothing is written and its id is returned."""
+        _one_of(doc["doc_type"], DOC_TYPES, "doc_type")
+        did, created_at = doc["doc_id"], doc.get("created_at") or _now()
+        prows, mentions, rels, ents = [], [], list(relations), list(entities)
+        for rec in records:
+            prows.append({"id": rec["passage_id"], "props": {
+                "passage_id": rec["passage_id"], "source_id": did, "doc_id": did, "position": rec["position"], "locator": f"passage {rec['position'] + 1}",
+                "text": rec["text"], "source": doc.get("source"), "source_url": doc.get("source_url"), "created_at": created_at,
+                "language": rec.get("language"), "token_estimate": rec.get("token_estimate"), "sha256": rec.get("sha256"),
+                "quality_score": rec.get("quality_score"), "corruption_related": bool(rec.get("corruption_related"))}})
+            for e in rec.get("entities", ()):
+                ents.append({**e, "passage_id": rec["passage_id"]})
+                mentions.append({"passage_id": rec["passage_id"], "type": e["type"], "name": e["name"]})
+            rels += [{**r, "passage_id": rec["passage_id"]} for r in rec.get("relations", ())]
+        props = {"doc_id": did, "title": doc.get("title"), "url": doc.get("source_url"), "publisher": doc.get("publisher"),
+                 "doc_type": doc["doc_type"], "published_date": doc.get("published_date"), "licence": doc.get("licence"),
+                 "sha256": doc.get("sha256"), "raw_sha256": doc.get("raw_sha256"), "source": doc.get("source"),
+                 "source_url": doc.get("source_url"), "created_at": created_at, "language": doc.get("language"),
+                 "person_key": doc.get("person_key")}
+        props = {k: v for k, v in props.items() if v is not None}
+        full_doc = {**doc, "created_at": created_at}
+
+        def work(tx):
+            if props.get("sha256"):
+                other = tx.run("MATCH (s:Source {sha256:$h}) WHERE s.id <> $id RETURN s.id AS id", h=props["sha256"], id=did).single()
+                if other is not None:
+                    return other["id"], False
+            if props.get("url"):                                  # the same page loaded before in another form (another loader, another cleaning): not stored twice
+                same_page = tx.run("MATCH (s:Source {url:$u}) WHERE s.id <> $id RETURN s.id AS id", u=props["url"], id=did).single()
+                if same_page is not None:
+                    return same_page["id"], False
+            existed = tx.run("MATCH (s:Source {id:$id}) RETURN 1 AS x", id=did).single() is not None
+            tx.run("MERGE (s:Source {id:$id}) ON CREATE SET s.retrieved_at=$now SET s:Document, s += $props", id=did, now=_now(), props=props)
+            if prows:
+                tx.run("MATCH (s:Source {id:$id}) UNWIND $rows AS r MERGE (p:Passage {id:r.id}) SET p += r.props "
+                       "MERGE (p)-[:FROM]->(s) MERGE (s)-[:HAS_PASSAGE]->(p)", id=did, rows=prows)
+            self._entities_tx(tx, ents, did, doc.get("source"), doc.get("source_url"), created_at)
+            self._mentions_tx(tx, mentions)
+            self._relations_tx(tx, rels, full_doc)
+            return did, not existed
+        return self._tx(work)
+
+    def link_person_documents(self, pairs):
+        """Write (:Entity {type:'Person'})-[:HAS_DOCUMENT]->(:Source) for (person_key, doc_id, url) triples whose person entity and document both exist.
+        The document is found by doc_id, or by url (a page the knowledge base already held under another id). Idempotent. Returns the pairs linked."""
+        done = []
+        for person_key, doc_id, url in pairs:
+            rows = self._run("MATCH (e:Entity {type:'Person', person_key:$pk}) MATCH (s:Source) WHERE s.doc_id=$d OR ($u IS NOT NULL AND s.url=$u) "
+                             "MERGE (e)-[:HAS_DOCUMENT]->(s) RETURN count(s) AS n", pk=person_key, d=doc_id, u=url)
+            if rows and rows[0]["n"]:
+                done.append((person_key, doc_id))
+        return done
+
+    def label_documents(self):
+        """One-off: give every existing Source the label Document (new loads already do). Returns how many were changed."""
+        return self._run("MATCH (s:Source) WHERE NOT s:Document SET s:Document RETURN count(s) AS n")[0]["n"]
 
     # ---- review queue ----------------------------------------------
     def iter_passages(self, exclude_doc_types=()):
@@ -449,13 +597,13 @@ class KnowledgeBase:
 
     def export_jsonl(self, path, skip_reference=False):
         """Portable backup: every node and relationship as JSON lines (restore with import_jsonl). Returns counts.
-        skip_reference=True leaves out reference documents (Wikipedia, project notes) and their passages unless a fact cites them:
-        the hosted graph then stays small, and those passages are served by the vector store alone."""
+        skip_reference=True leaves out reference documents (Wikipedia, project notes) and news documents (copyrighted articles) and their passages
+        unless a fact cites them: the hosted graph then stays small, and those passages are served by the vector store alone."""
         nodes = rels = 0
         drop = []
         if skip_reference:
             drop = [r["id"] for r in self._read(
-                "MATCH (s:Source {doc_type:'reference'}) WHERE NOT EXISTS { MATCH (s)<-[:FROM]-(:Passage)<-[:SUPPORTED_BY]-() } RETURN s.id AS id")]
+                "MATCH (s:Source) WHERE s.doc_type IN ['reference', 'news'] AND NOT EXISTS { MATCH (s)<-[:FROM]-(:Passage)<-[:SUPPORTED_BY]-() } RETURN s.id AS id")]
         with open(path, "w", encoding="utf-8") as f, self._session() as s:
             for r in s.run(f"MATCH (n) WHERE {self._KEEP.format(x='n')} RETURN elementId(n) AS id, labels(n) AS labels, properties(n) AS props", drop=drop):
                 f.write(json.dumps({"node": r["id"], "labels": r["labels"], "props": r["props"]}, ensure_ascii=False) + "\n")
@@ -472,7 +620,7 @@ class KnowledgeBase:
         if self._read("MATCH (n) RETURN count(n) AS n")[0]["n"]:
             raise ValueError("the target graph is not empty; refusing to import into it")
         primary = ("Source", "Passage", "Entity", "CaseParty", "CaseEvent", "Claim", "Candidate")
-        allowed = set(primary) | set(ENTITY_TYPES)
+        allowed = set(primary) | set(ENTITY_TYPES) | {"Document"}
         nodes, rels, main = {}, {}, {}
         with open(path, encoding="utf-8") as f:
             for line in f:

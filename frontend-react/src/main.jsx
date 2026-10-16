@@ -17,6 +17,7 @@ import "./styles/sidebar-3d.css";
 import "./styles/sessions.css";
 import "./styles/voice.css";
 import "./styles/lead.css";
+import "./styles/pipeline.css";
 import "./styles/responsive.css";
 
 createRoot(document.getElementById("root")).render(<App />);

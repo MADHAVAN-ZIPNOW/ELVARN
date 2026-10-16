@@ -7,6 +7,7 @@ then open http://127.0.0.1:8000
 import hmac
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -41,12 +42,24 @@ from search.prompt import KB_HEADER, build_evidence_text  # noqa: E402
 from search.providers.searxng import SearxngProvider, is_loopback_host, wake_up  # noqa: E402
 from search.service import USED, USED_NO_EVIDENCE_MESSAGE, SearchService, Source  # noqa: E402
 
+# Questions about the present ("who is the current ...", "latest ...", a year from now on) cannot be answered from stored records that may be months old:
+# when web search is on, the web is asked too and its answer is preferred (the stored records stay as the fallback).
+FRESH = re.compile(r"\b(current(ly)?|now|today|latest|recent(ly)?|present(ly)?|newest|incumbent|this (year|month|week)|as of)\b|\b20(2[5-9]|3\d)\b", re.I)
+KB_SLEEPING_NOTE = ("The stored records could not be reached just now (the service may be waking up, which takes up to a minute), "
+                    "so this answer was not checked against them. Ask again in a moment.")
+
 KB_RAG_MESSAGE = ("Answer written from verified knowledge-graph facts and stored documents (judgments, press releases, reference pages); "
                   "every note is cited and labelled alleged / reported / court finding. The small model can still be wrong, so check the sources.")
 
 # The React app (frontend-react/, built into dist/) is served when it has been built; the earlier single-file page in frontend/ is the fallback.
 REACT_DIST = BACKEND_DIR.parent / "frontend-react" / "dist"
 FRONTEND_DIR = REACT_DIST if (REACT_DIST / "index.html").is_file() and os.environ.get("ELVARN_LEGACY_UI") != "1" else BACKEND_DIR.parent / "frontend"
+
+
+class TargetedRequest(BaseModel):
+    text: Optional[str] = Field(default=None, max_length=300)
+    person: Optional[str] = Field(default=None, max_length=60)
+    sources: Optional[List[str]] = Field(default=None, max_length=10)
 
 
 class Turn(BaseModel):
@@ -126,7 +139,7 @@ Thanks for trying ELVARN, a small AI model that answers questions about Tamil Na
 You are getting this mail because you left your address on the site and agreed to it. Reply STOP and we will delete it.
 """
 
-def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None, call_config=None, owner_key=None):
+def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_per_minute=None, max_concurrent=None, search_service=None, file_service=None, kb_service=None, rag_service=None, memory_service=None, remote_service=None, mail_service=None, call_config=None, owner_key=None, collect_service=None):
     """public=True (or ELVARN_PUBLIC=1) is for a website anyone can reach: it turns on a per-visitor rate limit,
     a cap on simultaneous generations, and disables the reload endpoint."""
     public = env_flag("ELVARN_PUBLIC") if public is None else public
@@ -283,32 +296,33 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
     def graph_step(req, request):
         """GraphRAG: Chroma vector search and Neo4j graph traversal run in parallel, then merge into one ranked, cited context.
-        Returns (SearchResult | None, Context | None, early reply | None). An early reply is a refusal or an 'unavailable'
-        notice for a corruption question: the model is never asked to guess those."""
+        Returns (SearchResult | None, Context | None, early reply | None, note). An early reply is a refusal or an 'unavailable'
+        notice for a corruption question: the model is never asked to guess those. `note` is a sentence to show when the stored records
+        could not be reached for another kind of question (the chat then goes on without them, and says so)."""
         if req.file_ids or not (kb_expected or rag_expected or remote_expected):
-            return None, None, None
+            return None, None, None, None
         corruption = bool(CORRUPTION_WORDS.search(req.text))
         if remote_expected:                                   # hosted knowledge service: it does the retrieval, we only get the context
             if remote is None:
-                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None), KB_SLEEPING_NOTE
             try:
                 ctx, populated = remote.context(req.text, session_of(req, request))
             except Exception:
-                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None), KB_SLEEPING_NOTE
         else:
             if kb is None and rag_store is None:
-                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None), KB_SLEEPING_NOTE
             try:
                 ctx = graphrag.build_context(kb, rag_store, req.text, memory, session_of(req, request))
             except Exception:
-                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None)
+                return None, None, (kb_reply(req, UNAVAILABLE) if corruption else None), KB_SLEEPING_NOTE
             populated = None
         # headings, bare links and one-line fragments scraped from web pages are not answers: drop them before the model or the user sees them
         ctx.items = [i for i in ctx.items if i["kind"] == "fact" or groundcheck.usable_note(i.get("text", ""))]
         if not ctx.items:
             if corruption and (populated if populated is not None else has_data()):
-                return None, None, kb_reply(req, NOT_FOUND)
-            return None, ctx, None
+                return None, None, kb_reply(req, NOT_FOUND), None
+            return None, ctx, None, None
         sources = [Source(title=i["source"]["title"], url=i["source"]["url"], domain=i["source"]["label"], snippet=i["text"]) for i in ctx.items]
         res = SearchResult(status=USED, searched=True, sources=[s.as_dict() for s in sources], message=KB_RAG_MESSAGE)
         try:
@@ -320,7 +334,24 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             res.model_text, res.evidence_in_prompt = model_text, len(used)
         else:
             res.message = USED_NO_EVIDENCE_MESSAGE
-        return res, ctx, None
+        return res, ctx, None, None
+
+    def web_plan(req, history, rag):
+        """The web search to run for this question, or None when the stored records are used as they are. Without stored evidence the usual
+        plan applies; with it, a question about the present also goes to the web (when web search is on)."""
+        if rag is not None and not (req.web_search == "auto" and FRESH.search(req.text)):
+            return None
+        return plan_search(req.text, history, req.mode, req.web_search)
+
+    def settle(rag, found_web, note):
+        """-> (evidence to answer from, whether it is the stored records). The web answer wins for a present-day question; the stored
+        records stay when the web gave nothing. A sleeping knowledge service is said so when nothing else backs the answer."""
+        if rag is not None and not (found_web is not None and found_web.evidence_in_prompt):
+            return rag, True
+        found = found_web if found_web is not None else SearchResult()
+        if note and not found.sources:
+            found.status, found.message = "unavailable", note
+        return found, False
 
     def check_grounding(result, found, question, label="the web results"):
         """An answer written from notes must match the notes: otherwise the stored record text itself is shown (and the model's own
@@ -361,18 +392,15 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         handled = file_turn(req, request)
         if handled is not None:
             return file_result(handled, req)
-        rag, ctx, early = graph_step(req, request)
+        rag, ctx, early, note = graph_step(req, request)
         if early is not None:
             return early
         check_web_search(req)
         history = [(t.user, t.assistant) for t in req.history] if req.history else None
         take_slot()
         try:
-            if rag is not None:
-                found = rag
-            else:
-                plan = plan_search(req.text, history, req.mode, req.web_search)
-                found = search_step(plan, req, request)
+            plan = web_plan(req, history, rag)
+            found, from_kb = settle(rag, search_step(plan, req, request) if plan is not None else None, note)
             text, hist = model_input(req, found, history)
             rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
             temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
@@ -382,9 +410,9 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                 greedy=req.greedy, history=hist, **rep,
             )
             result.update(found.fields())
-            if rag is not None:
+            if from_kb:
                 result.update(kb_extra(ctx))
-            check_grounding(result, found, req.text, "the stored records" if rag is not None else "the web results")
+            check_grounding(result, found, req.text, "the stored records" if from_kb else "the web results")
             result["repetition_source"] = rep_source
             result["sampling_source"] = sampling_source
             remember(req, request, result.get("text", ""), ctx)
@@ -425,7 +453,7 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
             return StreamingResponse(file_events(), media_type="application/x-ndjson",
                                      headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
-        rag, ctx, early = graph_step(req, request)
+        rag, ctx, early, note = graph_step(req, request)
         if early is not None:
             return StreamingResponse(iter([json.dumps({"event": "done", **early}) + "\n"]), media_type="application/x-ndjson",
                                      headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
@@ -437,17 +465,14 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
         def events():
             try:
-                if rag is not None:
-                    found = rag
+                plan = web_plan(req, history, rag)
+                if plan is not None and plan.query:
+                    yield json.dumps({"event": "status", "status": "searching", "message": "Searching the web..."}) + "\n"
+                found, from_kb = settle(rag, search_step(plan, req, request) if plan is not None else None, note)
+                if from_kb:
                     yield json.dumps({"event": "sources", **found.fields(), **kb_extra(ctx)}) + "\n"
-                else:
-                    plan = plan_search(req.text, history, req.mode, req.web_search)
-                    if plan.query:
-                        yield json.dumps({"event": "status", "status": "searching",
-                                          "message": "Searching the web..."}) + "\n"
-                    found = search_step(plan, req, request)
-                    if plan.query:
-                        yield json.dumps({"event": "sources", **found.fields()}) + "\n"
+                elif (plan is not None and plan.query) or note:
+                    yield json.dumps({"event": "sources", **found.fields()}) + "\n"
                 text, hist = model_input(req, found, history)
                 rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
                 temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
@@ -458,9 +483,9 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                 ):
                     if event["event"] == "done":
                         event.update(found.fields())
-                        if rag is not None:
+                        if from_kb:
                             event.update(kb_extra(ctx))
-                        check_grounding(event, found, req.text, "the stored records" if rag is not None else "the web results")
+                        check_grounding(event, found, req.text, "the stored records" if from_kb else "the web results")
                         event["repetition_source"] = rep_source
                         event["sampling_source"] = sampling_source
                         remember(req, request, event.get("text", ""), ctx)
@@ -519,6 +544,66 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
     def owner_request(request):
         got = request.headers.get("x-owner-key", "")
         return len(owner_secret) >= 16 and hmac.compare_digest(got.encode(), owner_secret.encode())
+
+    # ---- politician-by-politician data collection: owner only, and only on the machine that runs the stack (never on the public site)
+    if not public:
+        collect_state = {"monitor": collect_service}
+
+        def collect_monitor(request):
+            if not owner_request(request):
+                raise HTTPException(403, "Not allowed.")
+            if collect_state["monitor"] is None:
+                from backend.pipeline.monitor import Monitor            # imported here: the hosted site does not carry the pipeline's packages
+                collect_state["monitor"] = Monitor(kb=kb, rag=rag_store)
+            return collect_state["monitor"]
+
+        @app.get("/api/collect/status")
+        def collect_status(request: Request):
+            return collect_monitor(request).status()
+
+        @app.post("/api/collect/start")
+        def collect_start(request: Request):
+            monitor = collect_monitor(request)
+            from backend.pipeline import control
+            control.start(monitor.control_path)
+            return monitor.status()
+
+        @app.post("/api/collect/stop")
+        def collect_stop(request: Request):
+            monitor = collect_monitor(request)
+            from backend.pipeline import control
+            control.request_stop(monitor.control_path)
+            return monitor.status()
+
+        @app.post("/api/collect/targeted")
+        def collect_targeted(request: Request, body: TargetedRequest):
+            """'collect C. Joseph Vijay ED cases': one person, some sources only. Either a sentence (text), or the person and sources picked from the candidates."""
+            monitor = collect_monitor(request)
+            from backend.pipeline import collect_request, control
+            if control.is_running(monitor.control_path):
+                return {**monitor.status(), "request": {"ok": False, "message": "A collection is running. Stop it first (or wait), then ask again."}}
+            try:
+                plan = collect_request.plan(monitor.registry, body.text, body.person, body.sources)
+            except Exception as exc:  # noqa: BLE001 - Wikidata unreachable and the like
+                return {**monitor.status(), "request": {"ok": False, "message": f"Could not look the person up: {str(exc)[:120]}"}}
+            if not plan["ok"]:
+                return {**monitor.status(), "request": plan}
+            groups = [g for g in plan["sources"] if g != "all"]
+            extra = ("--person", plan["person"]["key"]) + (("--sources", ",".join(groups)) if groups else ())
+            wording = "all sources" if not groups else ", ".join(groups)
+            control.start(monitor.control_path, extra=extra, message=f"Collecting {wording} for {plan['person']['name']} ...")
+            return {**monitor.status(), "request": plan}
+
+        @app.get("/api/collect/people")
+        def collect_people(request: Request, status: Optional[str] = None, q: Optional[str] = None, limit: int = 50, offset: int = 0):
+            return collect_monitor(request).people_page(status, q, limit, offset)
+
+        @app.get("/api/collect/person/{key:path}")
+        def collect_person(key: str, request: Request):
+            found = collect_monitor(request).person_detail(key)
+            if found is None:
+                raise HTTPException(404, "Unknown person.")
+            return found
 
     @app.get("/api/notify/status")
     def notify_status():

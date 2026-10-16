@@ -82,6 +82,8 @@ export function originInfo(meta) {
     return { cls: "kb", label: "Answered from: stored records.", text: " Knowledge-graph facts and documents are cited below; the small model wrote the wording, which can still be wrong." };
   if (s && s.searched)
     return { cls: "web", label: "Answered from: live web search.", text: " The small model wrote the text from the results below; check them." };
+  if (s && s.status === "unavailable" && s.message && /stored records/i.test(s.message))
+    return { cls: "model", label: "Answered by the model alone: the stored records are waking up.", text: " " + s.message };
   return { cls: "model", label: "Answered by the model alone.", text: " No stored records and no web search were used, so nothing here has been checked." };
 }
 

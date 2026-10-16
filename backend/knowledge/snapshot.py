@@ -42,6 +42,8 @@ def select_passage_ids(kb):
     rows = kb._read("MATCH (s:Source)<-[:FROM]-(p:Passage) RETURN s.id AS sid, s.doc_type AS t, s.publisher AS pub, "
                     "collect(p.id) AS ids, collect(p.text) AS texts ORDER BY sid")      # one row per DOCUMENT (never per type)
     for r in rows:
+        if r["t"] == "news":
+            continue                                          # news articles belong to their publishers: kept in the private stores only, never in the public snapshot
         if r["t"] != "reference":
             reason = "official"
         elif (r["pub"] or "").startswith(NOTES_PUBLISHERS):

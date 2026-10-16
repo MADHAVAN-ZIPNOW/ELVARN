@@ -89,8 +89,11 @@ def _terms(text):
 
 
 def usable_note(text):
-    """Not a bare link, not a one-line heading / question."""
+    """Not a bare link, not a one-line heading / question. A wiki heading such as '=== Chief Minister of Tamil Nadu (2026-present) ===' has six words
+    but says nothing: the model then answers 'The notes do not say.' although the web could have answered."""
     t = (text or "").strip()
+    if re.match(r"^=+.*=+$", t) or re.match(r"^#{1,6}\s", t):
+        return False
     return len(t.split()) >= 6 and not re.match(r"^(https?://|www\.)\S+$", t) and not t.endswith("?")
 
 

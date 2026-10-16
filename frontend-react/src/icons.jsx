@@ -80,6 +80,16 @@ const ICON3D = {
       <path d="M4 15.2v2.2M20 15.2v2.2" stroke="#fff" strokeOpacity=".5" strokeWidth=".9" strokeLinecap="round" />
     </>
   ),
+  pipeline: (
+    <>
+      <path d="M12 3.4c4.7 0 8 1.5 8 3.4s-3.3 3.4-8 3.4-8-1.5-8-3.4 3.3-3.4 8-3.4z" fill="url(#g3Navy)" />
+      <path d="M4 6.8v10.4c0 1.9 3.3 3.4 8 3.4s8-1.5 8-3.4V6.8c0 1.9-3.3 3.4-8 3.4S4 8.7 4 6.8z" fill="url(#g3Navy)" />
+      <path d="M4 12c0 1.9 3.3 3.4 8 3.4s8-1.5 8-3.4" fill="none" stroke="#f3e7cc" strokeOpacity=".7" strokeWidth="1" />
+      <path d="M6.2 5.6c1.6-.9 3.4-1.2 5.4-1.2" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1" strokeLinecap="round" />
+      <circle cx="17.6" cy="17.6" r="4.4" fill="url(#g3Terra)" />
+      <path d="M15.6 17.6h3.6m-1.6-1.8 1.8 1.8-1.8 1.8" fill="none" stroke="url(#g3Ivory)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
   theme: (
     <>
       <circle cx="12" cy="12" r="9" fill="url(#g3Emerald)" />

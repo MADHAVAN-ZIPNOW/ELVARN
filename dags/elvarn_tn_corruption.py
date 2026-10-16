@@ -3,7 +3,8 @@
     collect_dvac / collect_cbi / collect_supreme_court / collect_madras_high_court   (download + publish to Kafka)
     load_wikipedia                                                                    (straight into Neo4j + Chroma)
         -> wait_for_spark       Spark turns the Kafka messages into Neo4j + Chroma data; wait until it has caught up
-        -> check_stores         repair any gap between Neo4j and Chroma, then fail the run if they still disagree
+        -> check_stores         embed new corpus passages into Chroma, fill Neo4j gaps, update the Parquet flags, write the report, then repair any
+                                Neo4j-to-Chroma gap and fail the run if they still disagree (backend/knowledge/check_stores.py)
         -> audit_graph          every stored fact must still be cited (court findings only from judgments/orders)
         -> export_training      write backend/data/raw_v2/kb_corpus.txt for the model's training
 
@@ -91,7 +92,7 @@ with DAG(
     hc = PythonOperator(task_id="collect_madras_high_court", python_callable=collect, op_kwargs={"site": "hc", "max_fetch": 300})
     wiki = BashOperator(task_id="load_wikipedia", bash_command=f"{RAG_PY} backend.knowledge.ingest_wikipedia")
     wait = PythonOperator(task_id="wait_for_spark", python_callable=wait_for_spark, trigger_rule="all_done", retries=0)
-    stores = BashOperator(task_id="check_stores", bash_command=f"{RAG_PY} backend.knowledge.reindex --verify")      # fails if Neo4j and Chroma still disagree
+    stores = BashOperator(task_id="check_stores", bash_command=f"{RAG_PY} backend.knowledge.check_stores --verify")      # embeds new corpus passages, fills Neo4j gaps, updates the Parquet flags, writes _stats/report.json; fails if Neo4j and Chroma still disagree
     audit = PythonOperator(task_id="audit_graph", python_callable=audit_graph)
     export = PythonOperator(task_id="export_training", python_callable=export_training)
     [dvac, cbi, sc, hc, wiki] >> wait >> stores >> audit >> export
