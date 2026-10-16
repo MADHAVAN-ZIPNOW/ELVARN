@@ -152,7 +152,7 @@ def process_batch(batch_df, batch_id):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--once", action="store_true", help="process everything currently on the topic, then stop")
-    ap.add_argument("--interval", default="30 seconds")
+    ap.add_argument("--interval", default="5 seconds")
     a = ap.parse_args()
     from pyspark.sql import SparkSession
     spark = SparkSession.builder.appName("elvarn-kb-loader").getOrCreate()

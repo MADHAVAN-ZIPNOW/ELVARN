@@ -312,7 +312,7 @@ class StoreSync(threading.Thread):
     """Keeps Chroma (and the corpus flags) in step while the collector runs, so no nightly Airflow job is needed: every `interval` seconds it runs the
     same check_stores pass: embed the new passages into Chroma, write what Neo4j still lacks, update the flags and the report."""
 
-    def __init__(self, interval=90, say=print, registry=None):
+    def __init__(self, interval=20, say=print, registry=None):
         super().__init__(daemon=True)
         self.interval, self.say, self.done, self.lock, self.registry = interval, say, threading.Event(), threading.Lock(), registry
 
