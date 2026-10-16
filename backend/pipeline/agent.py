@@ -67,7 +67,12 @@ class Agent:
             self.say(f"command {c.get('action')}")
             self.answers.append({"seq": c["seq"], "result": remote_ops.run(self.monitor, c.get("action"), c.get("args"))})
         if commands:
-            self.post({"report": self.refresh(), "results": self.answers})
+            if any(c.get("action") in ("start", "stop", "targeted") for c in commands):
+                report = self.refresh()                                        # a control command: the answer carries the NEW state
+            else:
+                with self._lock:                                               # a roster search or person lookup: answer at once, the status is not rebuilt for it
+                    report = self.latest
+            self.post({"report": report, "results": self.answers})
             self.answers = []
         return len(commands)
 
