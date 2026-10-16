@@ -9,13 +9,15 @@ if the computer sleeps or the agent stops, the dashboard on the site says "offli
 import argparse
 import json
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
 
 from backend.pipeline import remote_ops
 
-POLL_SECONDS = 2.0
+POLL_SECONDS = 1.0          # how often the site is told the state and asked for commands
+REFRESH_SECONDS = 1.5       # how often the (slower) status document is rebuilt in the background
 MAX_BACKOFF = 60.0
 
 
@@ -27,6 +29,7 @@ class Agent:
         self.key, self.monitor, self.say = owner_key, monitor, say
         self.post = post or self._post
         self.answers = []
+        self.latest, self._lock = None, threading.Lock()          # the last status document; rebuilt by a background thread so a slow probe never delays a report
 
     def _post(self, payload):
         req = urllib.request.Request(self.url, data=json.dumps(payload, default=str).encode("utf-8"),
@@ -34,27 +37,47 @@ class Agent:
         with urllib.request.urlopen(req, timeout=25) as resp:
             return json.load(resp)
 
-    def step(self):
-        """One round: report the state, receive the waiting commands, run them. Returns how many commands ran."""
+    def refresh(self):
+        """Rebuild the status document now (it is cached, so the next report carries it)."""
         try:
             report = self.monitor.status()
         except Exception as exc:  # noqa: BLE001 - a broken stage must not silence the agent
-            report = None
             self.say(f"status unavailable: {exc.__class__.__name__}: {str(exc)[:80]}")
+            return None
+        with self._lock:
+            self.latest = report
+        return report
+
+    def _keep_fresh(self):
+        while True:
+            self.refresh()
+            time.sleep(REFRESH_SECONDS)
+
+    def step(self):
+        """One round: report the state, receive the waiting commands, run them. Returns how many commands ran.
+        After commands, a FRESH status goes out at once together with their answers, so the dashboard shows the effect without waiting."""
+        with self._lock:
+            report = self.latest
+        if report is None:
+            report = self.refresh()
         reply = self.post({"report": report, "results": self.answers})
         self.answers = []
         commands = reply.get("commands") or []
         for c in commands:
             self.say(f"command {c.get('action')}")
             self.answers.append({"seq": c["seq"], "result": remote_ops.run(self.monitor, c.get("action"), c.get("args"))})
+        if commands:
+            self.post({"report": self.refresh(), "results": self.answers})
+            self.answers = []
         return len(commands)
 
     def run_forever(self, sleep=time.sleep):
+        threading.Thread(target=self._keep_fresh, daemon=True).start()
         wait = POLL_SECONDS
         while True:
             try:
                 ran = self.step()
-                wait = 0.2 if ran else POLL_SECONDS                      # answer a command at once
+                wait = POLL_SECONDS
             except (urllib.error.URLError, TimeoutError, ConnectionError, ValueError) as exc:
                 wait = min(MAX_BACKOFF, wait * 2 if wait >= POLL_SECONDS else POLL_SECONDS)
                 self.say(f"the site did not answer ({exc.__class__.__name__}); trying again in {wait:.0f}s")

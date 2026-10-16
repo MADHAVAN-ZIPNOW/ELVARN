@@ -113,21 +113,35 @@ def agent_for(site, monitor):
     return Agent("https://site.example", KEY, monitor, post=post, say=lambda m: None)
 
 
+def running_agent(agent):
+    """The agent polling the site in the background, as it does on the owner's computer."""
+    stop = threading.Event()
+
+    def loop():
+        while not stop.is_set():
+            agent.step()
+            time.sleep(0.05)
+    t = threading.Thread(target=loop)
+    t.start()
+    return stop, t
+
+
 def test_start_pressed_on_the_site_starts_the_collector_on_the_owners_computer(site, local):
     monitor, started = local
     agent = agent_for(site, monitor)
     agent.step()                                                                           # the agent reports: the site is online
     s = site.get("/api/collect/status", headers=OWNER).json()
     assert s["agent"]["online"] is True and s["state"] == "idle" and s["people"]["total"] == 2
-    assert site.post("/api/collect/start", headers=OWNER).json()["message"].startswith("Start sent")
-    assert agent.step() == 1                                                               # the agent picks the command up and runs it
-    assert len(started) == 1
-    agent.step()                                                                           # and reports the new state
-    assert site.get("/api/collect/status", headers=OWNER).json()["state"] == "running"
-    site.post("/api/collect/stop", headers=OWNER)
-    assert agent.step() == 1
-    agent.step()
-    assert site.get("/api/collect/status", headers=OWNER).json()["state"] == "stopping"
+    stop, t = running_agent(agent)
+    try:
+        r = site.post("/api/collect/start", headers=OWNER).json()
+        assert r["message"].startswith("Start sent") and len(started) == 1
+        assert r["state"] == "running"                                                      # the answer already carries the NEW state: nothing to wait for
+        r = site.post("/api/collect/stop", headers=OWNER).json()
+        assert r["message"].startswith("Stop sent") and r["state"] == "stopping"
+    finally:
+        stop.set()
+        t.join()
 
 
 def test_a_typed_request_and_the_roster_come_back_through_the_agent(site, local):
@@ -164,7 +178,6 @@ def test_the_agent_refuses_a_weak_key_and_survives_a_failing_command(local):
     assert "error" in remote_ops.run(monitor, "people", {"limit": "not a number"})                  # a bad argument is an answer, not a crash
     sent = []
     agent = Agent("https://site.example", KEY, monitor, post=lambda p: sent.append(p) or {"commands": [{"seq": 7, "action": "stop", "args": {}}]}, say=lambda m: None)
-    assert agent.step() == 1 and agent.answers == [{"seq": 7, "result": {"ok": True}}]
-    agent.post = lambda p: sent.append(p) or {"commands": []}
-    agent.step()
-    assert sent[-1]["results"] == [{"seq": 7, "result": {"ok": True}}] and agent.answers == []     # the answer travels with the next post, once
+    assert agent.step() == 1 and agent.answers == []
+    assert len(sent) == 2 and sent[1]["results"] == [{"seq": 7, "result": {"ok": True}}]                 # the answer goes out at once, with a fresh status
+    assert sent[1]["report"] is not None and sent[0]["results"] == []

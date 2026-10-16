@@ -107,8 +107,8 @@ def _docker(*args, timeout=60):
 def kafka_up(bootstrap=None, timeout=4):
     try:
         from confluent_kafka import Producer
-        from backend.pipeline.kafka_io import BOOTSTRAP, TOPIC
-        meta = Producer({"bootstrap.servers": bootstrap or BOOTSTRAP}).list_topics(TOPIC, timeout=timeout)
+        from backend.pipeline.kafka_io import BOOTSTRAP, CLIENT_OPTIONS, TOPIC
+        meta = Producer({"bootstrap.servers": bootstrap or BOOTSTRAP, **CLIENT_OPTIONS}).list_topics(TOPIC, timeout=timeout)
         return TOPIC in meta.topics and not meta.topics[TOPIC].error
     except Exception:  # noqa: BLE001 - any failure means "not reachable"
         return False
@@ -132,6 +132,18 @@ def ensure_stack(wait_seconds=120, say=lambda m: None):
     return False
 
 
+def hidden_process_options():
+    """How to start the collector so that it outlives this process and shows NO window. On Windows a DETACHED process has no console, and the
+    virtual environment's python.exe starts the real interpreter as a child: that child then gets a console window of its own (a black cmd
+    window pops up). CREATE_NO_WINDOW gives the process a hidden console that its children share, so nothing is shown."""
+    if os.name != "nt":
+        return {"start_new_session": True}
+    info = subprocess.STARTUPINFO()
+    info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    info.wShowWindow = 0                                   # SW_HIDE
+    return {"creationflags": subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP, "startupinfo": info}
+
+
 def _launch(path, python, check_stack, extra=()):
     if check_stack and not ensure_stack(say=lambda m: write({"message": m}, path)):
         write({"state": "error", "pid": None, "message": "Kafka is not reachable and could not be started. Start Docker Desktop, then press Start again "
@@ -142,9 +154,8 @@ def _launch(path, python, check_stack, extra=()):
         return
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     with open(LOG_PATH, "ab") as log:
-        flags = (subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP) if os.name == "nt" else 0
         proc = subprocess.Popen([python or sys.executable, "-m", "backend.pipeline.person_collector", "run", *extra], cwd=str(REPO), stdout=log, stderr=log,
-                                stdin=subprocess.DEVNULL, creationflags=flags, close_fds=True, start_new_session=(os.name != "nt"))
+                                stdin=subprocess.DEVNULL, close_fds=True, **hidden_process_options())
     write({"pid": proc.pid, "message": "Collecting politician by politician."}, path)
 
 

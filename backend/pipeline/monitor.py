@@ -124,8 +124,8 @@ class Monitor:
     def kafka(self, stats):
         def read():
             from confluent_kafka import Consumer, TopicPartition
-            from backend.pipeline.kafka_io import BOOTSTRAP, TOPIC
-            c = Consumer({"bootstrap.servers": BOOTSTRAP, "group.id": "elvarn-monitor", "enable.auto.commit": False, "log_level": 0})      # quiet while Kafka is stopped
+            from backend.pipeline.kafka_io import BOOTSTRAP, CLIENT_OPTIONS, TOPIC
+            c = Consumer({"bootstrap.servers": BOOTSTRAP, "group.id": "elvarn-monitor", "enable.auto.commit": False, **CLIENT_OPTIONS})      # IPv4 only, quiet while Kafka is stopped
             try:
                 meta = c.list_topics(TOPIC, timeout=3)
                 marks = {p: c.get_watermark_offsets(TopicPartition(TOPIC, p), timeout=3) for p in meta.topics[TOPIC].partitions}
@@ -214,8 +214,14 @@ class Monitor:
     def people(self):
         counts = self.registry.counts()
         current = None
+        running = control.is_running(self.control_path)
+        cur = control.read(self.control_path).get("current") if running else None
+        if cur:                                                  # what the collector itself says it is doing (also for a one-person request)
+            p = self.registry.person(cur["key"]) or {}
+            current = {"key": cur["key"], "name": cur.get("name"), "party": cur.get("party"), "stage": cur.get("stage"), "docs": p.get("docs", 0),
+                       "since": cur.get("since"), "done": p.get("sources_done", []), "wanted": cur.get("wanted")}
         row = self.registry._one("SELECT key, name, party, stage, docs, started_at FROM people WHERE status='in_progress' ORDER BY updated_at DESC LIMIT 1")
-        if row and control.is_running(self.control_path):
+        if not current and row and running:
             current = {"key": row["key"], "name": row["name"], "party": row["party"], "stage": row["stage"] or "finishing", "docs": row["docs"],
                        "since": row["started_at"]}
         return {**counts, "current": current, "recent": self.registry.recent_people(8), "queue": self.registry.queue(8)}

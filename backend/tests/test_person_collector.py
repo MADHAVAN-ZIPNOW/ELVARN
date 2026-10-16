@@ -267,6 +267,38 @@ def test_official_records_stage_links_known_documents_and_downloads_new_ones(env
 
 
 # ---- start / stop state ------------------------------------------------------------------------------------------------------------
+def test_the_collector_is_started_without_a_window(monkeypatch, tmp_path):
+    """A detached Windows process has no console, so the venv's python launcher opened a visible cmd window for the real interpreter."""
+    import subprocess
+    seen = {}
+
+    class FakeProc:
+        pid = 4242
+
+    monkeypatch.setattr(subprocess, "Popen", lambda cmd, **kw: seen.update(kw=kw, cmd=cmd) or FakeProc())
+    monkeypatch.setattr(control, "LOG_PATH", tmp_path / "collector.log")
+    control._launch(tmp_path / "control.json", None, False, ("--person", "wd:Q1"))
+    assert seen["cmd"][-3:] == ["run", "--person", "wd:Q1"]
+    options = control.hidden_process_options()
+    if control.os.name == "nt":
+        flags = seen["kw"]["creationflags"]
+        assert flags & subprocess.CREATE_NO_WINDOW and not flags & subprocess.DETACHED_PROCESS
+        assert seen["kw"]["startupinfo"].wShowWindow == 0 and options["creationflags"] == flags
+    else:
+        assert options == {"start_new_session": True}
+    assert control.read(tmp_path / "control.json")["pid"] == 4242
+
+
+def test_every_kafka_client_is_forced_to_ipv4():
+    """'localhost' tries ::1 first; the broker listens on IPv4 only, so each connection waited for a refused attempt and status checks randomly timed out."""
+    from backend.pipeline import kafka_io
+    assert kafka_io.CLIENT_OPTIONS["broker.address.family"] == "v4"
+    import inspect
+    from backend.pipeline import monitor
+    assert "CLIENT_OPTIONS" in inspect.getsource(monitor.Monitor.kafka) and "CLIENT_OPTIONS" in inspect.getsource(control.kafka_up)
+    assert "CLIENT_OPTIONS" in inspect.getsource(kafka_io.KafkaSink.__init__) and "CLIENT_OPTIONS" in inspect.getsource(kafka_io.consume)
+
+
 def test_control_state_survives_a_dead_process_and_stop_is_graceful(tmp_path):
     path = tmp_path / "control.json"
     assert control.state(path)["state"] == "idle"

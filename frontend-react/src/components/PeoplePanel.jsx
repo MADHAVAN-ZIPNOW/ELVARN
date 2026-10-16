@@ -1,20 +1,41 @@
 // "Politician by politician": overall progress, the person in progress, recent and next people, and the searchable roster.
 import { useEffect, useRef, useState } from "react";
 import { collectCall } from "../pipeline/collectApi";
-import { NA, STAGE_LABEL, fmtAgo, fmtNum, isNum, pct } from "../pipeline/format";
+import { useFitRows } from "../hooks/useFitRows";
+import { NA, STAGE_LABEL, STAGE_ORDER, fmtAgo, fmtNum, isNum, pct } from "../pipeline/format";
 
-const STEPS = ["wikipedia_en", "wikipedia_ta", "wikidata", "corruption_articles", "finishing"];
 const STATUSES = ["", "pending", "in_progress", "done", "failed"];
-const PAGE = 25;
 
-function Steps({ stage }) {
-  const at = STEPS.indexOf(stage);
+/** The sources of one person, in order: finished, the one being read now, waiting, or not asked for (a one-person request). */
+function Steps({ cur }) {
+  const done = new Set(cur.done || []), wanted = Array.isArray(cur.wanted) && cur.wanted.length ? new Set(cur.wanted) : null;
   return (
-    <ol className="pl-steps" aria-label="Stages for this person">
-      {STEPS.map((s, i) => (
-        <li key={s} className={i < at ? "done" : i === at ? "now" : ""} aria-current={i === at ? "step" : undefined}>{STAGE_LABEL[s]}</li>
-      ))}
+    <ol className="pl-steps" aria-label="Sources for this person">
+      {STAGE_ORDER.map((s) => {
+        const skipped = wanted && !wanted.has(s);
+        const cls = skipped ? "skip" : s === cur.stage ? "now" : done.has(s) ? "done" : "";
+        return <li key={s} className={cls} aria-current={s === cur.stage ? "step" : undefined}>{STAGE_LABEL[s]}</li>;
+      })}
     </ol>
+  );
+}
+
+/** Top of the Pipeline page: who is being collected right now and from which source, and what the last run said. */
+export function NowStrip({ current: cur, state, message, onOpen }) {
+  return (
+    <section className={"pl-now" + (cur ? " live" : "")} aria-label="Now collecting" aria-live="polite">
+      <div className="pl-nowwho">
+        <span className="pl-k">{cur ? "Now collecting" : "Collector"}</span>
+        {cur ? (
+          <>
+            <button type="button" className="pl-curname" onClick={() => onOpen(cur.key)}>{cur.name || cur.key}</button>
+            <span className="pl-sub">{[cur.party, isNum(cur.docs) ? cur.docs + " documents" : "", cur.since ? "since " + fmtAgo(cur.since) : ""].filter(Boolean).join(" · ")}</span>
+          </>
+        ) : <span className="pl-curname idle">{state === "offline" ? "Computer offline" : "Waiting for you"}</span>}
+      </div>
+      {cur ? <Steps cur={cur} /> : null}
+      <p className="pl-nowmsg">{message}</p>
+    </section>
   );
 }
 
@@ -32,38 +53,33 @@ function Person({ p, onOpen }) {
   );
 }
 
-export function Overview({ people, onOpen }) {
+export function Progress({ people }) {
   if (!people) return <p className="pl-na">Roster numbers {NA}</p>;
-  const { total, done, failed, in_progress: inProg, current: cur, recent, queue } = people;
+  const { total, done, failed, in_progress: inProg } = people;
   const p = pct(done, total);
   return (
-    <div className="pl-overview">
-      <div className="pl-prog">
-        <div className="pl-barhead"><span>People finished</span><b>{isNum(done) && isNum(total) ? fmtNum(done) + " of " + fmtNum(total) : NA}</b></div>
-        <div className="pl-meter big" role="progressbar" aria-label="People finished" aria-valuemin={0} aria-valuemax={100} aria-valuenow={p === null ? undefined : Math.round(p)}>
-          <span style={{ width: (p || 0) + "%" }} />
-        </div>
-        <p className="pl-sub">{isNum(inProg) ? inProg + " in progress" : ""}{isNum(failed) && failed ? " · " + failed + " failed" : ""}</p>
+    <div className="pl-prog">
+      <div className="pl-barhead"><span>People finished</span><b>{isNum(done) && isNum(total) ? fmtNum(done) + " of " + fmtNum(total) : NA}</b></div>
+      <div className="pl-meter big" role="progressbar" aria-label="People finished" aria-valuemin={0} aria-valuemax={100} aria-valuenow={p === null ? undefined : Math.round(p)}>
+        <span style={{ width: (p || 0) + "%" }} />
       </div>
-      <div className="pl-current" aria-live="polite">
-        <span className="pl-k">Now collecting</span>
-        {cur ? (
-          <>
-            <button type="button" className="pl-curname" onClick={() => onOpen(cur.key)}>{cur.name || cur.key}</button>
-            <span className="pl-sub">{[cur.party, isNum(cur.docs) ? cur.docs + " documents so far" : "", cur.since ? "since " + fmtAgo(cur.since) : ""].filter(Boolean).join(" · ")}</span>
-            <Steps stage={cur.stage} />
-          </>
-        ) : <span className="pl-sub">No one right now.</span>}
+      <p className="pl-sub">{isNum(inProg) ? inProg + " in progress" : ""}{isNum(failed) && failed ? " · " + failed + " failed" : ""}</p>
+    </div>
+  );
+}
+
+export function Lists({ people, onOpen }) {
+  if (!people) return null;
+  const { recent, queue } = people;
+  return (
+    <div className="pl-lists">
+      <div><span className="pl-k">Recently finished</span>
+        {Array.isArray(recent) && recent.length ? recent.slice(0, 4).map((r) => (
+          <div className="pl-rec" key={r.key}><Person p={r} onOpen={onOpen} /><small>{isNum(r.docs) ? r.docs + " docs " : ""}{fmtAgo(r.finished_at)}</small></div>
+        )) : <span className="pl-sub">None yet.</span>}
       </div>
-      <div className="pl-lists">
-        <div><span className="pl-k">Recently finished</span>
-          {Array.isArray(recent) && recent.length ? recent.slice(0, 6).map((r) => (
-            <div className="pl-rec" key={r.key}><Person p={r} onOpen={onOpen} /><small>{isNum(r.docs) ? r.docs + " docs" : ""} {fmtAgo(r.finished_at)}</small></div>
-          )) : <span className="pl-sub">None yet.</span>}
-        </div>
-        <div><span className="pl-k">Up next</span>
-          {Array.isArray(queue) && queue.length ? queue.slice(0, 6).map((r) => <div className="pl-rec" key={r.key}><Person p={r} onOpen={onOpen} /></div>) : <span className="pl-sub">Queue is empty.</span>}
-        </div>
+      <div><span className="pl-k">Up next</span>
+        {Array.isArray(queue) && queue.length ? queue.slice(0, 5).map((r) => <div className="pl-rec" key={r.key}><Person p={r} onOpen={onOpen} /></div>) : <span className="pl-sub">Queue is empty.</span>}
       </div>
     </div>
   );
@@ -73,6 +89,8 @@ export function Roster({ ownerKey, onOpen, refreshKey }) {
   const [q, setQ] = useState(""), [st, setSt] = useState(""), [page, setPage] = useState(0);
   const [qNow, setQNow] = useState("");
   const [data, setData] = useState(null), [err, setErr] = useState(""), [loading, setLoading] = useState(false);
+  const [fit, PAGE] = useFitRows(46, { min: 3, max: 30, start: 8, reserve: 34 });                      // as many people as fit under the filters: the table never scrolls
+  useEffect(() => { setPage(0); }, [PAGE]);
   useEffect(() => { const t = setTimeout(() => { setQNow(q.trim()); setPage(0); }, 300); return () => clearTimeout(t); }, [q]);
   useEffect(() => {
     const ab = new AbortController();
@@ -82,7 +100,7 @@ export function Roster({ ownerKey, onOpen, refreshKey }) {
       .then((d) => { setData(d); setErr(""); setLoading(false); })
       .catch((e) => { if (e.name !== "AbortError") { setErr(e.message); setLoading(false); } });
     return () => ab.abort();
-  }, [ownerKey, st, qNow, page, refreshKey]);
+  }, [ownerKey, st, qNow, page, refreshKey, PAGE]);
   const items = data && Array.isArray(data.items) ? data.items : [];
   const total = data && isNum(data.total) ? data.total : 0;
   const pages = Math.max(1, Math.ceil(total / PAGE));
@@ -97,7 +115,7 @@ export function Roster({ ownerKey, onOpen, refreshKey }) {
         </label>
         <span className="pl-sub" role="status">{err ? err : loading ? "Loading…" : fmtNum(total) + " people"}</span>
       </div>
-      <div className="pl-tablewrap">
+      <div className="pl-tablewrap" ref={fit}>
         <table className="pl-table">
           <caption className="sr-only">Politicians, collected one by one</caption>
           <thead><tr><th scope="col">Person</th><th scope="col">Years</th><th scope="col">Status</th><th scope="col" className="num">Docs</th><th scope="col" className="num">Tokens</th><th scope="col" className="num">Corruption docs</th></tr></thead>

@@ -1,4 +1,4 @@
-// Polls GET /api/collect/status: every 2 s while collecting, every 10 s when idle, paused while the tab is hidden, aborted on unmount.
+// Polls GET /api/collect/status: every 1.5 s while collecting, every 3 s when idle, paused while the tab is hidden, aborted on unmount.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { collectCall } from "../pipeline/collectApi";
 import { measureRates } from "../pipeline/format";
@@ -24,7 +24,7 @@ export function usePipelineStatus(ownerKey) {
     const c = ctl.current;
     clearTimeout(c.timer);
     if (!c.alive) return;
-    let next = 10000;
+    let next = 3000;
     if (!document.hidden) {
       if (c.abort) c.abort.abort();
       const ab = new AbortController();
@@ -32,7 +32,7 @@ export function usePipelineStatus(ownerKey) {
       try { take(await collectCall(ownerKey, "/status", { signal: ab.signal })); }
       catch (e) { if (e.name === "AbortError" || !c.alive) return; setError(e.message || "The collector did not answer."); }
       const st = c.prev && c.prev.state;
-      next = st === "running" || st === "stopping" ? 2000 : 10000;
+      next = st === "running" || st === "stopping" ? 1500 : 3000;
     }
     if (c.alive) c.timer = setTimeout(poll, next);
   }, [ownerKey, take]);
@@ -51,7 +51,7 @@ export function usePipelineStatus(ownerKey) {
   }, [poll]);
 
   // after a request that changes the state, check again soon (fast interval) instead of waiting for the idle timer
-  const soon = useCallback(() => { const c = ctl.current; clearTimeout(c.timer); if (c.alive) c.timer = setTimeout(poll, 1500); }, [poll]);
+  const soon = useCallback(() => { const c = ctl.current; clearTimeout(c.timer); if (c.alive) c.timer = setTimeout(poll, 700); }, [poll]);
 
   const control = useCallback(async (what) => {
     if (busy) return;

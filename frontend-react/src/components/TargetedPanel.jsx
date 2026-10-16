@@ -34,7 +34,7 @@ export function TargetedPanel({ running, offline, busy, onSubmit }) {
     } else line = result.message || "Nothing to collect for this request.";
   }
   return (
-    <section className="pl-panel pl-target" aria-label="Collect for one person">
+    <section className="pl-panel pl-target pl-targetpage" aria-label="Collect for one person">
       <h3 className="pl-h">Collect for one person <small>only that person, only those sources</small></h3>
       <form className="pl-tform" onSubmit={submit}>
         <input type="text" className="pl-tinput" value={text} disabled={disabled} onChange={(e) => setText(e.target.value)}

@@ -581,16 +581,18 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             collect_guard(request)
             if not bridge.online():
                 return bridge.status()
-            bridge.enqueue("start")
-            return {**bridge.status(), "message": "Start sent to your collection computer."}
+            got = bridge.call("start", wait=ASK)                     # returns once the agent has acted and reported (about a second)
+            note = "Start sent to your collection computer." if got is not None else "Your collection computer has not answered yet; it will start when it does."
+            return {**bridge.status(), "message": note}
 
         @app.post("/api/collect/stop")
         def collect_stop(request: Request):
             collect_guard(request)
             if not bridge.online():
                 return bridge.status()
-            bridge.enqueue("stop")
-            return {**bridge.status(), "message": "Stop sent to your collection computer."}
+            got = bridge.call("stop", wait=ASK)
+            note = "Stop sent to your collection computer." if got is not None else "Your collection computer has not answered yet; it will stop when it does."
+            return {**bridge.status(), "message": note}
 
         @app.post("/api/collect/targeted")
         def collect_targeted(request: Request, body: TargetedRequest):

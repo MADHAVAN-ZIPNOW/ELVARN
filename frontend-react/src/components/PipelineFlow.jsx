@@ -1,4 +1,6 @@
 // The pipeline picture: stage cards joined by animated connectors, plus the movement feed.
+import { useState } from "react";
+import { useFitRows } from "../hooks/useFitRows";
 import { NA, PIPE_LABEL, buildStages, flowLook, fmtAgo, isNum } from "../pipeline/format";
 
 const GLYPH = {
@@ -25,7 +27,7 @@ function Connector({ rate, active, label }) {
 }
 
 function Stage({ st, rate, n }) {
-  const down = st.up === false, unknown = st.up === null, idle = st.up === "idle";        // idle: the collector exists and is simply not running (not a fault)
+  const down = st.up === false, unknown = st.up === null && !st.loading, idle = st.up === "idle";        // idle: the collector exists and is simply not running (not a fault)
   const state = unknown ? "unavailable" : idle ? "idle" : down ? "down" : "up";
   return (
     <article className={"pl-card tone-" + st.tone + " " + state} aria-label={st.title + ": " + state}>
@@ -38,7 +40,7 @@ function Stage({ st, rate, n }) {
         <dl className="pl-rows">
           {st.rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd className={v === NA ? "na" : ""}>{v}</dd></div>)}
         </dl>
-      ) : <p className="pl-na">Numbers {NA}</p>}
+      ) : <p className="pl-na">{st.loading ? "Loading…" : "Numbers " + NA}</p>}
       {st.bar && (
         <div className="pl-bar">
           <div className="pl-barhead"><span>{st.bar.label}</span>
@@ -48,7 +50,6 @@ function Stage({ st, rate, n }) {
           </div>
         </div>
       )}
-      {st.note ? <p className="pl-note" title={st.note}>{st.note}</p> : null}
       {isNum(rate) && <p className="pl-rate">{(rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " / min"}</p>}
     </article>
   );
@@ -73,16 +74,23 @@ export function PipelineFlow({ status, rates }) {
   );
 }
 
-export function MovementFeed({ items }) {
-  const list = Array.isArray(items) ? items.slice(0, 20) : null;
+export function MovementFeed({ items, compact }) {
+  // As many rows as the free height holds: no scrollbar. `compact` is the small live list on the Pipeline page: it shows what fits under the cards
+  // (nothing at all on a small window) and keeps its place, so the page never changes size.
+  const [fit, rows] = useFitRows(58, { min: compact ? 0 : 3, max: 14, start: compact ? 0 : 8 });
+  const [page, setPage] = useState(0);
+  const list = Array.isArray(items) ? items.slice(0, 50) : null;
+  const pages = list ? Math.max(1, Math.ceil(list.length / Math.max(1, rows))) : 1;
+  const at = Math.min(page, pages - 1);
+  const shown = list ? list.slice(at * rows, at * rows + rows) : [];
   return (
-    <section className="pl-panel pl-move" aria-label="Documents on the move">
-      <h3 className="pl-h">On the move <small>newest first</small></h3>
+    <section className={"pl-panel pl-move" + (compact ? " compact" : "") + (compact && rows < 1 ? " tiny" : "")} aria-label="Documents on the move" aria-hidden={compact && rows < 1 ? true : undefined}>
+      <h3 className="pl-h">On the move <small>every document, stage by stage, newest first</small></h3>
       {list === null ? <p className="pl-na">Movement feed {NA}</p>
         : !list.length ? <p className="pl-na">Nothing has moved yet.</p>
         : (
-          <ol className="pl-feed">
-            {list.map((m, i) => (
+          <ol className="pl-feed" ref={fit}>
+            {shown.map((m, i) => (
               <li key={(m.doc_id || "") + (m.stage || "") + (m.at || "") + i} className={"pl-item st-" + m.stage}>
                 <span className="pl-chip">{PIPE_LABEL[m.stage] || m.stage || "?"}</span>
                 <span className="pl-ititle" title={m.title || m.doc_id}>{m.title || m.doc_id || "document"}</span>
@@ -92,6 +100,13 @@ export function MovementFeed({ items }) {
             ))}
           </ol>
         )}
+      {list && list.length > 0 && (
+        <nav className="pl-pager" aria-label="Movement pages">
+          <button type="button" className="pl-btn" disabled={at <= 0} onClick={() => setPage(at - 1)}>Newer</button>
+          <span>Page {at + 1} of {pages}</span>
+          <button type="button" className="pl-btn" disabled={at + 1 >= pages} onClick={() => setPage(at + 1)}>Older</button>
+        </nav>
+      )}
     </section>
   );
 }

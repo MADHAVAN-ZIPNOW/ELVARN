@@ -41,9 +41,10 @@ export function fmtAgo(iso, now) {
 export const pct = (a, b) => (isNum(a) && isNum(b) && b > 0 ? Math.max(0, Math.min(100, (a / b) * 100)) : null);
 
 export const STAGE_LABEL = {
-  wikipedia_en: "Wikipedia (English)", wikipedia_ta: "Wikipedia (Tamil)", wikidata: "Wikidata record",
-  corruption_articles: "Corruption articles", finishing: "Finishing",
+  wikidata: "Wikidata", wikipedia_en: "Wikipedia EN", wikipedia_ta: "Wikipedia TA", corruption_articles: "Case articles", court_records: "Courts",
+  ed_records: "ED", dvac_records: "DVAC", cbi_records: "CBI", news_records: "News", finishing: "Finishing",
 };
+export const STAGE_ORDER = ["wikidata", "wikipedia_en", "wikipedia_ta", "corruption_articles", "court_records", "ed_records", "dvac_records", "cbi_records", "news_records"];
 export const PIPE_STAGES = ["collected", "raw", "kafka", "spark", "corpus", "neo4j", "chroma"];
 export const PIPE_LABEL = { collected: "Collected", raw: "Raw", kafka: "Kafka", spark: "Spark", corpus: "Corpus", neo4j: "Neo4j", chroma: "Chroma" };
 
@@ -89,26 +90,28 @@ export function buildStages(status) {
   const run = !!status && status.state === "running";
   const c = s.collector, r = s.raw, k = s.kafka, p = s.spark, q = s.corpus, n = s.neo4j, h = s.chroma;
   const upOf = (o) => (o ? (typeof o.up === "boolean" ? o.up : true) : null);
-  const bySrc = r && r.by_source ? Object.entries(r.by_source).filter(([, v]) => isNum(v)).map(([a, v]) => a + " " + fmtNum(v)).join(" · ") : null;
+  const loading = !status;
   const tokPct = q ? pct(q.clean_tokens, isNum(q.target_tokens) ? q.target_tokens : 1e9) : null;
+  // three headline numbers per stage: a card is small enough for all seven to stand in one row
   return [
+    ...[
     { id: "collector", title: "Collector", sub: "person by person", icon: "collector", up: c ? (run || status.state === "stopping" ? true : "idle") : null, tone: "navy",
-      rows: c ? [["Documents", fmtNum(c.documents)], ["Downloaded", fmtBytes(c.bytes)], ["Failed", fmtNum(c.failed)], ["Retries", fmtNum(c.retries)]] : null,
-      note: c && c.last && c.last.title ? "Last: " + c.last.title : "" },
+      rows: c ? [["Documents", fmtNum(c.documents)], ["Downloaded", fmtBytes(c.bytes)], ["Failed", fmtNum(c.failed)]] : null },
     { id: "raw", title: "Raw storage", sub: "kb_raw/", icon: "raw", up: r ? true : null, tone: "terra",
-      rows: r ? [["Files", fmtNum(r.files)], ["Size", fmtBytes(r.bytes)], ["Free disk", fmtBytes(r.free_disk_bytes)]] : null, note: bySrc || "" },
-    { id: "kafka", title: "Kafka", sub: k && k.topic ? k.topic : "kb.raw_documents", icon: "kafka", up: upOf(k), tone: "emerald",
-      rows: k ? [["Messages", fmtNum(k.messages)], ["Consumer lag", fmtNum(k.consumer_lag)]] : null, note: "" },
-    { id: "spark", title: "Spark", sub: "clean, split, dedupe", icon: "spark", up: upOf(p), tone: "terra",
-      rows: p ? [["Processed", fmtNum(p.processed_documents)], ["Skipped", fmtNum(p.skipped)], ["Failed", fmtNum(p.failed)], ["Dead letters", fmtNum(p.dead_letters)]] : null, note: "" },
+      rows: r ? [["Files", fmtNum(r.files)], ["Size", fmtBytes(r.bytes)], ["Free disk", fmtBytes(r.free_disk_bytes)]] : null },
+    { id: "kafka", title: "Kafka", sub: "message queue", icon: "kafka", up: upOf(k), tone: "emerald",
+      rows: k ? [["Messages", fmtNum(k.messages)], ["Waiting", fmtNum(k.consumer_lag)]] : null },
+    { id: "spark", title: "Spark", sub: "clean and split", icon: "spark", up: upOf(p), tone: "terra",
+      rows: p ? [["Processed", fmtNum(p.processed_documents)], ["Skipped", fmtNum(p.skipped)], ["Failed", fmtNum(p.failed)]] : null },
     { id: "corpus", title: "Corpus", sub: "Parquet passages", icon: "corpus", up: q ? true : null, tone: "navy",
-      rows: q ? [["Passages", fmtNum(q.passages)], ["Duplicates removed", fmtNum(q.duplicates_removed)], ["Files", fmtNum(q.files)]] : null,
-      bar: q ? { label: "Tokens", value: q.clean_tokens, target: isNum(q.target_tokens) ? q.target_tokens : 1e9, pct: tokPct } : null, note: "" },
+      rows: q ? [["Passages", fmtNum(q.passages)], ["Duplicates", fmtNum(q.duplicates_removed)]] : null,
+      bar: q ? { label: "Tokens", value: q.clean_tokens, target: isNum(q.target_tokens) ? q.target_tokens : 1e9, pct: tokPct } : null },
     { id: "neo4j", title: "Neo4j", sub: "knowledge base", icon: "graph", up: upOf(n), tone: "emerald",
-      rows: n ? [["Documents", fmtNum(n.documents)], ["Passages", fmtNum(n.passages)], ["People", fmtNum(n.people)], ["Entities", fmtNum(n.entities)], ["Relationships", fmtNum(n.relationships)]] : null, note: "" },
+      rows: n ? [["Documents", fmtNum(n.documents)], ["Entities", fmtNum(n.entities)], ["Relations", fmtNum(n.relationships)]] : null },
     { id: "chroma", title: "Chroma", sub: "vector search", icon: "vector", up: upOf(h), tone: "terra",
       rows: h ? [["Passages", fmtNum(h.passages)]] : null,
-      bar: h ? { label: "Embedded", value: null, target: null, pct: isNum(h.embedded_pct) ? Math.max(0, Math.min(100, h.embedded_pct)) : null } : null, note: "" },
+      bar: h ? { label: "Embedded", value: null, target: null, pct: isNum(h.embedded_pct) ? Math.max(0, Math.min(100, h.embedded_pct)) : null } : null },
+  ].map((st) => ({ ...st, loading })),
   ];
 }
 

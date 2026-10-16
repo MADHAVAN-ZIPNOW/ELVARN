@@ -64,10 +64,11 @@ def build_message(found, person, doc_id, sha, raw_path, size, labels_path=None):
 
 
 class PersonCollector:
-    def __init__(self, registry, wikimedia, archive, sink, should_stop=lambda: False, workers=WORKERS, say=print, sleep=time.sleep, index=None, s3=None, agency_fetcher=None, known_urls=None, folders=None, news_fetcher=None, article_fetcher=None):
+    def __init__(self, registry, wikimedia, archive, sink, should_stop=lambda: False, workers=WORKERS, say=print, sleep=time.sleep, index=None, s3=None, agency_fetcher=None, known_urls=None, folders=None, news_fetcher=None, article_fetcher=None, on_stage=None):
         self.registry, self.wm, self.archive, self.sink = registry, wikimedia, archive, sink
         self.index, self.s3 = index, s3                          # the official-records index (None: that stage finds nothing)
         self.agency_fetcher = agency_fetcher or Fetcher(delay=3.0)       # DVAC / CBI: robots.txt respected, a pause between requests
+        self.on_stage = on_stage or (lambda person, stage, wanted: None)      # called as each source starts and when the person ends (stage None)
         self.article_fetcher = article_fetcher                        # news sites: robots.txt respected, a pause between pages, small pages only (None: headlines only)
         self.news_fetcher = news_fetcher                              # GDELT: one request every 5 seconds, robots.txt respected (None: no news stage)
         self.known_urls = known_urls or (lambda: set())               # URLs the knowledge base already holds (any loader): never downloaded or stored again
@@ -232,6 +233,7 @@ class PersonCollector:
                 continue
             self.check_stop()
             self.registry.set_stage(person["key"], source)
+            self.on_stage(person, source, only)
             for attempt in range(1, STAGE_TRIES + 1):
                 try:
                     items = self.collect_source(source, person)
@@ -248,6 +250,7 @@ class PersonCollector:
             person["sources_done"].append(source)
             self.say(f"  {source}: {len(items)} file(s), {len(stored)} new")
         self.folders.sync_person(person)                                    # the person's own folder and manifest.json
+        self.on_stage(person, None, only)
 
     def run_targeted(self, key, stages):
         """One person, some stages, on request. The person's roster status is not touched (a half-collected person stays in line for the full run).
@@ -378,6 +381,17 @@ def run_process(limit=None, only=None, stages=None):
             s3 = None
         control.write({"message": "Collecting politician by politician." if not stages else "Collecting " + ", ".join(stages) + " for one person."})
         sync = StoreSync(say=lambda m: print(m, flush=True), registry=registry)
+        docs_before = registry.document_totals()["documents"]
+        began = {}
+
+        def on_stage(person, stage, wanted):
+            """Tell the dashboard (through the control file) which person and which source the collector is on right now."""
+            if stage is None:
+                control.write({"current": None})
+                return
+            began.setdefault(person["key"], now())
+            control.write({"current": {"key": person["key"], "name": person["name"], "party": person.get("party"), "stage": stage,
+                                       "wanted": list(wanted) if wanted else None, "since": began[person["key"]]}})
         sync.start()
         def known_urls():
             kb = KnowledgeBase.from_env()
@@ -390,7 +404,7 @@ def run_process(limit=None, only=None, stages=None):
             finally:
                 kb.close()
         collector = PersonCollector(registry, Wikimedia(), RawArchive(), KafkaSink(), should_stop=halt, say=lambda m: print(m, flush=True),
-                                    index=index if s3 is not None else None, s3=s3, known_urls=known_urls, news_fetcher=Fetcher(delay=5.0),
+                                    index=index if s3 is not None else None, s3=s3, known_urls=known_urls, news_fetcher=Fetcher(delay=5.0), on_stage=on_stage,
                                     article_fetcher=Fetcher(delay=3.0, max_bytes=3_000_000))
         try:
             outcome = collector.run_targeted(only, stages) if stages else collector.run(limit=limit, only=only)
@@ -399,15 +413,21 @@ def run_process(limit=None, only=None, stages=None):
         control.write({"message": "Syncing Chroma with what Spark has processed ..."})
         time.sleep(45)                                       # Spark is still working through the last messages
         sync.once()
-        message = {"done": "The roster is finished." if not limit else "Finished the requested people.",
-                   "stopped": "Stopped. Start again to resume with the same person.",
-                   "error": "Stopped after repeated failures (network or Wikimedia down). Start again to retry."}[outcome]
+        new_docs = registry.document_totals()["documents"] - docs_before
+        who = (registry.person(only) or {}).get("name", "") if only else ""
+        found = f"{new_docs} new document{'' if new_docs == 1 else 's'}"
+        if stages and outcome == "done":
+            message = f"Finished {', '.join(stages)} for {who}: {found}." + ("" if new_docs else " Nothing new was found: the sources have no matching record, or it was collected before.")
+        else:
+            message = {"done": "The roster is finished." if not limit else "Finished the requested people.",
+                       "stopped": "Stopped. Start again to resume with the same person.",
+                       "error": "Stopped after repeated failures (network or Wikimedia down). Start again to retry."}[outcome] + f" ({found} in this run.)"
     except Stopped:
         outcome, message = "stopped", "Stopped while indexing court records. Start again to continue."
     except Exception as exc:  # noqa: BLE001
         message = f"The collector stopped with an error: {exc}"
         print(message, flush=True)
-    control.write({"state": "idle" if outcome in ("done", "stopped") else "error", "pid": None, "stop_requested": False, "message": message})
+    control.write({"state": "idle" if outcome in ("done", "stopped") else "error", "pid": None, "stop_requested": False, "message": message, "current": None})
     return outcome
 
 
