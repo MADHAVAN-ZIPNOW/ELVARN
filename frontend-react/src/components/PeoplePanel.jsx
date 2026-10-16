@@ -20,6 +20,35 @@ function Steps({ cur }) {
   );
 }
 
+const TOPIC_NAME = { person: "profile", structured: "structured data", corruption: "case articles", court_record: "court records", agency_record: "agency records", news: "news" };
+
+/** One plain sentence: what the collector is doing for this person right now. */
+function doing(cur) {
+  const label = STAGE_LABEL[cur.stage];
+  if (!label) return "";
+  const n = cur.live && isNum(cur.live.documents) ? cur.live.documents : cur.docs;
+  return "Now reading " + label + " for " + (cur.name || "this person") + " (" + fmtNum(n) + " documents stored for them so far; ones already in the knowledge base are not stored twice).";
+}
+
+/** The real numbers for THIS person, source to store: documents -> Kafka -> Spark -> Neo4j (with passages) -> Chroma. */
+function Trail({ cur }) {
+  const l = cur.live;
+  if (!l) return <p className="pl-trail pl-na">Numbers for this person {NA}</p>;
+  const topics = Object.entries(l.topics || {}).map(([t, n]) => n + " " + (TOPIC_NAME[t] || t)).join(" · ");
+  const cells = [
+    ["Collected", fmtNum(l.documents), topics || "nothing yet"],
+    ["Sent to Kafka", fmtNum(l.kafka), l.already_in_kb ? l.already_in_kb + " were already in the knowledge base" : "new documents only"],
+    ["Cleaned by Spark", fmtNum(l.spark), "split into passages"],
+    ["In Neo4j", isNum(l.passages) ? fmtNum(l.passages) + " passages" : NA, isNum(l.neo4j_documents) ? l.neo4j_documents + " documents" : ""],
+    ["In Chroma", isNum(l.chroma_passages) ? fmtNum(l.chroma_passages) + " passages" : NA, isNum(l.passages) && isNum(l.chroma_passages) ? (l.passages - l.chroma_passages) + " waiting" : ""],
+  ];
+  return (
+    <ol className="pl-trail" aria-label={"Where the documents of " + (cur.name || "this person") + " are now"}>
+      {cells.map(([k, v, sub]) => <li key={k}><span className="pl-k">{k}</span><b>{v}</b><small>{sub}</small></li>)}
+    </ol>
+  );
+}
+
 /** Top of the Pipeline page: who is being collected right now and from which source, and what the last run said. */
 export function NowStrip({ current: cur, state, message, onOpen }) {
   return (
@@ -34,7 +63,8 @@ export function NowStrip({ current: cur, state, message, onOpen }) {
         ) : <span className="pl-curname idle">{state === "offline" ? "Computer offline" : "Waiting for you"}</span>}
       </div>
       {cur ? <Steps cur={cur} /> : null}
-      <p className="pl-nowmsg">{message}</p>
+      {cur ? <Trail cur={cur} /> : null}
+      <p className="pl-nowmsg">{cur ? doing(cur) + " " : ""}{message}</p>
     </section>
   );
 }

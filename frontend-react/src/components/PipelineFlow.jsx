@@ -26,6 +26,8 @@ function Connector({ rate, active, label }) {
   );
 }
 
+const UNIT = { collector: "documents", raw: "files", kafka: "messages", spark: "documents", corpus: "passages", neo4j: "passages", chroma: "passages" };
+
 function Stage({ st, rate, n }) {
   const down = st.up === false, unknown = st.up === null && !st.loading, idle = st.up === "idle";        // idle: the collector exists and is simply not running (not a fault)
   const state = unknown ? "unavailable" : idle ? "idle" : down ? "down" : "up";
@@ -50,7 +52,8 @@ function Stage({ st, rate, n }) {
           </div>
         </div>
       )}
-      {isNum(rate) && <p className="pl-rate">{(rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " / min"}</p>}
+      {isNum(rate) && <p className="pl-rate" title={"New " + (UNIT[st.id] || "items") + " arriving in this stage, per minute, measured from the last two updates"}>
+        {(rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " new " + (UNIT[st.id] || "items") + " per minute"}</p>}
     </article>
   );
 }

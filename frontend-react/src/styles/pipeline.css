@@ -42,7 +42,7 @@
 .pl-tabbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
 
 /* now collecting */
-.pl-now{display:grid;grid-template-columns:minmax(190px,.8fr) minmax(0,2.6fr);grid-template-areas:"who steps" "msg msg";gap:6px 20px;align-items:center;padding:12px 18px;border-radius:20px;background:var(--bg);box-shadow:var(--raise);flex:none}
+.pl-now{display:grid;grid-template-columns:minmax(190px,.8fr) minmax(0,2.6fr);grid-template-areas:"who steps" "trail trail" "msg msg";gap:6px 20px;align-items:center;padding:12px 18px;border-radius:20px;background:var(--bg);box-shadow:var(--raise);flex:none}
 .pl-now.live{box-shadow:var(--raise),0 0 0 2px rgba(14,138,95,.35)}
 .pl-nowwho{grid-area:who;display:flex;flex-direction:column;min-width:0}
 .pl-now .pl-steps{grid-area:steps}
@@ -203,7 +203,7 @@ dd.na{font-size:13px;font-weight:600;font-style:italic;color:var(--ink3)}
   .pl-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
   .pl-people{grid-template-columns:minmax(0,1fr)}
   .pl-side{display:none}
-  .pl-now{grid-template-columns:minmax(0,1fr);grid-template-areas:"who" "steps" "msg"}
+  .pl-now{grid-template-columns:minmax(0,1fr);grid-template-areas:"who" "steps" "trail" "msg"}
 }
 /* a phone is too small to fit a page into one screen: there the page may scroll up and down, and the pipeline row is swiped sideways */
 @media (max-width:760px),(max-height:520px){
@@ -255,3 +255,11 @@ dd.na{font-size:13px;font-weight:600;font-style:italic;color:var(--ink3)}
   .pl-now{padding:10px 12px}
   .pl-move.compact{display:none}
 }
+
+.pl-trail{grid-area:trail;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.pl-trail li{display:flex;flex-direction:column;min-width:0;padding:6px 10px;border-radius:12px;background:var(--bg);box-shadow:var(--raise-sm)}
+.pl-trail b{font-size:17px;color:var(--pl-navy,#1b2a6b)}
+.pl-trail small{font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:640px){.pl-trail{grid-template-columns:repeat(2,minmax(0,1fr))}.pl-trail small{display:none}}
+
+.pl-rate{text-transform:none!important;letter-spacing:0!important;font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

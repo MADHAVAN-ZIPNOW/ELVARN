@@ -234,6 +234,17 @@ class Registry:
         return self._all("SELECT d.doc_id, d.title, pd.topic, d.source, d.url, d.bytes, d.collected_at, d.raw_path, d.status FROM person_docs pd "
                          "JOIN documents d ON d.doc_id=pd.doc_id WHERE pd.person_key=? ORDER BY d.collected_at LIMIT ?", person_key, limit)
 
+    def person_flow(self, person_key):
+        """How far the documents of ONE person have travelled: counts per source label and per stage they were seen in."""
+        docs = self._all("SELECT d.doc_id, d.source, d.status, pd.topic FROM person_docs pd JOIN documents d ON d.doc_id=pd.doc_id WHERE pd.person_key=?", person_key)
+        stages = {r["stage"]: r["n"] for r in self._all(
+            "SELECT s.stage AS stage, COUNT(*) AS n FROM doc_stages s JOIN person_docs pd ON pd.doc_id=s.doc_id WHERE pd.person_key=? GROUP BY s.stage", person_key)}
+        topics = {}
+        for d in docs:
+            topics[d["topic"] or "other"] = topics.get(d["topic"] or "other", 0) + 1
+        return {"doc_ids": [d["doc_id"] for d in docs], "documents": len(docs), "topics": topics,
+                "already_in_kb": sum(1 for d in docs if d["status"] == "in_kb"), "stages": stages}
+
     def recent_documents(self, limit=40):
         return self._all("SELECT d.*, p.name AS person FROM documents d LEFT JOIN people p ON p.key=d.person_key ORDER BY d.collected_at DESC, d.rowid DESC LIMIT ?", limit)
 

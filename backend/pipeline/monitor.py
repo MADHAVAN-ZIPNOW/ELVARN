@@ -186,7 +186,8 @@ class Monitor:
     def observe(self, stats):
         """Record when recent documents were first seen in Spark, the corpus, Neo4j and Chroma. Returns nothing; reads are best effort."""
         recent = self.registry.recent_documents(30)
-        ids = [d["doc_id"] for d in recent]
+        cur = (control.read(self.control_path).get("current") or {}).get("key")
+        ids = list(dict.fromkeys([d["doc_id"] for d in recent] + (self.registry.person_flow(cur)["doc_ids"][:60] if cur else [])))     # the person on screen is followed too
         seen = self.registry.stages_of(ids)
         in_stats = {d for line in stats for d in (line.get("doc_ids") or [])}
         pending = [d for d in ids if not {"neo4j", "chroma"} <= set(seen[d])]
@@ -210,6 +211,25 @@ class Monitor:
         return [{"at": r["at"], "doc_id": r["doc_id"], "title": r["title"], "person": r["person"], "stage": r["stage"], "detail": ""}
                 for r in self.registry.stage_rows(50)]
 
+    # ---- the person being collected: where each of THEIR documents is now ------------------------------------
+    def person_live(self, key):
+        """Real numbers for one person: documents by topic, and how many reached Kafka, Spark, Neo4j (with passages) and Chroma."""
+        flow = self.registry.person_flow(key)
+        ids = flow.pop("doc_ids")
+        st = flow.pop("stages")
+        out = {**flow, "kafka": st.get("kafka", 0), "spark": st.get("spark", 0), "neo4j_documents": None, "passages": None, "chroma_passages": None}
+        kb = self.kb() if ids else None
+        if kb is not None:
+            def read():
+                rows = kb._read("MATCH (s:Source) WHERE s.doc_id IN $ids OPTIONAL MATCH (p:Passage)-[:FROM]->(s) "
+                                "RETURN count(DISTINCT s) AS docs, collect(p.id) AS pids", ids=ids)[0]
+                pids = [p for p in rows["pids"] if p]
+                rag = self.rag()
+                missing = _safe(lambda: rag.missing(pids), None) if (rag is not None and pids) else None
+                return {"neo4j_documents": rows["docs"], "passages": len(pids), "chroma_passages": None if missing is None else len(pids) - len(missing)}
+            out.update(self.cache.get("live:" + key + ":" + str(len(ids)), 3, lambda: _safe(read, {})))
+        return out
+
     # ---- people ------------------------------------------------------------------------------------------
     def people(self):
         counts = self.registry.counts()
@@ -219,7 +239,7 @@ class Monitor:
         if cur:                                                  # what the collector itself says it is doing (also for a one-person request)
             p = self.registry.person(cur["key"]) or {}
             current = {"key": cur["key"], "name": cur.get("name"), "party": cur.get("party"), "stage": cur.get("stage"), "docs": p.get("docs", 0),
-                       "since": cur.get("since"), "done": p.get("sources_done", []), "wanted": cur.get("wanted")}
+                       "since": cur.get("since"), "done": p.get("sources_done", []), "wanted": cur.get("wanted"), "live": _safe(lambda: self.person_live(cur["key"]))}
         row = self.registry._one("SELECT key, name, party, stage, docs, started_at FROM people WHERE status='in_progress' ORDER BY updated_at DESC LIMIT 1")
         if not current and row and running:
             current = {"key": row["key"], "name": row["name"], "party": row["party"], "stage": row["stage"] or "finishing", "docs": row["docs"],

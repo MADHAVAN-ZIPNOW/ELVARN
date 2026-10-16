@@ -22,7 +22,7 @@ function Totals({ status }) {
   const s = (status && status.stages) || {}, c = s.collector, q = s.corpus, r = s.raw;
   const NA = status ? NA_TEXT : "…";                                                // the first numbers are on their way
   const cells = [
-    ["Documents / min", c && isNum(c.per_minute) ? c.per_minute.toFixed(1) : NA],
+    ["Documents per minute", c && isNum(c.per_minute) ? c.per_minute.toFixed(1) : NA],
     ["Collected", c ? fmtBytes(c.bytes) : NA],
     ["Failures", c ? fmtNum(c.failed) : NA],
     ["Elapsed", status && isNum(status.elapsed_s) ? fmtDuration(status.elapsed_s) : NA],
