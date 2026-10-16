@@ -64,7 +64,7 @@ SUBJECTS = {
 _SUBJECT_RX = {name: re.compile(rx, re.I) for name, rx in SUBJECTS.items()}
 _WORD = r"(?:[A-Z][\w&()'\-]*|of|and|for|the)"
 _ACT = re.compile(rf"\b({_WORD}(?:\s+{_WORD}){{0,8}}\s+Act)\s*,?\s*(?:of\s+)?((?:18|19|20)\d{{2}})")
-_LEAD = {"in", "the", "under", "of", "by", "see", "and", "for", "to", "as", "per", "that", "this", "with", "section", "sections", "act"}
+_LEAD = {"interplay", "between", "in", "the", "under", "of", "by", "see", "and", "for", "to", "as", "per", "that", "this", "with", "section", "sections", "act"}
 
 
 def subjects_of(text):
@@ -74,7 +74,7 @@ def subjects_of(text):
 def statutes_of(text, limit=12):
     """The Acts named in the text, as 'Representation of the People Act, 1951' (each once, in order of appearance)."""
     out = []
-    for m in _ACT.finditer(re.sub(r"\s+", " ", text)):
+    for m in _ACT.finditer(re.sub(r"\s+", " ", re.sub(r"List of Acts", " ", text))):
         words = m.group(1).split()
         while words and words[0].lower() in _LEAD:
             words.pop(0)

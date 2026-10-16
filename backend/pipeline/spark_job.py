@@ -142,9 +142,10 @@ def process_batch(batch_df, batch_id):
     offsets = {str(r["partition"]): int(r["o"]) + 1 for r in batch_df.groupBy("partition").agg(F.max("offset").alias("o")).collect()}
     values = batch_df.selectExpr("CAST(value AS STRING) AS value").rdd.map(lambda r: r.value)
     values = values.repartition(int(os.environ.get("SPARK_PARALLEL", "8")))        # the topic has 3 partitions: spread the documents over every core
+    # collect(), not toLocalIterator(): the iterator runs ONE partition (one core) at a time, which capped the whole pipeline at about 11,000 tokens/s
     kb, cache = KnowledgeBase(), Memory.from_env()          # the graph, and the cache (new data clears it)
     try:
-        handle_results(values.map(_process).toLocalIterator(), kb, corpus.PassageIndex(CORPUS_DIR), make_parquet_writer(batch_df.sparkSession),
+        handle_results(values.map(_process).collect(), kb, corpus.PassageIndex(CORPUS_DIR), make_parquet_writer(batch_df.sparkSession),
                        CORPUS_DIR, batch_id, offsets, on_failure=_dead_letter, cache=cache)
     finally:
         kb.close()
