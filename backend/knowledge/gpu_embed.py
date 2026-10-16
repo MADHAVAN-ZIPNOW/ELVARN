@@ -39,16 +39,21 @@ def _remote(texts, url, timeout=120):
 
 
 def best_embedding_function():
-    """The default Chroma embedding function, answered by the GPU service while it is running."""
+    """The default Chroma embedding function, answered by the GPU service while it is running.
+    The GPU is tried FIRST on every call (a separate 'are you alive?' check timed out whenever the service was busy and silently sent the work to the
+    CPU); only a real failure moves a call to the CPU, and then the GPU is left alone for 30 seconds before it is tried again."""
+    import time
     from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 
     class GpuOrCpu(DefaultEmbeddingFunction):
+        down_until = 0.0
+
         def __call__(self, input):  # noqa: A002 - Chroma's parameter name
             texts = [str(t) for t in input]
-            if alive(timeout=0.3):
+            if URL != "off" and time.time() >= GpuOrCpu.down_until:
                 try:
                     return _remote(texts, URL)
-                except Exception:  # noqa: BLE001 - the service stopped half way: this call is done on the CPU
-                    pass
+                except Exception:  # noqa: BLE001 - the service is not running or failed: this call is done on the CPU
+                    GpuOrCpu.down_until = time.time() + 30
             return super().__call__(texts)
     return GpuOrCpu()
