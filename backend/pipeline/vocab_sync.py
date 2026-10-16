@@ -133,7 +133,8 @@ def run_once(corpus_dir=CORPUS, tokenizer=MAIN_TOKENIZER, text_out=TEXT_OUT, sta
     if steps and size + len(steps) <= max_vocab:
         original = tokenizer.with_name("tokenizer.original.json")
         if not original.exists():
-            original.write_text(tokenizer.read_text(encoding="utf-8"), encoding="utf-8")
+            import shutil
+            shutil.copyfile(tokenizer, original)                                 # a bit-exact backup of the vocabulary before the first growth
         tmp = tokenizer.with_suffix(".part")
         tmp.write_text(json.dumps(new_json, ensure_ascii=False, indent=2), encoding="utf-8")
         tmp.replace(tokenizer)                                                   # a half-written vocabulary is never visible
