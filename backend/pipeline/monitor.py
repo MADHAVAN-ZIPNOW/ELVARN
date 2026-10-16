@@ -65,6 +65,7 @@ class Monitor:
         self._kb, self._rag, self._own = kb, rag, {}
         self.raw_dir, self.corpus_dir, self.control_path = Path(raw_dir), Path(corpus_dir), control_path
         self.cache = Cache()
+        self._kafka_up = True
 
     # ---- connections (the server's own, or opened here on first use) -------------------------------------
     def kb(self):
@@ -124,14 +125,15 @@ class Monitor:
         def read():
             from confluent_kafka import Consumer, TopicPartition
             from backend.pipeline.kafka_io import BOOTSTRAP, TOPIC
-            c = Consumer({"bootstrap.servers": BOOTSTRAP, "group.id": "elvarn-monitor", "enable.auto.commit": False})
+            c = Consumer({"bootstrap.servers": BOOTSTRAP, "group.id": "elvarn-monitor", "enable.auto.commit": False, "log_level": 0})      # quiet while Kafka is stopped
             try:
                 meta = c.list_topics(TOPIC, timeout=3)
                 marks = {p: c.get_watermark_offsets(TopicPartition(TOPIC, p), timeout=3) for p in meta.topics[TOPIC].partitions}
             finally:
                 c.close()
             return TOPIC, marks
-        got = self.cache.get("kafka", 3, lambda: _safe(read))
+        got = self.cache.get("kafka", 3 if self._kafka_up else 20, lambda: _safe(read))                 # a stopped Kafka is asked about less often
+        self._kafka_up = got is not None
         if not got:
             return {"up": False, "topic": "kb.raw_documents", "messages": None, "consumer_lag": None}
         topic, marks = got

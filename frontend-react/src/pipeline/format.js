@@ -92,7 +92,7 @@ export function buildStages(status) {
   const bySrc = r && r.by_source ? Object.entries(r.by_source).filter(([, v]) => isNum(v)).map(([a, v]) => a + " " + fmtNum(v)).join(" · ") : null;
   const tokPct = q ? pct(q.clean_tokens, isNum(q.target_tokens) ? q.target_tokens : 1e9) : null;
   return [
-    { id: "collector", title: "Collector", sub: "person by person", icon: "collector", up: c ? run || status.state === "stopping" : null, tone: "navy",
+    { id: "collector", title: "Collector", sub: "person by person", icon: "collector", up: c ? (run || status.state === "stopping" ? true : "idle") : null, tone: "navy",
       rows: c ? [["Documents", fmtNum(c.documents)], ["Downloaded", fmtBytes(c.bytes)], ["Failed", fmtNum(c.failed)], ["Retries", fmtNum(c.retries)]] : null,
       note: c && c.last && c.last.title ? "Last: " + c.last.title : "" },
     { id: "raw", title: "Raw storage", sub: "kb_raw/", icon: "raw", up: r ? true : null, tone: "terra",

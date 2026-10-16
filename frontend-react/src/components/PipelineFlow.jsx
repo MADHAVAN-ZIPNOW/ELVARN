@@ -24,16 +24,16 @@ function Connector({ rate, active, label }) {
   );
 }
 
-function Stage({ st, rate }) {
-  const down = st.up === false, unknown = st.up === null;
-  const state = unknown ? "unavailable" : down ? "down" : "up";
+function Stage({ st, rate, n }) {
+  const down = st.up === false, unknown = st.up === null, idle = st.up === "idle";        // idle: the collector exists and is simply not running (not a fault)
+  const state = unknown ? "unavailable" : idle ? "idle" : down ? "down" : "up";
   return (
     <article className={"pl-card tone-" + st.tone + " " + state} aria-label={st.title + ": " + state}>
-      <header className="pl-chead">
+      <div className="pl-chead">
         <svg viewBox="0 0 24 24" className="pl-glyph" aria-hidden="true">{GLYPH[st.icon]}</svg>
-        <div className="pl-ctitle"><h3>{st.title}</h3><small>{st.sub}</small></div>
-        <span className={"pl-led " + state} role="img" aria-label={state === "up" ? "up" : state === "down" ? "down" : NA} title={state} />
-      </header>
+        <div className="pl-ctitle"><h3><span className="pl-step" aria-hidden="true">{n}</span>{st.title}</h3><small>{st.sub}</small></div>
+        <span className={"pl-led " + state} role="img" aria-label={state === "up" ? "up" : state === "down" ? "down" : state === "idle" ? "idle" : NA} title={state} />
+      </div>
       {st.rows ? (
         <dl className="pl-rows">
           {st.rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd className={v === NA ? "na" : ""}>{v}</dd></div>)}
@@ -49,7 +49,7 @@ function Stage({ st, rate }) {
         </div>
       )}
       {st.note ? <p className="pl-note" title={st.note}>{st.note}</p> : null}
-      <footer className="pl-rate">{isNum(rate) ? (rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " / min" : "rate " + NA}</footer>
+      {isNum(rate) && <p className="pl-rate">{(rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " / min"}</p>}
     </article>
   );
 }
@@ -65,7 +65,7 @@ export function PipelineFlow({ status, rates }) {
         return (
           <div className="pl-cell" key={st.id}>
             {prev && <Connector rate={rates[st.id]} active={ok} label={prev.title + " to " + st.title} />}
-            <Stage st={st} rate={rates[st.id]} />
+            <Stage st={st} rate={rates[st.id]} n={i + 1} />
           </div>
         );
       })}

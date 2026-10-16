@@ -38,7 +38,7 @@ export function PipelineDashboard({ ownerKey, onClose }) {
   const refreshKey = status && status.people ? (status.people.done || 0) + "/" + (status.people.failed || 0) : "";
   return (
     <section className={"pl-page st-" + state} id="pipelinePage" aria-label="Data collection dashboard">
-      <header className="pl-top">
+      <div className="pl-top">
         <div>
           <h2>Data collection</h2>
           <p className="pl-sub">{scope ? "Tamil Nadu politicians, " + scope.from_year + " to " + scope.to_year + ". One person at a time, then the next." : "Tamil Nadu politicians, one person at a time."}</p>
@@ -56,7 +56,7 @@ export function PipelineDashboard({ ownerKey, onClose }) {
           )}
           <button type="button" className="pl-btn" onClick={onClose}>Back to chat</button>
         </div>
-      </header>
+      </div>
       <div className="sr-only" role="status" aria-live="polite">{LABEL[state]}. {msg}</div>
       {msg && <p className={"pl-msg" + (stopping ? " warn" : "")}>{msg}</p>}
       {error && <p className="pl-msg err" role="alert">{error}{status ? " (showing the last known numbers)" : ""}</p>}

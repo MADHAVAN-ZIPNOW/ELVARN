@@ -39,52 +39,59 @@
 .pl-summary dd{font-size:20px;font-weight:800;margin:3px 0 0;font-variant-numeric:tabular-nums}
 dd.na{font-size:14px;font-weight:600;font-style:italic;color:var(--ink3)}
 
-/* the flow: cards joined by connectors. Vertical on narrow screens, one row on wide ones. */
-.pl-flow{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:6px 0}
-.pl-cell{display:flex;flex-direction:column;align-items:stretch;min-width:0}
-.pl-card{position:relative;padding:14px 14px 10px;border-radius:22px;background:var(--bg);box-shadow:var(--raise);display:flex;flex-direction:column;gap:8px;min-width:0;border-top:4px solid var(--tone);flex:1}
+/* the flow: cards in a wrapping grid (4, 2 or 1 per row); the connector sits in the gap before each card: sideways inside a row, downwards where a row starts */
+.pl-flow{--gap:36px;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gap);padding:6px 0}
+@media (min-width:640px){.pl-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1040px){.pl-flow{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.pl-cell{position:relative;display:flex;min-width:0}
+.pl-card{position:relative;padding:14px 16px 12px;border-radius:22px;background:var(--bg);box-shadow:var(--raise);display:flex;flex-direction:column;gap:8px;min-width:0;border-top:4px solid var(--tone);flex:1}
 .tone-navy{--tone:var(--pl-navy)}.tone-terra{--tone:var(--pl-terra)}.tone-emerald{--tone:var(--pl-emerald)}
 .pl-card.down{--tone:var(--pl-bad)}
+.pl-card.idle{--tone:var(--ink3)}
 .pl-card.unavailable{opacity:.72}
 .pl-chead{display:flex;align-items:center;gap:10px}
-.pl-glyph{width:34px;height:34px;flex:none;filter:drop-shadow(0 2px 1.5px rgba(40,25,10,.35))}
+.pl-glyph{width:36px;height:36px;flex:none;filter:drop-shadow(0 2px 1.5px rgba(40,25,10,.35))}
 .pl-ctitle{flex:1;min-width:0}
-.pl-ctitle h3{font-size:16px;line-height:1.2}
+.pl-ctitle h3{font-size:16px;line-height:1.2;margin:0}
 .pl-ctitle small{display:block;font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pl-led{width:12px;height:12px;border-radius:50%;flex:none;background:var(--ink3)}
 .pl-led.up{background:var(--pl-emerald);box-shadow:0 0 8px var(--pl-emerald)}
 .pl-led.down{background:var(--pl-bad);box-shadow:0 0 8px var(--pl-bad)}
-.pl-rows{display:flex;flex-direction:column;gap:3px;margin:0}
-.pl-rows>div{display:flex;justify-content:space-between;gap:8px;font-size:13px}
-.pl-rows dt{color:var(--ink2)}
-.pl-rows dd{margin:0;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.pl-led.idle{background:var(--ink3);box-shadow:none}
+.pl-rows{display:flex;flex-direction:column;gap:4px;margin:0}
+.pl-rows>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px}
+.pl-rows dt{color:var(--ink2);min-width:0}
+.pl-rows dd{margin:0;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;min-width:0;overflow-wrap:anywhere}
+.pl-rows dd.na{font-size:12px}
 .pl-na.pl-na{padding:2px 0}
-.pl-note{font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pl-rate{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--tone);margin-top:auto}
+.pl-note{font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0}
+.pl-rate{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--tone);margin:auto 0 0}
 .pl-barhead{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink2)}
 .pl-barhead b{color:var(--ink);font-variant-numeric:tabular-nums}
 .pl-meter{height:10px;border-radius:999px;background:var(--bg);box-shadow:var(--inset);overflow:hidden;margin-top:4px}
 .pl-meter.big{height:14px}
 .pl-meter span{display:block;height:100%;min-width:2px;border-radius:999px;background:linear-gradient(90deg,var(--pl-emerald),var(--pl-terra));transition:width .6s}
 
-/* connectors */
-.pl-conn{position:relative;flex:none;height:34px;width:100%;display:grid;place-items:center}
-.pl-track{position:absolute;left:50%;top:4px;bottom:4px;width:4px;margin-left:-2px;border-radius:2px;background:linear-gradient(180deg,var(--pl-navy),var(--pl-emerald));opacity:.85}
-.pl-conn.still .pl-track{opacity:.25;background:var(--ink3)}
-.pl-dot{position:absolute;left:50%;top:0;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--pl-dot);box-shadow:0 0 8px var(--pl-dot);animation:plflowy linear infinite}
-.pl-arrow{display:none;position:absolute;left:50%;bottom:2px;width:10px;height:10px;margin-left:-5px;border-right:3px solid var(--ink3);border-bottom:3px solid var(--ink3);transform:rotate(45deg)}
+/* connectors: horizontal in the gap to the left of a card ... */
+.pl-conn{position:absolute;left:calc(-1 * var(--gap));width:var(--gap);top:50%;height:0;pointer-events:none}
+.pl-track{position:absolute;left:3px;right:3px;top:-2px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--pl-navy),var(--pl-emerald));opacity:.85}
+.pl-conn.still .pl-track{opacity:.3;background:var(--ink3)}
+.pl-dot{position:absolute;left:0;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--pl-dot);box-shadow:0 0 8px var(--pl-dot);animation:plflowx linear infinite}
+.pl-arrow{display:none;position:absolute;right:0;top:-5px;width:10px;height:10px;border-right:3px solid var(--ink3);border-bottom:3px solid var(--ink3);transform:rotate(-45deg)}
+/* ... and downwards, above the card that starts a row (4 per row: the 5th; 2 per row: the 3rd, 5th, 7th; 1 per row: every card) */
+@media (max-width:639px){
+  .pl-cell .pl-conn{left:50%;top:calc(-1 * var(--gap));width:0;height:var(--gap)}
+  .pl-cell .pl-track{left:-2px;right:auto;top:3px;bottom:3px;width:4px;height:auto;background:linear-gradient(180deg,var(--pl-navy),var(--pl-emerald))}
+  .pl-cell .pl-dot{left:-5px;top:0;animation-name:plflowy}
+  .pl-cell .pl-arrow{left:-5px;right:auto;top:auto;bottom:2px;transform:rotate(45deg)}
+}
+/* when the cards wrap onto a second row (2 or 4 per row) no line is drawn from the end of one row to the start of the next: the step numbers show the order */
+@media (min-width:640px) and (max-width:1039px){.pl-cell:nth-child(2n+1) .pl-conn{display:none}}
+@media (min-width:1040px){.pl-cell:nth-child(4n+1) .pl-conn{display:none}}
+.pl-conn.still .pl-track{background:var(--ink3)!important}
 @keyframes plflowy{from{top:0;opacity:0}15%{opacity:1}85%{opacity:1}to{top:calc(100% - 10px);opacity:0}}
 @keyframes plflowx{from{left:0;opacity:0}15%{opacity:1}85%{opacity:1}to{left:calc(100% - 10px);opacity:0}}
 @keyframes plpulse{0%{box-shadow:0 0 0 0 rgba(14,138,95,.55)}70%{box-shadow:0 0 0 8px rgba(14,138,95,0)}100%{box-shadow:0 0 0 0 rgba(14,138,95,0)}}
-@media (min-width:1280px){
-  .pl-flow{flex-direction:row;align-items:stretch}
-  .pl-cell{flex-direction:row;flex:1 1 0}
-  .pl-conn{width:34px;height:auto;align-self:stretch}
-  .pl-track{left:3px;right:3px;top:50%;bottom:auto;height:4px;width:auto;margin:-2px 0 0;background:linear-gradient(90deg,var(--pl-navy),var(--pl-emerald))}
-  .pl-conn.still .pl-track{background:var(--ink3)}
-  .pl-dot{left:0;top:50%;margin:-5px 0 0;animation-name:plflowx}
-  .pl-arrow{left:auto;right:0;top:50%;bottom:auto;margin:-5px 0 0;transform:rotate(-45deg)}
-}
 @media (prefers-reduced-motion:reduce){
   .pl-dot{display:none}
   .pl-arrow{display:block}
@@ -199,3 +206,14 @@ dd.na{font-size:14px;font-weight:600;font-style:italic;color:var(--ink3)}
 .pl-tag{display:inline-block;margin-left:6px;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:1px 8px;border-radius:999px;background:var(--bg);box-shadow:var(--inset);color:var(--pl-terra);align-self:flex-start}
 .pl-tgroup h5{font-size:13px;display:flex;align-items:center;gap:8px;margin:6px 0}
 .pl-topic.t-court_record,.pl-topic.t-agency_record{color:var(--pl-terra)}
+
+/* step numbers on the cards: the order of the pipeline stays clear when the cards wrap onto a second row */
+.pl-step{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--tone);color:#fff;font-size:11px;font-weight:800;margin-right:7px;vertical-align:2px}
+/* the owner's header has one more button than a visitor's: on a phone it must not cover the wordmark */
+@media (max-width:470px){
+  .hdricons:has(#collectBtn){gap:4px}
+  .hdricons:has(#collectBtn) .icon-btn{width:36px;height:36px;border-radius:13px}
+  header:has(#collectBtn) .hdrbrandbox{gap:5px}
+  header:has(#collectBtn) .hdrbrandbox .wordmark3d{font-size:14px;letter-spacing:.05em}
+  header:has(#collectBtn) .hdrlogo{height:30px!important}
+}
