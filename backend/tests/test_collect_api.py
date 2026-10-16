@@ -45,13 +45,14 @@ def client(ckpt_dir, monitor):
 def test_everything_needs_the_owner_key(client):
     for method, path in (("get", "/api/collect/status"), ("post", "/api/collect/start"), ("post", "/api/collect/stop"), ("get", "/api/collect/people"),
                          ("get", "/api/collect/person/wd:Q0")):
-        assert getattr(client, method)(path).status_code == 403
-        assert getattr(client, method)(path, headers={"X-Owner-Key": "wrong-key-wrong-key-wrong"}).status_code == 403
+        assert getattr(client, method)(path).status_code in (403, 429)                           # 429 once the address has failed too often (see the throttle test)
+        assert getattr(client, method)(path, headers={"X-Owner-Key": "wrong-key-wrong-key-wrong"}).status_code in (403, 429)
 
 
-def test_the_public_site_has_no_collect_routes(ckpt_dir, monitor):
-    app = create_app(ckpt_dir, load_on_start=False, public=True, owner_key=OWNER["X-Owner-Key"], collect_service=monitor)
-    assert TestClient(app).get("/api/collect/status", headers=OWNER).status_code == 404
+def test_wrong_keys_are_throttled(client):
+    codes = [client.get("/api/collect/status", headers={"X-Owner-Key": "wrong-key-wrong-key-wrong"}).status_code for _ in range(10)]
+    assert codes[:8] == [403] * 8 and codes[8:] == [429, 429]
+    assert client.get("/api/collect/status", headers=OWNER).status_code == 429                  # even the right key waits: the address is locked for a while
 
 
 def test_status_has_the_contract_shape_and_degrades_stage_by_stage(client):

@@ -4,12 +4,12 @@ import { useState } from "react";
 const CHIPS = [["all", "All"], ["wikipedia", "Wikipedia"], ["wikidata", "Wikidata"], ["articles", "Case articles"], ["courts", "Courts"], ["ed", "ED"], ["cbi", "CBI"], ["dvac", "DVAC"], ["news", "News"]];
 const EXAMPLES = ["collect C. Joseph Vijay ED cases", "collect Karunanidhi Wikipedia", "collect J. Jayalalithaa CBI and court cases"];
 
-export function TargetedPanel({ running, busy, onSubmit }) {
+export function TargetedPanel({ running, offline, busy, onSubmit }) {
   const [text, setText] = useState("");
   const [picked, setPicked] = useState([]);
   const [result, setResult] = useState(null);
   const [wait, setWait] = useState(false);
-  const disabled = running || busy || wait;
+  const disabled = running || offline || busy || wait;
 
   const send = async (body) => {
     setWait(true);
@@ -50,6 +50,7 @@ export function TargetedPanel({ running, busy, onSubmit }) {
         {EXAMPLES.map((x) => <button key={x} type="button" className="pl-example" disabled={disabled} onClick={() => setText(x)}>{x}</button>)}
       </div>
       {running && <p className="pl-msg warn">A collection is running. Stop it first.</p>}
+      {offline && <p className="pl-msg warn">Your collection computer is offline, so nothing can be started from here.</p>}
       <div className={"pl-tmsg" + (result && !result.ok && !result.needs_choice ? " bad" : "")} role="status" aria-live="polite">{line}</div>
       {cands.length > 0 && (
         <ul className="pl-cands" aria-label="Which person do you mean?">

@@ -170,3 +170,20 @@ Any field may be `null` when the stage cannot be read (a store is down): the UI 
 * Only openly licensed or public-record sources: Wikipedia (English and Tamil, CC BY-SA), Wikidata (CC0), the existing government and court collectors.
   No news-site scraping, no login-only or private content.
 * The 1,000,000,000 clean-token target is a target to measure against, not a promise: the politician-wise sources cannot reach it alone.
+
+## 8. Pressing Start on the deployed site
+
+The collector needs Kafka, Spark, Neo4j, Chroma and the downloaded files, so it only ever runs on the owner's computer. To let the owner use the
+button on the deployed site anyway, that computer runs an **agent** (`python -m backend.pipeline.agent`, or `scripts/start_agent.ps1`):
+
+```
+owner's browser -> deployed site (backend/pipeline/bridge.py) <-- poll every 2 s -- agent on the owner's computer -> collector and stores
+```
+
+* The agent only makes outbound HTTPS calls (`POST /api/collect/agent/poll`, owner key in `X-Owner-Key`): it posts its status document and the answers to
+  earlier commands, and receives the waiting commands. Nothing on the computer is exposed.
+* Commands: `start`, `stop`, `targeted`, `people`, `person` (`backend/pipeline/remote_ops.py`). Anything else is refused.
+* On the deployed site the `/api/collect/*` routes show the agent's last status. With no report for 20 seconds the status is `state: "offline"`, the
+  dashboard says so and disables Start. Commands that wait longer than two minutes are dropped.
+* Wrong owner keys are throttled (8 per address, then 429 for ten minutes).
+* On the owner's own machine (`ELVARN_PUBLIC` off) the same routes run the collector directly and no agent is needed.

@@ -130,6 +130,29 @@ class SearchService:
         log.info("web_search status=%s results=%d ms=%d", status, len(sources), ms)
         return SearchOutcome(status, sources, MESSAGES[status], ms)
 
+    WAKE_PAUSE = 4.0
+
+    def _first_search(self, query, stale):
+        """One search. After a long idle the hosted search service is asleep and answers with quick errors (a 502 / 503 from the host, or a refused
+        connection) for 30 to 60 seconds: then keep trying, every few seconds, until the cold timeout is used up instead of giving up at once.
+        A refusal of our credentials is final and is never retried."""
+        if not (stale and self.cold_timeout):
+            return self.provider.search(query, self.max_results, self.timeout)
+        deadline = time.monotonic() + self.cold_timeout
+        while True:
+            left = deadline - time.monotonic()
+            try:
+                return self.provider.search(query, self.max_results, max(self.timeout, min(left, self.cold_timeout)))
+            except SearchRateLimited:
+                raise
+            except SearchUnavailable as exc:
+                if "credentials" in str(exc) or time.monotonic() + self.WAKE_PAUSE >= deadline:
+                    raise
+            except (SearchTimeout, SearchError):
+                if time.monotonic() + self.WAKE_PAUSE >= deadline:
+                    raise
+            time.sleep(self.WAKE_PAUSE)
+
     def _run(self, query, core=None):
         query = (query or "").strip()[:MAX_QUERY_CHARS]
         if not query:
@@ -138,7 +161,7 @@ class SearchService:
             return UNAVAILABLE, []
         try:
             stale = self._last_ok is None or time.monotonic() - self._last_ok > self.idle_seconds
-            raw = self.provider.search(query, self.max_results, max(self.timeout, self.cold_timeout or 0) if stale else self.timeout)
+            raw = self._first_search(query, stale)
             if raw:
                 self._last_ok = time.monotonic()
             if not raw:                                  # the search engines behind SearXNG are flaky from cloud servers: try once more

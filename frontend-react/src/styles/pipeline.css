@@ -16,6 +16,7 @@
 .pl-state.running i{background:var(--pl-emerald);box-shadow:0 0 0 0 var(--pl-emerald);animation:plpulse 1.6s infinite}
 .pl-state.stopping i{background:var(--pl-warn);animation:plpulse 1s infinite}
 .pl-state.error i{background:var(--pl-bad)}
+.pl-state.offline i{background:var(--pl-warn)}
 .pl-go{border:none;cursor:pointer;padding:16px 34px;border-radius:999px;font-weight:800;font-size:15px;letter-spacing:.09em;text-transform:uppercase;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.28);
   transition:transform .12s,filter .12s;position:relative}
 .pl-go.start{background:linear-gradient(180deg,#2fbf8d,#087a52);box-shadow:0 9px 20px rgba(14,138,95,.4),inset 0 1px 0 rgba(255,255,255,.6),inset 0 -4px 8px rgba(0,0,0,.2)}

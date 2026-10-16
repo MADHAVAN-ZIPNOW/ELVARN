@@ -1,0 +1,88 @@
+"""The agent that runs on the computer which does the collecting. It lets the owner press Start on the DEPLOYED site.
+
+    python -m backend.pipeline.agent [--site https://elvarn.onrender.com]
+
+It only makes outbound HTTPS calls to the site (nothing on this computer is opened to the internet), every call carries the owner key
+(OWNER_KEY in .env), and it understands exactly five commands: start, stop, targeted, people, person (see remote_ops.py). Leave it running;
+if the computer sleeps or the agent stops, the dashboard on the site says "offline" and nothing else is affected.
+"""
+import argparse
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+
+from backend.pipeline import remote_ops
+
+POLL_SECONDS = 2.0
+MAX_BACKOFF = 60.0
+
+
+class Agent:
+    def __init__(self, site, owner_key, monitor, post=None, say=print):
+        if len(owner_key or "") < 16:
+            raise ValueError("OWNER_KEY is missing or shorter than 16 characters")
+        self.url = site.rstrip("/") + "/api/collect/agent/poll"
+        self.key, self.monitor, self.say = owner_key, monitor, say
+        self.post = post or self._post
+        self.answers = []
+
+    def _post(self, payload):
+        req = urllib.request.Request(self.url, data=json.dumps(payload, default=str).encode("utf-8"),
+                                     headers={"Content-Type": "application/json", "X-Owner-Key": self.key, "User-Agent": "ELVARN-agent/1.0"})
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            return json.load(resp)
+
+    def step(self):
+        """One round: report the state, receive the waiting commands, run them. Returns how many commands ran."""
+        try:
+            report = self.monitor.status()
+        except Exception as exc:  # noqa: BLE001 - a broken stage must not silence the agent
+            report = None
+            self.say(f"status unavailable: {exc.__class__.__name__}: {str(exc)[:80]}")
+        reply = self.post({"report": report, "results": self.answers})
+        self.answers = []
+        commands = reply.get("commands") or []
+        for c in commands:
+            self.say(f"command {c.get('action')}")
+            self.answers.append({"seq": c["seq"], "result": remote_ops.run(self.monitor, c.get("action"), c.get("args"))})
+        return len(commands)
+
+    def run_forever(self, sleep=time.sleep):
+        wait = POLL_SECONDS
+        while True:
+            try:
+                ran = self.step()
+                wait = 0.2 if ran else POLL_SECONDS                      # answer a command at once
+            except (urllib.error.URLError, TimeoutError, ConnectionError, ValueError) as exc:
+                wait = min(MAX_BACKOFF, wait * 2 if wait >= POLL_SECONDS else POLL_SECONDS)
+                self.say(f"the site did not answer ({exc.__class__.__name__}); trying again in {wait:.0f}s")
+            sleep(wait)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--site", default=None, help="the deployed site, default PUBLIC_BASE_URL from .env")
+    a = ap.parse_args(argv)
+    try:
+        from dotenv import load_dotenv
+        from backend.pipeline import control
+        load_dotenv(control.REPO / ".env", override=False)
+    except ImportError:
+        pass
+    site = a.site or os.environ.get("PUBLIC_BASE_URL", "")
+    local = site.startswith(("http://127.0.0.1", "http://localhost"))              # a copy of the site on this computer (for testing)
+    if not (site.startswith("https://") or local):
+        raise SystemExit("Give the https address of the deployed site: --site https://... (or PUBLIC_BASE_URL in .env). The owner key is only sent over https.")
+    from backend.pipeline.monitor import Monitor
+    agent = Agent(site, os.environ.get("OWNER_KEY", ""), Monitor())
+    print(f"agent running for {site}; press Ctrl+C to stop", flush=True)
+    try:
+        agent.run_forever()
+    except KeyboardInterrupt:
+        print("agent stopped")
+
+
+if __name__ == "__main__":
+    main()

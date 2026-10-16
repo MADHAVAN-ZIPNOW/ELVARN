@@ -545,13 +545,95 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         got = request.headers.get("x-owner-key", "")
         return len(owner_secret) >= 16 and hmac.compare_digest(got.encode(), owner_secret.encode())
 
-    # ---- politician-by-politician data collection: owner only, and only on the machine that runs the stack (never on the public site)
-    if not public:
+    # ---- politician-by-politician data collection: owner only.
+    # On the owner's own machine the routes run the collector directly. On the deployed (public) site there is no collector: the owner's computer runs
+    # an agent (backend/pipeline/agent.py) that polls this site, and the routes below pass the owner's button presses to it and show what it reports.
+    collect_failures = {}
+
+    def collect_guard(request):
+        """Owner key or 403. Too many wrong keys from one address are answered 429 for ten minutes (the key is long, but nobody should be able to try)."""
+        who, now_ = visitor(request), time.time()
+        count, first = collect_failures.get(who, (0, now_))
+        if now_ - first > 600:
+            count, first = 0, now_
+        if count >= 8:
+            raise HTTPException(429, "Too many wrong keys. Try again later.")
+        if not owner_request(request):
+            collect_failures[who] = (count + 1, first)
+            raise HTTPException(403, "Not allowed.")
+        collect_failures.pop(who, None)
+
+    if public:
+        from backend.pipeline.bridge import CollectBridge       # standard library only: the hosted site carries no collector packages
+        bridge = CollectBridge()
+        ASK = 12.0                                              # seconds the site waits for the agent to answer a question
+
+        def with_request(request_obj):
+            return {**bridge.status(), "request": request_obj}
+
+        @app.get("/api/collect/status")
+        def collect_status(request: Request):
+            collect_guard(request)
+            return bridge.status()
+
+        @app.post("/api/collect/start")
+        def collect_start(request: Request):
+            collect_guard(request)
+            if not bridge.online():
+                return bridge.status()
+            bridge.enqueue("start")
+            return {**bridge.status(), "message": "Start sent to your collection computer."}
+
+        @app.post("/api/collect/stop")
+        def collect_stop(request: Request):
+            collect_guard(request)
+            if not bridge.online():
+                return bridge.status()
+            bridge.enqueue("stop")
+            return {**bridge.status(), "message": "Stop sent to your collection computer."}
+
+        @app.post("/api/collect/targeted")
+        def collect_targeted(request: Request, body: TargetedRequest):
+            collect_guard(request)
+            if not bridge.online():
+                return with_request({"ok": False, "message": "Your collection computer is offline. Start the agent there, then ask again."})
+            got = bridge.call("targeted", body.model_dump() if hasattr(body, "model_dump") else body.dict(), wait=ASK)
+            if got is None or "error" in (got or {}):
+                return with_request({"ok": False, "message": "Your collection computer did not answer in time." if got is None else got["error"]})
+            return with_request(got)
+
+        @app.get("/api/collect/people")
+        def collect_people(request: Request, status: Optional[str] = None, q: Optional[str] = None, limit: int = 50, offset: int = 0):
+            collect_guard(request)
+            got = bridge.call("people", {"status": status, "q": q, "limit": limit, "offset": offset}, wait=ASK)
+            if not isinstance(got, dict) or "items" not in got:
+                raise HTTPException(503, "Your collection computer did not answer (is the agent running?).")
+            return got
+
+        @app.get("/api/collect/person/{key:path}")
+        def collect_person(key: str, request: Request):
+            collect_guard(request)
+            got = bridge.call("person", {"key": key}, wait=ASK)
+            if got is None:
+                raise HTTPException(503, "Your collection computer did not answer (is the agent running?).")
+            if not got or "error" in got:
+                raise HTTPException(404, "Unknown person.")
+            return got
+
+        class AgentPoll(BaseModel):
+            report: Optional[dict] = None
+            results: Optional[list] = None
+
+        @app.post("/api/collect/agent/poll")
+        def collect_agent_poll(request: Request, body: AgentPoll):
+            """The agent's call: its latest status and answers in, the waiting commands out."""
+            collect_guard(request)
+            return {"commands": bridge.poll(body.report, body.results or [])}
+    else:
         collect_state = {"monitor": collect_service}
 
         def collect_monitor(request):
-            if not owner_request(request):
-                raise HTTPException(403, "Not allowed.")
+            collect_guard(request)
             if collect_state["monitor"] is None:
                 from backend.pipeline.monitor import Monitor            # imported here: the hosted site does not carry the pipeline's packages
                 collect_state["monitor"] = Monitor(kb=kb, rag=rag_store)
@@ -563,36 +645,25 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
 
         @app.post("/api/collect/start")
         def collect_start(request: Request):
+            from backend.pipeline import remote_ops
             monitor = collect_monitor(request)
-            from backend.pipeline import control
-            control.start(monitor.control_path)
+            remote_ops.start(monitor)
             return monitor.status()
 
         @app.post("/api/collect/stop")
         def collect_stop(request: Request):
+            from backend.pipeline import remote_ops
             monitor = collect_monitor(request)
-            from backend.pipeline import control
-            control.request_stop(monitor.control_path)
+            remote_ops.stop(monitor)
             return monitor.status()
 
         @app.post("/api/collect/targeted")
         def collect_targeted(request: Request, body: TargetedRequest):
             """'collect C. Joseph Vijay ED cases': one person, some sources only. Either a sentence (text), or the person and sources picked from the candidates."""
+            from backend.pipeline import remote_ops
             monitor = collect_monitor(request)
-            from backend.pipeline import collect_request, control
-            if control.is_running(monitor.control_path):
-                return {**monitor.status(), "request": {"ok": False, "message": "A collection is running. Stop it first (or wait), then ask again."}}
-            try:
-                plan = collect_request.plan(monitor.registry, body.text, body.person, body.sources)
-            except Exception as exc:  # noqa: BLE001 - Wikidata unreachable and the like
-                return {**monitor.status(), "request": {"ok": False, "message": f"Could not look the person up: {str(exc)[:120]}"}}
-            if not plan["ok"]:
-                return {**monitor.status(), "request": plan}
-            groups = [g for g in plan["sources"] if g != "all"]
-            extra = ("--person", plan["person"]["key"]) + (("--sources", ",".join(groups)) if groups else ())
-            wording = "all sources" if not groups else ", ".join(groups)
-            control.start(monitor.control_path, extra=extra, message=f"Collecting {wording} for {plan['person']['name']} ...")
-            return {**monitor.status(), "request": plan}
+            answer = remote_ops.targeted(monitor, body.model_dump() if hasattr(body, "model_dump") else body.dict())                # first (it may start the collector), then the status that shows it
+            return {**monitor.status(), "request": answer}
 
         @app.get("/api/collect/people")
         def collect_people(request: Request, status: Optional[str] = None, q: Optional[str] = None, limit: int = 50, offset: int = 0):

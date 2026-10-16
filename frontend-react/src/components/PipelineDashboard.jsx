@@ -6,7 +6,7 @@ import { PipelineFlow, MovementFeed } from "./PipelineFlow";
 import { TargetedPanel } from "./TargetedPanel";
 import { Overview, PersonDrawer, Roster } from "./PeoplePanel";
 
-const LABEL = { idle: "Idle", running: "Collecting", stopping: "Stopping", error: "Error" };
+const LABEL = { idle: "Idle", running: "Collecting", stopping: "Stopping", error: "Error", offline: "Computer offline" };
 
 function Summary({ status }) {
   const s = (status && status.stages) || {}, c = s.collector, q = s.corpus, r = s.raw;
@@ -32,7 +32,7 @@ export function PipelineDashboard({ ownerKey, onClose }) {
   const [rosterOpen, setRosterOpen] = useState(false);
   const closeDrawer = useCallback(() => setPerson(null), []);
   const state = runState(status);
-  const running = state === "running", stopping = state === "stopping";
+  const running = state === "running", stopping = state === "stopping", offline = state === "offline";      // offline: the deployed site cannot reach the collection computer
   const scope = status && status.scope;
   const msg = stopping ? "Stopping, finishing the current document" : (status && status.message) || (status ? "" : "Connecting to the collector…");
   const refreshKey = status && status.people ? (status.people.done || 0) + "/" + (status.people.failed || 0) : "";
@@ -50,7 +50,7 @@ export function PipelineDashboard({ ownerKey, onClose }) {
               {busy === "stop" || stopping ? "Stopping…" : "Stop collecting"}
             </button>
           ) : (
-            <button type="button" className="pl-go start" onClick={start} disabled={!!busy || !status} aria-busy={busy === "start"}>
+            <button type="button" className="pl-go start" onClick={start} disabled={!!busy || !status || offline} aria-busy={busy === "start"}>
               {busy === "start" ? "Starting…" : "Start collecting"}
             </button>
           )}
@@ -60,7 +60,7 @@ export function PipelineDashboard({ ownerKey, onClose }) {
       <div className="sr-only" role="status" aria-live="polite">{LABEL[state]}. {msg}</div>
       {msg && <p className={"pl-msg" + (stopping ? " warn" : "")}>{msg}</p>}
       {error && <p className="pl-msg err" role="alert">{error}{status ? " (showing the last known numbers)" : ""}</p>}
-      <TargetedPanel running={!!status && (status.running === true || running || stopping)} busy={!!busy} onSubmit={targeted} />
+      <TargetedPanel running={!!status && (status.running === true || running || stopping)} offline={offline} busy={!!busy} onSubmit={targeted} />
       <Summary status={status} />
       <PipelineFlow status={status} rates={rates} />
       <div className="pl-grid">

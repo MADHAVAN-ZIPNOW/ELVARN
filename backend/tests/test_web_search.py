@@ -3,6 +3,8 @@ import logging
 import pathlib
 
 import httpx
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -880,3 +882,50 @@ def test_no_second_wording_when_there_is_none():
     p = FakeProvider([])
     out = SearchService(p, retry_delay=0).search("paris capital")
     assert out.status == "no_results" and len(p.calls) == 2         # only the empty-answer retry, no extra wording
+
+
+# ---- a sleeping hosted search service: keep trying while it wakes -------------------------------------------------------------------------------
+class WakingProvider(SearchProvider):
+    """Answers with quick errors for the first `errors` calls (a sleeping Render service), then with results."""
+    name = "waking"
+
+    def __init__(self, errors, error_factory, results):
+        self.errors, self.error_factory, self.results, self.calls = errors, error_factory, results, 0
+
+    def is_configured(self):
+        return True
+
+    def search(self, query, count, timeout):
+        self.calls += 1
+        if self.calls <= self.errors:
+            raise self.error_factory()
+        return self.results
+
+
+@pytest.mark.parametrize("make_error", [lambda: SearchError("search server error 503"), lambda: SearchUnavailable("cannot connect to the search server"),
+                                        lambda: SearchTimeout("search server timed out")])
+def test_a_sleeping_search_service_is_waited_for_not_given_up_on(make_error, monkeypatch):
+    slept = []
+    monkeypatch.setattr("search.service.time.sleep", lambda s: slept.append(s))
+    p = WakingProvider(3, make_error, good_results())
+    out = SearchService(p, cold_timeout=70, retry_delay=0).search("latest news paris")
+    assert out.status == "used" and p.calls == 4 and slept[:3] == [4.0, 4.0, 4.0]
+
+
+def test_a_warm_service_is_not_retried_and_a_refused_token_is_final(monkeypatch):
+    monkeypatch.setattr("search.service.time.sleep", lambda s: None)
+    warm = WakingProvider(5, lambda: SearchError("search server error 503"), good_results())
+    svc = SearchService(warm, cold_timeout=70, retry_delay=0)
+    svc._last_ok = time.monotonic()                                                       # it answered a moment ago: it is awake
+    assert svc.search("latest news paris").status == "error" and warm.calls == 1
+    refused = WakingProvider(5, lambda: SearchUnavailable("search service refused the credentials"), good_results())
+    assert SearchService(refused, cold_timeout=70, retry_delay=0).search("latest news paris").status == "unavailable" and refused.calls == 1
+
+
+def test_the_wait_ends_when_the_cold_timeout_is_used_up(monkeypatch):
+    clock = {"t": 1000.0}
+    monkeypatch.setattr("search.service.time.monotonic", lambda: clock["t"])
+    monkeypatch.setattr("search.service.time.sleep", lambda s: clock.update(t=clock["t"] + s))
+    never = WakingProvider(10_000, lambda: SearchError("search server error 502"), [])
+    assert SearchService(never, cold_timeout=20, retry_delay=0).search("latest news paris").status == "error"
+    assert 4 <= never.calls <= 6                                                          # about 20 s of trying every 4 s, then it says so

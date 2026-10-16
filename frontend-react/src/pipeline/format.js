@@ -114,5 +114,5 @@ export function buildStages(status) {
 
 export function runState(status) {
   const st = status && status.state;
-  return st === "running" || st === "stopping" || st === "error" ? st : "idle";
+  return st === "running" || st === "stopping" || st === "error" || st === "offline" ? st : "idle";
 }
