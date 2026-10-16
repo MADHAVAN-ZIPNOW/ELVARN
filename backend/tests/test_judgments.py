@@ -160,3 +160,20 @@ def test_case_lifecycle_stage_and_petition_kind():
     assert law_tags.stage_of("dvac", "DVAC raids the house of the former minister") == "Investigation"
     assert law_tags.stage_rank("FIR") < law_tags.stage_rank("Chargesheet") < law_tags.stage_rank("High Court") < law_tags.stage_rank("Supreme Court") < law_tags.stage_rank("Final judgment")
     assert {"writ petition", "bail petition", "election petition"} <= set(law_tags.petitions_of("W.P.(MD) No. 5 of 2020: an election petition and a bail application"))
+
+
+def test_run_plan_judgments_then_politicians():
+    from backend.pipeline import remote_ops
+    assert judgments.should_chain("done", "people") and judgments.should_chain("full", "people")
+    assert not judgments.should_chain("stopped", "people") and not judgments.should_chain("error", "people") and not judgments.should_chain("done", None)
+    words, message = remote_ops.judgments_args({"mode": "judgments", "then": "people", "max_gb": 50})
+    assert words[-2:] == ["--then", "people"] and "50" in words and message.startswith("Step 1 of 2")
+    words, message = remote_ops.judgments_args({"mode": "judgments"})
+    assert "--then" not in words and not message.startswith("Step 1")
+
+
+def test_start_settings_are_checked_before_they_reach_the_command_line():
+    from backend.pipeline import remote_ops
+    words, _ = remote_ops.judgments_args({"scope": "; rm -rf /", "max_gb": 99999, "from_year": "abc", "topics": ["election", "$(evil)"], "then": "x; y"})
+    assert words[words.index("--scope") + 1] == "all" and words[words.index("--max-gb") + 1] == "500" and "--then" not in words
+    assert words[words.index("--topics") + 1] == "election"

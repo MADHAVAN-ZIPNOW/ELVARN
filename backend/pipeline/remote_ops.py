@@ -10,17 +10,22 @@ def judgments_args(args):
     from backend.pipeline import judgments
     args = args or {}
     scope = args.get("scope") if args.get("scope") in judgments.SCOPES else "all"
-    try:
-        gb = min(500.0, max(1.0, float(args.get("max_gb") or judgments.DEFAULT_GB)))
-        first = min(2026, max(judgments.FIRST_YEAR, int(args.get("from_year") or judgments.FIRST_YEAR)))
-        last = min(2026, max(first, int(args.get("to_year") or 2026)))
-    except (TypeError, ValueError):
-        gb, first, last = float(judgments.DEFAULT_GB), judgments.FIRST_YEAR, 2026
+    def number(value, default, low, high, cast):
+        try:
+            return min(high, max(low, cast(value if value not in (None, "") else default)))
+        except (TypeError, ValueError):
+            return default                                                            # one bad setting falls back alone; the others are kept
+    gb = number(args.get("max_gb"), float(judgments.DEFAULT_GB), 1.0, 500.0, float)
+    first = number(args.get("from_year"), judgments.FIRST_YEAR, judgments.FIRST_YEAR, 2026, int)
+    last = number(args.get("to_year"), 2026, first, 2026, int)
     topics = [t for t in (args.get("topics") or []) if t in judgments.SUBJECT_NAMES][:12] if isinstance(args.get("topics"), list) else []
     words = ["--max-gb", f"{gb:g}", "--scope", scope, "--from-year", str(first), "--to-year", str(last)]
     if topics:
         words += ["--topics", ",".join(topics)]
-    return words, f"Collecting court judgments from all of India ({scope}, {first}-{last}, up to {gb:g} GB" + (f", about {', '.join(topics)}" if topics else "") + ") ..."
+    then = args.get("then") == "people"                                          # run plan C: the politician collector follows by itself
+    if then:
+        words += ["--then", "people"]
+    return words, ("Step 1 of 2: " if then else "") + f"Collecting court judgments from all of India ({scope}, {first}-{last}, up to {gb:g} GB" + (f", about {', '.join(topics)}" if topics else "") + ") ..."
 
 
 def start(monitor, args=None):

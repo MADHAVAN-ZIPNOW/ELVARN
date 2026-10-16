@@ -270,7 +270,7 @@ class Monitor:
             "scope": {"from_year": 1947, "to_year": 2026}, "message": ctl.get("message", ""), "people": self.people(),
             "stages": {"collector": self.collector(), "raw": _safe(self.raw), "kafka": self.kafka(stats), "spark": self.spark(stats),
                        "corpus": self.corpus(stats), "neo4j": neo, "chroma": self.chroma(neo)},
-            "movement": self.movement(), "law": _safe(self.law), "mode": ctl.get("mode"), "at": now()}
+            "movement": self.movement(), "law": _safe(self.law), "mode": ctl.get("mode"), "then": ctl.get("then"), "at": now()}
 
     def people_page(self, status=None, q=None, limit=50, offset=0):
         total, rows = self.registry.people(status or None, q or None, max(1, min(int(limit), 200)), max(0, int(offset)))

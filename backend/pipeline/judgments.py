@@ -270,7 +270,13 @@ class JudgmentCollector:
 
 
 # ---- the process the Start button launches ------------------------------------------------------------------------
-def run_process(max_gb=DEFAULT_GB, scope="all", from_year=FIRST_YEAR, to_year=2026, topics=None):
+def should_chain(outcome, then):
+    """Run plan "judgments, then politicians": the second step starts by itself when the first one finished (or used its whole disk budget).
+    A Stop pressed by the owner ends the whole plan."""
+    return then == "people" and outcome in ("done", "full")
+
+
+def run_process(max_gb=DEFAULT_GB, scope="all", from_year=FIRST_YEAR, to_year=2026, topics=None, then=None):
     try:
         from dotenv import load_dotenv
         load_dotenv(control.REPO / ".env", override=False)
@@ -278,8 +284,8 @@ def run_process(max_gb=DEFAULT_GB, scope="all", from_year=FIRST_YEAR, to_year=20
         pass
     from backend.pipeline.person_collector import StoreSync
     registry = Registry()
-    control.write({"state": "running", "pid": os.getpid(), "started_at": now(), "stop_requested": False, "mode": "judgments", "budget_bytes": int(max_gb * 1024 ** 3),
-                   "message": "Collecting court judgments from all of India."})
+    control.write({"state": "running", "pid": os.getpid(), "started_at": now(), "stop_requested": False, "mode": "judgments", "budget_bytes": int(max_gb * 1024 ** 3), "then": then if then == "people" else None,
+                   "message": ("Step 1 of 2: " if then == "people" else "") + "Collecting court judgments from all of India."})
     stop = {"flag": False}
 
     def request(*_):
@@ -314,7 +320,11 @@ def run_process(max_gb=DEFAULT_GB, scope="all", from_year=FIRST_YEAR, to_year=20
     except Exception as exc:  # noqa: BLE001
         message = f"The judgments collector stopped with an error: {exc}"
         print(message, flush=True)
-    control.write({"state": "idle" if outcome in ("done", "stopped", "full") else "error", "pid": None, "stop_requested": False, "message": message, "current": None})
+    if should_chain(outcome, then):
+        control.write({"message": message + " Step 2 of 2: the politician-by-politician collector starts now.", "current": None, "then": None})
+        from backend.pipeline import person_collector
+        return person_collector.run_process()                              # the same Start/Stop control: it writes its own state, pid and message
+    control.write({"state": "idle" if outcome in ("done", "stopped", "full") else "error", "pid": None, "stop_requested": False, "message": message, "current": None, "then": None})
     return outcome
 
 
@@ -325,6 +335,7 @@ def main(argv=None):
     ap.add_argument("--scope", choices=SCOPES, default="all")
     ap.add_argument("--from-year", type=int, default=FIRST_YEAR)
     ap.add_argument("--to-year", type=int, default=2026)
+    ap.add_argument("--then", choices=["people"], default=None, help="when this run finishes, start the politician-by-politician collector")
     ap.add_argument("--topics", default="", help="only judgments about these subjects: " + ", ".join(SUBJECT_NAMES))
     a = ap.parse_args(argv)
     if a.command == "status":
@@ -332,7 +343,7 @@ def main(argv=None):
         print(r._one("SELECT COUNT(*) AS judgments, COALESCE(SUM(bytes),0) AS bytes FROM documents WHERE topic='judgment'"))
         return
     topics = [t for t in a.topics.split(",") if t]
-    sys.exit(0 if run_process(a.max_gb, a.scope, a.from_year, a.to_year, topics) in ("done", "stopped", "full") else 1)
+    sys.exit(0 if run_process(a.max_gb, a.scope, a.from_year, a.to_year, topics, a.then) in ("done", "stopped", "full") else 1)
 
 
 if __name__ == "__main__":

@@ -350,7 +350,7 @@ def run_process(limit=None, only=None, stages=None):
     except ImportError:
         pass
     registry = Registry()
-    control.write({"state": "running", "pid": os.getpid(), "started_at": now(), "stop_requested": False,
+    control.write({"state": "running", "pid": os.getpid(), "started_at": now(), "stop_requested": False, "mode": "people", "then": None,
                    "message": "Collecting politician by politician." if not stages else "Collecting " + ", ".join(stages) + " for one person."})
     stop = {"flag": False}
 

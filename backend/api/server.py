@@ -64,6 +64,7 @@ class StartRequest(BaseModel):
     from_year: Optional[int] = Field(default=None, ge=1947, le=2026)
     to_year: Optional[int] = Field(default=None, ge=1947, le=2026)
     topics: Optional[List[str]] = Field(default=None, max_length=12)
+    then: Optional[str] = Field(default=None, max_length=10)
 
 
 def start_args(body):

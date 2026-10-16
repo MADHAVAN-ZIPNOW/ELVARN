@@ -12,6 +12,7 @@ export function LawPanel({ status, running, offline, busy, onStart, onStop }) {
   const [gb, setGb] = useState(40);
   const [from, setFrom] = useState(1950), [to, setTo] = useState(2026);
   const [topics, setTopics] = useState([]);
+  const [plan, setPlan] = useState("judgments");                                          // "judgments" (A) or "then" (C: the politician collector follows)
   const law = status && status.law;
   const mine = !!law && law.running;                                                    // this kind of collection is the one running
   const other = running && !mine;                                                       // the politician collector is running instead
@@ -20,7 +21,7 @@ export function LawPanel({ status, running, offline, busy, onStart, onStop }) {
   const p = used === null ? null : pct(used, budget);
   const toggle = (id) => setTopics((t) => (t.includes(id) ? t.filter((x) => x !== id) : [...t, id]));
   const disabled = busy || offline || running;
-  const go = () => onStart({ mode: "judgments", scope, max_gb: Number(gb) || 40, from_year: Number(from) || 1950, to_year: Number(to) || 2026, topics });
+  const go = () => onStart({ mode: "judgments", scope, max_gb: Number(gb) || 40, from_year: Number(from) || 1950, to_year: Number(to) || 2026, topics, then: plan === "then" ? "people" : undefined });
   const courts = law && Array.isArray(law.courts) ? law.courts : [];
   return (
     <div className="pl-lawpage">
@@ -37,6 +38,11 @@ export function LawPanel({ status, running, offline, busy, onStart, onStop }) {
         <div className="pl-chips" role="group" aria-label="Only these subjects (none = everything)">
           {TOPICS.map(([id, label]) => <button key={id} type="button" className={"pl-srcchip" + (topics.includes(id) ? " on" : "")} aria-pressed={topics.includes(id)} disabled={disabled} onClick={() => toggle(id)}>{label}</button>)}
         </div>
+        <div className="pl-chips" role="group" aria-label="Run plan">
+          <button type="button" className={"pl-srcchip" + (plan === "judgments" ? " on" : "")} aria-pressed={plan === "judgments"} disabled={disabled} onClick={() => setPlan("judgments")}>Judgments only</button>
+          <button type="button" className={"pl-srcchip" + (plan === "then" ? " on" : "")} aria-pressed={plan === "then"} disabled={disabled} onClick={() => setPlan("then")}>Judgments, then politicians</button>
+        </div>
+        <p className="pl-sub">{plan === "then" ? "When the judgments are done, the politician-by-politician collector starts by itself. Stop ends both." : "Politicians only: use Start collecting at the top."}</p>
         <p className="pl-sub">{topics.length ? "Only judgments about the chosen subjects are kept." : "No subject chosen: every judgment is kept."} Each one is saved with its case name, number, court, year, judges, outcome and the Acts it cites.</p>
         <div className="pl-lawgo">
           {mine ? <button type="button" className="pl-go stop" disabled={busy} onClick={onStop}>Stop judgments</button>
@@ -46,7 +52,7 @@ export function LawPanel({ status, running, offline, busy, onStart, onStop }) {
         </div>
       </section>
       <section className="pl-panel pl-lawlive" aria-label="Judgments collected">
-        <h3 className="pl-h">Collected so far <small>{mine ? "running now" : "stopped"}</small></h3>
+        <h3 className="pl-h">Collected so far <small>{mine ? (status && status.then ? "step 1 of 2, running now" : "running now") : "stopped"}</small></h3>
         <dl className="pl-summary pl-lawsum">
           <div><dt>Judgments</dt><dd>{law ? fmtNum(law.documents) : NA}</dd></div>
           <div><dt>Disk used</dt><dd>{used === null ? NA : fmtBytes(used)}</dd></div>
