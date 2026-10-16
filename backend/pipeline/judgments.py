@@ -71,6 +71,14 @@ class Stopped(Exception):
     """The owner pressed Stop (or the disk budget is used up)."""
 
 
+class SourceDown(Exception):
+    """The open court data stopped answering (network, DNS, throttling). The run ends with an error and can simply be started again:
+    nothing that failed was marked as done."""
+
+
+MAX_FAILED_UNITS_IN_A_ROW = 15
+
+
 class JudgmentCollector:
     def __init__(self, registry, archive, sink, s3, plan_path=PLAN_PATH, should_stop=lambda: False, say=print, max_bytes=DEFAULT_GB * 1024 ** 3,
                  scope="all", from_year=FIRST_YEAR, to_year=2026, topics=None, workers=WORKERS, current_year=2026, on_unit=None, quotas=QUOTAS):
@@ -87,7 +95,8 @@ class JudgmentCollector:
         self.known = {r["url"] for r in registry._all("SELECT url FROM documents WHERE topic='judgment' AND url IS NOT NULL")}
         self.known |= {r["url"] for r in self.db.execute("SELECT url FROM seen")}
         self.used = registry._one("SELECT COALESCE(SUM(bytes),0) AS b FROM documents WHERE topic='judgment'")["b"]
-        self.counts = {"stored": 0, "no_text": 0, "off_topic": 0, "missing": 0, "duplicate": 0}
+        self.counts = {"stored": 0, "no_text": 0, "off_topic": 0, "missing": 0, "duplicate": 0, "failed": 0}
+        self.failed_units, self.down = 0, ""
 
     # -- the plan: which court / year / bench units exist ------------------------------------------------------
     def plan(self):
@@ -154,8 +163,10 @@ class JudgmentCollector:
     def fetch(self, row):
         try:
             data = self.s3.read(row["bucket"], row["key"])
-        except Exception:  # noqa: BLE001 - listed but not in the bucket
+        except FileNotFoundError:                                  # listed in the metadata but not in the bucket: remembered, never asked again
             return row, None, "", 0
+        except Exception:  # noqa: BLE001 - a network or throttling error: NOT remembered, the next run asks again
+            return row, "failed", "", 0
         try:
             text, pages = read_pdf(data)
         except Exception:  # noqa: BLE001 - a damaged PDF
@@ -229,8 +240,13 @@ class JudgmentCollector:
                     raise Stopped()
                 self.on_unit(f"{label}: {i} of {len(todo)} new", unit)
                 sent = []
-                for row, data, text, pages in pool.map(self.fetch, todo[i:i + BATCH]):
-                    if data is None:
+                results = list(pool.map(self.fetch, todo[i:i + BATCH]))
+                if len(results) >= 10 and sum(1 for r in results if r[1] == "failed") >= 0.8 * len(results):
+                    raise SourceDown("the court data stopped answering while downloading judgments")
+                for row, data, text, pages in results:
+                    if data == "failed":
+                        self.counts["failed"] += 1
+                    elif data is None:
                         self.counts["missing"] += 1
                         self.reject(row["url"], "missing")
                     elif len(text.strip()) < MIN_TEXT:
@@ -248,6 +264,12 @@ class JudgmentCollector:
     def run(self):
         """-> 'done', 'stopped' or 'full' (the disk budget is used up)."""
         try:
+            ping = getattr(self.s3, "ping", None)
+            if ping is not None:
+                try:
+                    ping()
+                except Exception as exc:  # noqa: BLE001
+                    raise SourceDown(f"the open court data cannot be reached ({exc.__class__.__name__}); check the internet connection") from exc
             self.on_unit("Listing courts and years (the first run takes a few minutes)", None)
             self.plan()
             for sweep, quota in enumerate(self.quotas):
@@ -256,10 +278,15 @@ class JudgmentCollector:
                         raise Stopped()
                     try:
                         self.do_unit(unit, None if unit["kind"] == "sc" else quota)
-                    except Stopped:
+                        self.failed_units = 0
+                    except (Stopped, SourceDown):
                         raise
-                    except Exception as exc:  # noqa: BLE001 - one unreadable unit must not stop the rest
-                        self.say(f"unit {unit['unit']} skipped: {exc.__class__.__name__}: {str(exc)[:80]}")
+                    except Exception as exc:  # noqa: BLE001 - one unreadable unit must not stop the rest, but it is NOT done: the next run tries it again
+                        self.failed_units += 1
+                        self.say(f"unit {unit['unit']} failed, will be retried: {exc.__class__.__name__}: {str(exc)[:80]}")
+                        if self.failed_units >= MAX_FAILED_UNITS_IN_A_ROW:
+                            raise SourceDown(f"{self.failed_units} court/year units in a row could not be read") from exc
+                        continue
                     self.db.execute("UPDATE plan SET sweep=? WHERE unit=?", (sweep, unit["unit"]))
                     self.db.commit()
                 self.say(f"sweep {sweep} finished: {self.counts}")
@@ -267,6 +294,10 @@ class JudgmentCollector:
         except Stopped:
             self.db.commit()
             return "full" if self.used >= self.max_bytes * 0.98 else "stopped"
+        except SourceDown as exc:
+            self.db.commit()
+            self.down = str(exc)
+            return "error"
 
 
 # ---- the process the Start button launches ------------------------------------------------------------------------
@@ -311,12 +342,17 @@ def run_process(max_gb=DEFAULT_GB, scope="all", from_year=FIRST_YEAR, to_year=20
             outcome = collector.run()
         finally:
             sync.done.set()
-        control.write({"message": "Syncing Chroma with what Spark has processed ..."})
-        time.sleep(45)
-        sync.once()
+        if outcome != "stopped":                              # a Stop must be quick: the sync runs again at the next start
+            control.write({"message": "Syncing Chroma with what Spark has processed ..."})
+            time.sleep(45)
+            sync.once()
+        else:
+            with sync.lock:                                  # let a pass that is already running finish (it rewrites Parquet files), start no new one
+                pass
         n = registry._one("SELECT COUNT(*) AS n FROM documents WHERE topic='judgment'")["n"] - before
         message = {"done": "All the judgments in the chosen courts and years are collected.", "stopped": "Stopped. Start again to carry on.",
-                   "full": f"The {max_gb:g} GB disk budget is used up. Start again with a bigger budget to carry on."}.get(outcome, "") + f" ({n} new judgments in this run.)"
+                   "full": f"The {max_gb:g} GB disk budget is used up. Start again with a bigger budget to carry on.",
+                   "error": f"Stopped: {collector.down}. Nothing was lost; press Start again when it is back."}.get(outcome, "") + f" ({n} new judgments in this run.)"
     except Exception as exc:  # noqa: BLE001
         message = f"The judgments collector stopped with an error: {exc}"
         print(message, flush=True)

@@ -49,7 +49,7 @@ class FakeSource:
     def read(self, bucket, key):
         self.reads.append(key)
         if key not in self.files:
-            raise OSError("missing")
+            raise FileNotFoundError("missing")
         return self.files[key]
 
 
@@ -177,3 +177,42 @@ def test_start_settings_are_checked_before_they_reach_the_command_line():
     words, _ = remote_ops.judgments_args({"scope": "; rm -rf /", "max_gb": 99999, "from_year": "abc", "topics": ["election", "$(evil)"], "then": "x; y"})
     assert words[words.index("--scope") + 1] == "all" and words[words.index("--max-gb") + 1] == "500" and "--then" not in words
     assert words[words.index("--topics") + 1] == "election"
+
+
+class FlakySource(FakeSource):
+    """The network fails: metadata and downloads raise something other than 'file not found'."""
+    broken = True
+
+    def metadata(self, path, wanted):
+        if self.broken:
+            raise OSError("AWS Error NETWORK_CONNECTION")
+        return super().metadata(path, wanted)
+
+    def read(self, bucket, key):
+        if self.broken:
+            raise OSError("AWS Error NETWORK_CONNECTION")
+        return super().read(bucket, key)
+
+
+def test_a_network_failure_is_never_remembered_as_done(tmp_path):
+    src = FlakySource(*source().__dict__.values()[:3]) if False else FlakySource(source().files, source().sc_rows, source().hc_rows)
+    c = collector(tmp_path, src)
+    assert c.run() == "done" and c.sink.sent == []                                   # nothing was readable, and nothing was stored
+    src.broken = False
+    again = collector(tmp_path, src)
+    assert again.run() == "done" and len(again.sink.sent) == 3                       # the failed units were NOT marked done: the next run reads them
+
+
+def test_many_failed_units_in_a_row_end_the_run_with_an_error(tmp_path):
+    src = FlakySource(source().files, source().sc_rows, source().hc_rows)
+    c = collector(tmp_path, src, from_year=2000, to_year=2020, current_year=2020)
+    c.s3.children = lambda bucket, prefix: ["court=33_10"] if prefix.endswith("/") and "court=" not in prefix else ["bench=b"]
+    assert c.run() == "error" and "in a row" in c.down
+
+
+def test_a_file_that_is_listed_but_missing_is_remembered_but_a_network_error_is_not(tmp_path):
+    src = source()
+    del src.files["data/pdf/year=2020/court=33_10/bench=mdubench/two.pdf"]
+    c = collector(tmp_path, src)
+    c.run()
+    assert c.counts["missing"] == 1 and c.counts["failed"] == 0

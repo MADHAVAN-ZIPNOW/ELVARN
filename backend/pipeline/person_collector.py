@@ -410,9 +410,13 @@ def run_process(limit=None, only=None, stages=None):
             outcome = collector.run_targeted(only, stages) if stages else collector.run(limit=limit, only=only)
         finally:
             sync.done.set()
-        control.write({"message": "Syncing Chroma with what Spark has processed ..."})
-        time.sleep(45)                                       # Spark is still working through the last messages
-        sync.once()
+        if outcome != "stopped":                              # a Stop must be quick: the sync runs again at the next start
+            control.write({"message": "Syncing Chroma with what Spark has processed ..."})
+            time.sleep(45)                                   # Spark is still working through the last messages
+            sync.once()
+        else:
+            with sync.lock:                                  # let a pass that is already running finish (it rewrites Parquet files), start no new one
+                pass
         new_docs = registry.document_totals()["documents"] - docs_before
         who = (registry.person(only) or {}).get("name", "") if only else ""
         found = f"{new_docs} new document{'' if new_docs == 1 else 's'}"

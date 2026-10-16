@@ -17,6 +17,7 @@ counts as in Neo4j when a Source with its doc_id exists, and in Chroma when all 
 import json
 import shutil
 import subprocess
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,17 +32,36 @@ SOURCES = ("web", "pdf", "upload", "dataset")
 
 
 class Cache:
-    """Tiny time-based cache so a 2-second dashboard poll does not walk the disk or query the stores every time."""
+    """Time-based cache so a 2-second dashboard poll does not walk the disk or query the stores every time.
+    Stale-while-revalidate: once a value exists, an expired one is returned AT ONCE and refreshed in a background thread, so one slow store
+    (Neo4j retrying a connection, Chroma busy embedding) can never hold up the whole status document. Only the very first read waits."""
 
     def __init__(self):
-        self.items = {}
+        self.items, self.running = {}, set()
+        self.lock = threading.Lock()
+
+    def _refresh(self, key, fn):
+        try:
+            value = fn()
+            with self.lock:
+                self.items[key] = (time.time(), value)
+        except Exception:  # noqa: BLE001 - keep serving the last good value
+            pass
+        finally:
+            with self.lock:
+                self.running.discard(key)
 
     def get(self, key, ttl, fn):
-        hit = self.items.get(key)
-        if hit and time.time() - hit[0] < ttl:
+        with self.lock:
+            hit = self.items.get(key)
+            if hit is not None and time.time() - hit[0] >= ttl and key not in self.running:
+                self.running.add(key)
+                threading.Thread(target=self._refresh, args=(key, fn), daemon=True).start()
+        if hit is not None:
             return hit[1]
         value = fn()
-        self.items[key] = (time.time(), value)
+        with self.lock:
+            self.items[key] = (time.time(), value)
         return value
 
 

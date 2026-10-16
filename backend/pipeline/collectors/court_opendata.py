@@ -84,9 +84,21 @@ class S3Source:
 
     def metadata(self, path, wanted):
         """The columns of a metadata table that exist in it (the schema differs a little between years), as a list of dicts."""
+        import pyarrow.fs as pafs
         import pyarrow.parquet as pq
-        names = set(pq.read_schema(path, filesystem=self.fs).names)
-        return pq.read_table(path, columns=[c for c in wanted if c in names], filesystem=self.fs).to_pylist()
+        try:
+            names = set(pq.read_schema(path, filesystem=self.fs).names)
+            return pq.read_table(path, columns=[c for c in wanted if c in names], filesystem=self.fs).to_pylist()
+        except OSError:
+            if self.fs.get_file_info(path).type == pafs.FileType.NotFound:       # this year/court has no metadata file: normal, nothing to read
+                return []
+            raise                                                                # anything else (network, throttling) is NOT "no data": the caller must retry later
+
+    def ping(self):
+        """Raises when the bucket cannot be reached at all (no internet, DNS, AWS down)."""
+        import pyarrow.fs as pafs
+        if self.fs.get_file_info(f"{SC_BUCKET}/metadata/parquet/year=2019/metadata.parquet").type == pafs.FileType.Unknown:
+            raise OSError("the court data bucket did not answer")
 
     def children(self, bucket, prefix):
         import pyarrow.fs as pafs
