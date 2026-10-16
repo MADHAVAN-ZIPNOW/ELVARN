@@ -271,3 +271,8 @@ dd.na{font-size:13px;font-weight:600;font-style:italic;color:var(--ink3)}
 .pl-ctitle small{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25}
 .pl-rate{font-size:12px!important}
 @media (max-height:760px){.pl-ctitle small{display:none}.pl-card{padding:8px 10px 8px;gap:3px}.pl-rows{gap:2px}.pl-rate{margin:0!important;font-size:11px!important}.pl-chead{align-items:center}}
+/* short windows: the cards keep their height; the less important blocks give way (nothing ever scrolls) */
+.pl-flow{min-height:150px}
+@media (max-height:780px){.pl-nowmsg{display:none}.pl-trail small{display:none}.pl-now{padding:8px 14px}.pl-now .pl-sub{display:none}}
+@media (max-height:680px){.pl-summary{display:none}.pl-move.compact{display:none}.pl-trail li{padding:4px 8px}}
+@media (max-height:560px){.pl-steps{display:none}.pl-trail{grid-template-columns:repeat(5,minmax(0,1fr))}.pl-ctitle small{display:none}}
