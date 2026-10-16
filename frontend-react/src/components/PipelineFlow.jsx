@@ -53,7 +53,7 @@ function Stage({ st, rate, n }) {
         </div>
       )}
       {isNum(rate) && <p className="pl-rate" title={"New " + (UNIT[st.id] || "items") + " arriving in this stage, per minute, measured from the last two updates"}>
-        {(rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " new " + (UNIT[st.id] || "items") + " per minute"}</p>}
+        {(rate < 10 ? rate.toFixed(1) : Math.round(rate)) + " per minute"}</p>}
     </article>
   );
 }
