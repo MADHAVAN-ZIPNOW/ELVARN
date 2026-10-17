@@ -35,11 +35,16 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+JUDGMENT_SUBJECTS = ("corruption", "election")   # which judgments the hosted copy carries (the subject tags of backend/pipeline/law_tags.py)
+JUDGMENT_PASSAGES_PER_CASE = 5                    # the first passages of a judgment (headnote and the start of the reasoning): more cases instead of more of one. Measured: 15 per case (31,647 passages) was killed by the 512 MB limit under load, 5 (18,103 passages) stays under 380 MB with 4 questions at a time
+JUDGMENT_REASON = "judgments (corruption + election, first %d passages of each)" % JUDGMENT_PASSAGES_PER_CASE
+
+
 def select_passage_ids(kb):
     """Ids of the passages the hosted vector store should hold, with the reason (for the report)."""
     from backend.knowledge.ingest_wikipedia import is_relevant       # only the exporting machine needs this (the image does not contain it)
-    ids, reasons = [], {"official": 0, "project notes/files": 0, "wikipedia (Tamil Nadu + corruption)": 0}
-    rows = kb._read("MATCH (s:Source)<-[:FROM]-(p:Passage) RETURN s.id AS sid, s.doc_type AS t, s.publisher AS pub, "
+    ids, reasons = [], {"official": 0, "project notes/files": 0, "wikipedia (Tamil Nadu + corruption)": 0, JUDGMENT_REASON: 0}
+    rows = kb._read("MATCH (s:Source)<-[:FROM]-(p:Passage) WHERE s.doc_type <> 'judgment' RETURN s.id AS sid, s.doc_type AS t, s.publisher AS pub, "
                     "collect(p.id) AS ids, collect(p.text) AS texts ORDER BY sid")      # one row per DOCUMENT (never per type)
     for r in rows:
         if r["t"] == "news":
@@ -54,6 +59,13 @@ def select_passage_ids(kb):
             continue
         ids.extend(r["ids"])
         reasons[reason] += len(r["ids"])
+    cases = kb._read("MATCH (s:Source {doc_type: 'judgment'}) WHERE any(x IN coalesce(s.subjects, []) WHERE x IN $subjects) "
+                     "MATCH (s)<-[:FROM]-(p:Passage) WITH s, p ORDER BY p.position "
+                     "WITH s, collect(p.id)[0..$cap] AS ids RETURN s.id AS sid, ids ORDER BY sid",
+                     subjects=list(JUDGMENT_SUBJECTS), cap=JUDGMENT_PASSAGES_PER_CASE)
+    for r in cases:
+        ids.extend(r["ids"])
+        reasons[JUDGMENT_REASON] += len(r["ids"])
     return sorted(set(ids)), reasons
 
 

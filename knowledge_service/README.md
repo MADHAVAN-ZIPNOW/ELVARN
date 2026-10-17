@@ -18,15 +18,15 @@ The chat site needs no neo4j / chromadb / redis packages and no embedding model.
 
 ## How it works, and the one trade-off
 Neo4j needs a Java process that does not fit in a free 512 MB container. So the hosted service serves a **read-only snapshot** of your
-knowledge base (`knowledge_service/snapshot/`, about 14 MB, committed to the repo):
+knowledge base (`knowledge_service/snapshot/`, about 31 MB, committed to the repo):
 
 | File | Content |
 |---|---|
-| `graph.jsonl.gz` | the lean graph exported from Neo4j: official documents, proposed + approved facts, entities (7,024 nodes) |
-| `passages.jsonl.gz` + `vectors.npz` | 9,781 passages with their embeddings: all official documents, your own notes, and the Wikipedia articles about Tamil Nadu corruption |
+| `graph.jsonl.gz` | the lean graph exported from Neo4j: official documents, proposed + approved facts, entities (13,233 nodes; judgments are not in the graph, no fact cites them) |
+| `passages.jsonl.gz` + `vectors.npz` | 18,103 passages with their embeddings: all official documents, your own notes, the Wikipedia articles about Tamil Nadu corruption, and the first 5 passages of every Supreme Court judgment on corruption or elections (8,384 passages from 1,862 judgments) |
 | `manifest.json` | counts and a checksum of each file (checked at build and start) |
 
-Left out of the hosted copy: general Wikipedia (the live web search answers general questions). **Your Neo4j + Chroma on your computer stay the
+Left out of the hosted copy: the other 168,000 judgment passages (they stay in your local stores), general Wikipedia (the live web search answers general questions). **Your Neo4j + Chroma on your computer stay the
 source of truth**; the snapshot is rebuilt from them. A test runs Neo4j and the in-memory graph on the same data and requires identical answers.
 
 ## Deploy it exactly like the search service (Render dashboard)
@@ -37,7 +37,7 @@ source of truth**; the snapshot is rebuilt from them. A test runs Neo4j and the 
 | Root directory | leave **empty** (the build needs `backend/knowledge`, `backend/usermemory` and `knowledge_service` from the repo root) |
 | Dockerfile path | `knowledge_service/Dockerfile` |
 | Branch | `main` |
-| Plan | **Free** (512 MB). Measured with a hard 512 MB limit: 190 MB idle, 237 MB after queries, ready in 2 seconds |
+| Plan | **Free** (512 MB). Measured with a hard 512 MB limit: 195 MB idle, about 355 MB under load (18,103 passages), ready in 2 seconds |
 | Health check path | `/healthz` |
 | Env `KNOWLEDGE_TOKEN` | secret, long random (for example `openssl rand -hex 32`), at least 24 characters. **The only setting it needs.** |
 | Optional env | `KNOWLEDGE_RATE_PER_MINUTE` (default 120), `KNOWLEDGE_MAX_CONCURRENT` (default 4) |
@@ -82,7 +82,7 @@ Render rebuilds the knowledge service from the new commit. Nothing runs on Rende
 | | |
 |---|---|
 | Image | about 1.9 GB (the embedding runtime and the 80 MB model are inside) |
-| Memory | 190 MB idle, 237 MB after queries, never killed |
+| Memory | 195 MB idle, about 355 MB under load (4 questions at a time, about 180 queries, no growth), never killed. **Do not add much more:** with 31,647 passages (15 per judgment) the same test was killed by the 512 MB limit as soon as 2 questions ran at once |
 | Start | ready in 2 seconds (the vectors are loaded when the image is built) |
 | Speed | 0.2 to 0.45 s per question |
 | Agreement with your local Neo4j + Chroma | the same top source on 9 of 10 test questions; the tenth was a vague 3-word question where the two returned different loosely related passages |

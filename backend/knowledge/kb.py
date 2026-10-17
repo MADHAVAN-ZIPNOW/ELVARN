@@ -600,22 +600,33 @@ class KnowledgeBase:
 
     def export_jsonl(self, path, skip_reference=False):
         """Portable backup: every node and relationship as JSON lines (restore with import_jsonl). Returns counts.
-        skip_reference=True leaves out reference documents (Wikipedia, project notes) and news documents (copyrighted articles) and their passages
-        unless a fact cites them: the hosted graph then stays small, and those passages are served by the vector store alone."""
-        nodes = rels = 0
+        skip_reference=True leaves out reference documents (Wikipedia, project notes), news documents (copyrighted articles) and court judgments
+        (hundreds of thousands of passages, no facts cite them) and their passages unless a fact cites them: the hosted graph then stays small,
+        and those passages are served by the vector store alone."""
         drop = []
         if skip_reference:
             drop = [r["id"] for r in self._read(
-                "MATCH (s:Source) WHERE s.doc_type IN ['reference', 'news'] AND NOT EXISTS { MATCH (s)<-[:FROM]-(:Passage)<-[:SUPPORTED_BY]-() } RETURN s.id AS id")]
-        with open(path, "w", encoding="utf-8") as f, self._session() as s:
-            for r in s.run(f"MATCH (n) WHERE {self._KEEP.format(x='n')} RETURN elementId(n) AS id, labels(n) AS labels, properties(n) AS props", drop=drop):
-                f.write(json.dumps({"node": r["id"], "labels": r["labels"], "props": r["props"]}, ensure_ascii=False) + "\n")
-                nodes += 1
-            for r in s.run(f"MATCH (a)-[r]->(b) WHERE {self._KEEP.format(x='a')} AND {self._KEEP.format(x='b')} "
-                           "RETURN elementId(a) AS a, type(r) AS type, elementId(b) AS b, properties(r) AS props", drop=drop):
-                f.write(json.dumps({"rel": r["type"], "from": r["a"], "to": r["b"], "props": r["props"]}, ensure_ascii=False) + "\n")
-                rels += 1
-        return {"nodes": nodes, "relationships": rels}
+                "MATCH (s:Source) WHERE s.doc_type IN ['reference', 'news', 'judgment'] AND NOT EXISTS { MATCH (s)<-[:FROM]-(:Passage)<-[:SUPPORTED_BY]-() } RETURN s.id AS id")]
+        with self._session() as s:
+            node_rows = [{"node": r["id"], "labels": r["labels"], "props": r["props"]} for r in s.run(
+                f"MATCH (n) WHERE {self._KEEP.format(x='n')} RETURN elementId(n) AS id, labels(n) AS labels, properties(n) AS props", drop=drop)]
+            rel_rows = [{"rel": r["type"], "from": r["a"], "to": r["b"], "props": r["props"]} for r in s.run(
+                f"MATCH (a)-[r]->(b) WHERE {self._KEEP.format(x='a')} AND {self._KEEP.format(x='b')} "
+                "RETURN elementId(a) AS a, type(r) AS type, elementId(b) AS b, properties(r) AS props", drop=drop)]
+        if skip_reference:                                   # judges, parties and dates read out of judgments: with their documents gone nothing links to them
+            linked = {r["from"] for r in rel_rows} | {r["to"] for r in rel_rows}
+            lone = [n for n in node_rows if n["node"] not in linked and "Entity" in n["labels"] and n["props"].get("first_passage_id")]
+            from_judgments = set()
+            for i in range(0, len(lone), 5000):
+                from_judgments |= {r["id"] for r in self._read(
+                    "MATCH (p:Passage)-[:FROM]->(:Source {doc_type: 'judgment'}) WHERE p.id IN $ids RETURN p.id AS id",
+                    ids=[n["props"]["first_passage_id"] for n in lone[i:i + 5000]])}
+            skip = {n["node"] for n in lone if n["props"]["first_passage_id"] in from_judgments}
+            node_rows = [n for n in node_rows if n["node"] not in skip]
+        with open(path, "w", encoding="utf-8") as f:
+            for row in node_rows + rel_rows:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        return {"nodes": len(node_rows), "relationships": len(rel_rows)}
 
     def import_jsonl(self, path, batch=1000):
         """Restore an export_jsonl backup into THIS graph (used to move the data to a hosted Neo4j). The target must be EMPTY.
