@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 
 from backend.knowledge import rag
 from backend.knowledge.kb import CORRUPTION_WORDS
+from backend.knowledge.quotes import select_quotes
 from backend.knowledge.reranker import sigmoid
 
 log = logging.getLogger("elvarn.graphrag")
@@ -56,18 +57,19 @@ class Context:
     items: list = field(default_factory=list)          # ranked; each: kind, text, score, source{...}, level
     understanding: Understanding = None
     notes: list = field(default_factory=list)          # which branch failed, cache hit ...
+    quotes: list = None                                # the best sentences of the final items (backend/knowledge/quotes.py); None = not computed (no reranker)
 
     def facts(self):
         return [i for i in self.items if i["kind"] == "fact"]
 
     def to_dict(self):
         u = self.understanding
-        return {"items": self.items, "notes": self.notes,
+        return {"items": self.items, "notes": self.notes, "quotes": self.quotes,
                 "u": {"question": u.question, "resolved": u.resolved, "entities": u.entities, "intent": u.intent, "terms": u.terms, "followup": u.followup}}
 
     @classmethod
     def from_dict(cls, d):
-        return cls(items=d["items"], notes=d.get("notes", []) + ["cache"], understanding=Understanding(**d["u"]))
+        return cls(items=d["items"], notes=d.get("notes", []) + ["cache"], quotes=d.get("quotes"), understanding=Understanding(**d["u"]))
 
 
 # ---- 1. query understanding ------------------------------------------------------------------------
@@ -239,6 +241,8 @@ def build_context(kb, store, question, memory=None, session=None, max_items=5):
     if not in_domain(u.question, items):                   # outside the corruption domain only strong hits are worth showing the model
         items = [i for i in items if i["score"] >= OFF_DOMAIN_MIN]
     ctx = Context(items=items, understanding=u, notes=notes)
+    if items and getattr(store, "reranker", None) is not None and os.environ.get("ELVARN_EXPLAIN", "0") == "1":
+        ctx.quotes = select_quotes(u.resolved, items, store.reranker)           # the sentences the explanation layer may use; the items are untouched
     if memory is not None and not notes:                   # never cache a partial result
         memory.put_context(cache_key(u.resolved), ent_ids, ctx.to_dict())
     return ctx

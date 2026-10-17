@@ -1,0 +1,40 @@
+{
+  "questions": 100,
+  "records_only_hit": 58,
+  "styles": {
+    "instructions": {
+      "generated": 97,
+      "passed_validation": 18,
+      "answered": 16,
+      "partial": 2,
+      "not_enough_evidence_no_quote": 1,
+      "disabled": 2,
+      "contains_right_fact": 10,
+      "wrong_refusals": 28,
+      "right_sentence_among_quotes_given": 49,
+      "rejected_by_reason": {
+        "refusal although relevant quotes exist": 52,
+        "claim without a citation": 20,
+        "failed the grounding check": 7
+      }
+    },
+    "native": {
+      "generated": 97,
+      "passed_validation": 46,
+      "answered": 43,
+      "partial": 3,
+      "not_enough_evidence_no_quote": 1,
+      "disabled": 2,
+      "contains_right_fact": 25,
+      "wrong_refusals": 7,
+      "right_sentence_among_quotes_given": 49,
+      "rejected_by_reason": {
+        "claim without a citation": 13,
+        "failed the grounding check": 20,
+        "refusal although relevant quotes exist": 12,
+        "unsupported claim": 4,
+        "citation [1] is not one of the quotes given to the model": 2
+      }
+    }
+  }
+}

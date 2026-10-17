@@ -175,6 +175,18 @@ Colourful (cyan, indigo, rose) responsive chat for desktop and phone. While ELVA
 service. Settings (temperature, max tokens, top-k, greedy, voice, speed,
 listening language) are in the ⚙️ panel.
 
+## Stored-record answers and the grounded explanation
+When the stored records (Chroma + Neo4j graph) return something, **plain code prints every retrieved record**, word for word, numbered, with its source (`stored_answer` in `backend/api/server.py`). The model never decides whether the records answer the question and can never hide or change them. The retrieval is: vectors + BM25 keywords (`knowledge/lexical.py`) fused by rank, an exact "Section N of the Act" boost, then a cross-encoder reranker (`knowledge/reranker.py`).
+
+An **optional explanation** can be added (`backend/api/explain.py`, prompts in `explain_prompts.py`); it is **off unless `ELVARN_EXPLAIN=1`**:
+1. *Quotes by code*: the cross-encoder scores every sentence of the final records (`knowledge/quotes.py`, at most 8 quotes, none below the neutral score); they travel with the retrieval context.
+2. *The model* sees only the 1-3 shortest high-scoring quotes and writes one claim per line, each with its citation like `[2]` (a line format, not JSON: the 24M model cannot write JSON).
+3. *Python validates*: every claim cited, every citation one of the quotes given, every claim's words found in what it cites, no refusal, not empty, at most 180 words, the grounding check. A claim the model forgot to cite gets its citation from the code when its words are clearly one quote's. Anything that fails is dropped (the reason is logged) and only the records are shown.
+
+New fields in the chat reply (nothing existing is changed): `records` (the shown records as data), `explanation` (`{status, answer, key_points, used_records, missing_information}` or null) and `explanation_status` (`ANSWERED`, `PARTIAL`, `NOT_ENOUGH_EVIDENCE`, `DISABLED`, `INVALID`). In the stream, the records arrive first (a `token` event) and the final `done` event adds the explanation. The web UI does not draw the explanation yet.
+
+Measured on the fixed 100-question benchmark (`python backend/eval/run_explanation_eval.py`): the right sentence is among the records for 58; an explanation passed validation for 46 and contained the right fact for 25 (wrong refusals: 7). So today the records are the answer and the explanation is a weaker, optional extra; training the model on exactly this task is the next step.
+
 ## Web search with your own SearXNG (optional)
 
 The "Web search" switch in the settings panel asks a SearXNG server you run yourself for fresh results, shows them as citations and gives the model a few short snippets as notes. No API key and no paid search service. Without SearXNG the chat works as before and says the answer was not checked against live web results.

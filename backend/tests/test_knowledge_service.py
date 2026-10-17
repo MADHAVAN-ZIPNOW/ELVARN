@@ -57,7 +57,8 @@ def test_context_returns_ranked_cited_items_and_whether_data_exists(kb, rag_stor
     assert out["populated"] is True and out["notes"] == []
     assert out["items"][0]["kind"] == "fact" and "Test Housing Scam" in out["items"][0]["text"]
     assert out["u"]["entities"][0]["name"] == "Test Person" and out["items"][0]["source"]["url"] == "https://example.org/order1"
-    assert set(out) == {"items", "notes", "u", "populated"}                              # nothing else leaves the service
+    assert set(out) == {"items", "notes", "u", "populated", "quotes"}                    # nothing else leaves the service
+    assert out["quotes"] is None or all(q["quote"] in q["item_text"] and q["item_text"] in [i["text"] for i in out["items"]] for q in out["quotes"])   # quotes are slices of the same items
 
 
 def test_input_is_validated(kb, rag_store, memory):
