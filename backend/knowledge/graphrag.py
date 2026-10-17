@@ -36,6 +36,7 @@ INTENTS = (("timeline", re.compile(r"timeline|what happened|stages?|progress|sta
 # in-domain questions had >= 57% of their words covered by the best passage; questions the stores cannot answer topped out at 33-40%.
 MIN_SIM, VERY_CLOSE_SIM = 0.30, 0.72      # a passage below MIN_SIM is never used; one at VERY_CLOSE_SIM or above needs no word overlap
 RERANK_POOL = 20                          # candidates handed to the cross-encoder (from the fused keyword + vector list)
+RERANK_MIN = -1.0                         # a passage the cross-encoder scores below this is dropped (measured: keeps all 97 right-sentence snippets, drops most irrelevant ones)
 MIN_COVERAGE = 0.55                       # otherwise it must contain at least this share of the question's content words (and 2+ words)
 MAX_LINE = 280
 
@@ -157,8 +158,12 @@ def vector_items(store, u, k=10):
                                "date": meta.get("published_date"), "licence": meta.get("licence"), "source_id": meta.get("source_id")}})
     if reranker is not None and len(out) > 1:                  # the cross-encoder reads question and passage together; an exact section match keeps a small lead
         logits = reranker.scores(u.resolved, [f"{i['source']['title']}. {i['text']}" for i in out])
+        kept = []
         for item, logit in zip(out, logits):
-            item["score"] = round(0.5 + 0.4 * sigmoid(logit) + (0.1 if item["_exact"] else 0.0), 4)
+            if logit >= RERANK_MIN:
+                item["score"] = round(0.5 + 0.4 * sigmoid(logit) + (0.1 if item["_exact"] else 0.0), 4)
+                kept.append(item)
+        out = kept
     for item in out:
         item.pop("_exact", None)
     return out

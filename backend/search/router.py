@@ -142,3 +142,11 @@ def decide(text, history=None, mode="chat"):
 
 def keywords(text):
     return {w for w in re.findall(r"[a-z0-9]{3,}", text.lower()) if w not in _STOP}
+
+
+def is_small_talk(text):
+    """True for a greeting, thanks, a creative request ("tell me a joke"), a question about the conversation or about the assistant itself
+    ("who are you?"). None of these is a question for the stored records: the chat model answers them, and nothing is searched."""
+    t = (text or "").strip()
+    return bool(_GREETING.match(t) or _CREATIVE.search(t) or _ABOUT_CONVERSATION.search(t) or _CHAT_ABBREVIATION.search(t)
+                or re.match(r"^\s*(who|what) (are|is) (you|your)\b", t, re.I) or re.match(r"^\s*(what can you do|how are you)\b", t, re.I))

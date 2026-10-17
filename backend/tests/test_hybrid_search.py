@@ -143,3 +143,19 @@ def test_reranker_from_env_is_none_without_files(tmp_path, monkeypatch):
 
 def test_sigmoid_is_bounded_and_monotone():
     assert 0 < sigmoid(-100) < sigmoid(0) == 0.5 < sigmoid(100) < 1.0 + 1e-12
+
+
+def test_a_passage_the_reranker_scores_far_below_zero_is_dropped(rag_store, tmp_path, passages):
+    fill(rag_store, tmp_path, passages)
+    rag_store.reranker = FakeReranker({"Section 83(1)(a)": 4.0, "Section 80": -6.0, "forty five days": -3.0})
+    texts = [i["text"] for i in graphrag.vector_items(rag_store, understanding("election petition Section 83(1)(a) Representation of the People Act"))]
+    assert any("Section 83(1)(a)" in t for t in texts)
+    assert not any("Section 80" in t for t in texts) and not any("forty five days" in t for t in texts)         # below the cutoff: not shown
+
+
+def test_small_talk_is_never_searched():
+    from search.router import is_small_talk
+    for q in ("hello", "hii", "thanks!", "good morning", "tell me a joke", "who are you?", "what can you do?"):
+        assert is_small_talk(q), q
+    for q in ("What does Section 83(1)(a) of the Representation of the People Act require?", "Senthil Balaji bail", "Tell me about G. D. Naidu"):
+        assert not is_small_talk(q), q

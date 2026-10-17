@@ -39,6 +39,7 @@ from api.model_service import ModelNotReady, ModelService  # noqa: E402
 from model.generation import MAX_NO_REPEAT_NGRAM, MAX_REPETITION_PENALTY, MODES  # noqa: E402
 from search.orchestrate import WEB_SEARCH_MODES, SearchResult, plan_search, run_search  # noqa: E402
 from search.prompt import KB_HEADER, build_evidence_text  # noqa: E402
+from search.router import is_small_talk  # noqa: E402
 from search.providers.searxng import SearxngProvider, is_loopback_host, wake_up  # noqa: E402
 from search.service import USED, USED_NO_EVIDENCE_MESSAGE, SearchService, Source  # noqa: E402
 
@@ -316,8 +317,8 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         Returns (SearchResult | None, Context | None, early reply | None, note). An early reply is a refusal or an 'unavailable'
         notice for a corruption question: the model is never asked to guess those. `note` is a sentence to show when the stored records
         could not be reached for another kind of question (the chat then goes on without them, and says so)."""
-        if req.file_ids or not (kb_expected or rag_expected or remote_expected):
-            return None, None, None, None
+        if req.file_ids or not (kb_expected or rag_expected or remote_expected) or is_small_talk(req.text):
+            return None, None, None, None                       # small talk is never searched: the keyword search would match "hello" in unrelated pages
         corruption = bool(CORRUPTION_WORDS.search(req.text))
         if remote_expected:                                   # hosted knowledge service: it does the retrieval, we only get the context
             if remote is None:
