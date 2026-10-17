@@ -246,7 +246,7 @@ clients can set both in the request (`repetition_penalty` 1.0-2.0, `no_repeat_ng
 | `elvarn` | the chat site + model, auto-deploys from `main` | https://elvarn.onrender.com |
 | `elvarn-search` | protected SearXNG (`search_service/`), Docker, only answers requests that carry a secret token | https://elvarn-search.onrender.com |
 
-**The live model** is `deploy/models/17m_rag`: 17,152,000 parameters, 512-token context, vocabulary 16,384 (tokenizer trained on the v2 data).
+**The live model** is `deploy/models/24m_legal_rag`: 24,263,335 parameters, 512-token context, vocabulary 34,855 (the v2 vocabulary grown with legal words; old token ids unchanged). It was trained on about 157 million tokens of Indian judgments, then fine-tuned on notes-and-answer examples plus chat (validation loss 1.97). The previous model, `deploy/models/17m_rag` (17,152,000 parameters, vocabulary 16,384), stays in the repository for rollback.
 Stage 1 trained 5 epochs on Wikipedia / Dolly / OASST / the original domain text (validation loss 3.604). Stage 2 fine-tuned 3 epochs on
 "notes, question, answer written from the notes" examples (RAG validation loss 2.408). The older models (6.7M and 0.8M) were removed from
 `deploy/models` on 13 Oct 2026; they are still in git history (for example `git checkout 8471762 -- deploy/models/7m_epoch2`).
@@ -283,7 +283,7 @@ Settings (environment variables, already set in `render.yaml`):
 
 | Variable | Meaning |
 |---|---|
-| `ELVARN_CHECKPOINT_DIR` | Model folder: `deploy/models/17m_rag` (17.15M parameters, 512 context, RAG validation loss 2.408, the default). |
+| `ELVARN_CHECKPOINT_DIR` | Model folder. Live (render.yaml): `deploy/models/24m_legal_rag` (24.26M parameters, 512 context, vocabulary 34,855). The code default is still `deploy/models/17m_rag` (17.15M parameters, the rollback model). |
 | `ELVARN_PUBLIC` | `1` = public site: per-visitor rate limit, cap on simultaneous replies, `/api/reload` disabled. |
 | `ELVARN_RATE_LIMIT` | Chat requests per visitor per minute (default 20 when public). |
 | `ELVARN_MAX_CONCURRENT` | Replies generated at the same time (default 2 when public). |

@@ -16,7 +16,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: ELVARN_CHECKPOINT_DIR
-        value: deploy/models/17m_rag   # the live 17M RAG model (512 context, val loss 2.408). Older models are in git history.
+        value: deploy/models/24m_legal_rag   # the live 24M legal RAG model (512 context, vocabulary 34,855). Rollback: deploy/models/17m_rag (the previous 17M model, kept in the repo).
       - key: ELVARN_PUBLIC
         value: "1"                   # rate limit + concurrency cap + reload disabled
       - key: ELVARN_RATE_LIMIT

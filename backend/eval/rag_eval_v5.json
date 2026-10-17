@@ -1,0 +1,1329 @@
+{
+  "description": "ELVARN RAG hold-out: notes + question; passages come only from validation topics.",
+  "cases": [
+    {
+      "id": 1,
+      "type": "double",
+      "mode": "english",
+      "topic": "DR. JAISHRI LAXMANRAO PATIL vs THE CHIEF MINISTER & ORS, No. 2021 INSC 284, Supreme Court of India, 2021-05-05",
+      "notes": [
+        "On 13.08.1967, the State of Maharashtra issued unified list of OBC consist ing of 180 castes for the entire State which did not include Maratha.",
+        "His family moved to Huddersfield, England in 1962 where he completed his early education.",
+        "The population of other backward classes of remaining Hindu Cast es groups was estimated as 43.7% and backward non-Hindu classes as 8.40 per cent and total approximate backward class of Hindu including non-Hindu castes was estimated as 52%."
+      ],
+      "question": "Give me two facts about DR. JAISHRI LAXMANRAO PATIL vs THE CHIEF MINISTER & ORS, No. 2021 INSC 284, Supreme Court of India, 2021-05-05.",
+      "answerable": true,
+      "groups": [
+        [
+          "1967"
+        ],
+        [
+          "180"
+        ],
+        [
+          "Maharashtra"
+        ]
+      ],
+      "reference_answer": "On 13.08.1967, the State of Maharashtra issued unified list of OBC consist ing of 180 castes for the entire State which did not include Maratha. The population of other backward classes of remaining Hindu Cast es groups was estimated as 43.7% and backward non-Hindu classes as 8.40 per cent and total approximate backward class of Hindu including non-Hindu castes was estimated as 52%."
+    },
+    {
+      "id": 2,
+      "type": "double",
+      "mode": "domain",
+      "topic": "M/S. ULTRATECH CEMENT LTD. & ANR. vs STATE OF RAJASTHAN & ORS, No. 2020 INSC 456, Supreme Court of India, 2020-07-17",
+      "notes": [
+        "Commissioner, Commercial Taxes, Rajasthan, Jaipur and Anr. v. Rajasthan Taxation Tribunal and Ors.",
+        "The lamina expands outwards over the epithelium of the glans and also backwards forming an ingrowing fold at the base of the glans that will become the coronal sulcus.",
+        "Entitlement of the appellant to 50% subs idy has not been questioned."
+      ],
+      "question": "Share a couple of facts about M/S. ULTRATECH CEMENT LTD. & ANR. vs STATE OF RAJASTHAN & ORS, No. 2020 INSC 456, Supreme Court of India, 2020-07-17.",
+      "answerable": true,
+      "groups": [
+        [
+          "Commercial"
+        ],
+        [
+          "Taxation"
+        ],
+        [
+          "Tribunal"
+        ]
+      ],
+      "reference_answer": "Commissioner, Commercial Taxes, Rajasthan, Jaipur and Anr. v. Rajasthan Taxation Tribunal and Ors. [1] Entitlement of the appellant to 50% subs idy has not been questioned. [3]"
+    },
+    {
+      "id": 3,
+      "type": "double",
+      "mode": "english",
+      "topic": "FOOD CORPORATION OF INDIA vs SANKAR GHOSH & ORS, No. 2015 INSC 489, Supreme Court of India, 2015-07-08",
+      "notes": [
+        "There was a dispute with regard to mode of engagement of respondents in the aforesaid posts.",
+        "Aggrieved by the same, the appellant filed writ petition being Writ Petition · No.16519(W)/98 challenging the said award dated 06.10.1997 C and the same was dismissed by the single Judge of the High Court of Calcutta vide Order dated 20.11.1998."
+      ],
+      "question": "Share a couple of facts about FOOD CORPORATION OF INDIA vs SANKAR GHOSH & ORS, No. 2015 INSC 489, Supreme Court of India, 2015-07-08.",
+      "answerable": true,
+      "groups": [
+        [
+          "16519"
+        ],
+        [
+          "1997"
+        ],
+        [
+          "1998"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: There was a dispute with regard to mode of engagement of respondents in the aforesaid posts. Aggrieved by the same, the appellant filed writ petition being Writ Petition · No.16519(W)/98 challenging the said award dated 06.10.1997 C and the same was dismissed by the single Judge of the High Court of Calcutta vide Order dated 20.11.1998."
+    },
+    {
+      "id": 4,
+      "type": "single",
+      "mode": "domain",
+      "topic": "ANIL KUMAR vs STATE OF HARYANA & ORS, No. 2023 INSC 296, Supreme Court of India, 2023-03-24",
+      "notes": [
+        "Section 3(3) of the Act, 1988, which specifically provides that the period of temporary release shall not be counted towards the total period of the sentence of a prisoner."
+      ],
+      "question": "What numbers does the text give about ANIL KUMAR vs STATE OF HARYANA & ORS, No. 2023 INSC 296, Supreme Court of India, 2023-03-24?",
+      "answerable": true,
+      "groups": [
+        [
+          "1988"
+        ],
+        [
+          "Act"
+        ],
+        [
+          "specifically"
+        ]
+      ],
+      "reference_answer": "Section 3(3) of the Act, 1988, which specifically provides that the period of temporary release shall not be counted towards the total period of the sentence of a prisoner. [1]"
+    },
+    {
+      "id": 5,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "STATE OF HARYANA vs RAM MEHAR & OTHERS ETC. ETC, No. 2016 INSC 616, Supreme Court of India, 2016-08-24",
+      "notes": [
+        "It bears repetition to state that though sharp cutting weapons i.e. tangies were available, the appellants did not use them.",
+        "Naveen Kumar Misra (PW7) also stated on solemn affirmation that he was traveling on the same train on Berth No.35 in coach No. S-1.",
+        "A close scrutiny will reveal that there is no real contradiction 21 2011 (2) SCC 74 135 amongst the judgments at all."
+      ],
+      "question": "What figures are mentioned about STATE OF HARYANA vs RAM MEHAR & OTHERS ETC. ETC, No. 2016 INSC 616, Supreme Court of India, 2016-08-24?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "Not mentioned in the notes."
+    },
+    {
+      "id": 6,
+      "type": "double",
+      "mode": "english",
+      "topic": "RAJASTHAN PUBLIC SERVICE COMMISSION, AJMER & ANR. vs SHIKUN RAM FIRODA & ANR, No. 2019 INSC 1197, Supreme Court of India, 2019-10-25",
+      "notes": [
+        "Press Note was not issued for giving an opportunity to the candidates to apply afresh.",
+        "The Press Note was issued only to allow the corrections 1097 or to change category in the application forms already submitted online.",
+        "The reliance on the decisions in the cases of Pankaj Bansal (supra) and Prabir Purkayastha (supra), is misplaced as both the cases pertain to special statutes and the facts therein are not similar to the present case."
+      ],
+      "question": "Give me a short overview of RAJASTHAN PUBLIC SERVICE COMMISSION, AJMER & ANR. vs SHIKUN RAM FIRODA & ANR, No. 2019 INSC 1197, Supreme Court of India, 2019-10-25.",
+      "answerable": true,
+      "groups": [
+        [
+          "1097"
+        ],
+        [
+          "Press"
+        ],
+        [
+          "Note"
+        ]
+      ],
+      "reference_answer": "Press Note was not issued for giving an opportunity to the candidates to apply afresh. The Press Note was issued only to allow the corrections 1097 or to change category in the application forms already submitted online."
+    },
+    {
+      "id": 7,
+      "type": "double",
+      "mode": "english",
+      "topic": "UNION OF INDIA & ORS vs M/S. WILLOWOOD CHEMICALS PVT. LTD. & ANR, No. 2022 INSC 430, Supreme Court of India, 2022-04-19",
+      "notes": [
+        "N. Venkataraman, ASG, Akshay Amritanshu, Merusagar Samantray, Ms. Indira Bhakar, Manish, M. K. Maroria, Advs. for the Appellants.",
+        "Civil Application(for Review) No. 1 of 2020 in R/Special Civil Application No.18591 of 2018 and Order dated 10.07.2019 in R/Special Civil Application No. 18591 of 2018."
+      ],
+      "question": "Share a couple of facts about UNION OF INDIA & ORS vs M/S. WILLOWOOD CHEMICALS PVT. LTD. & ANR, No. 2022 INSC 430, Supreme Court of India, 2022-04-19.",
+      "answerable": true,
+      "groups": [
+        [
+          "18591"
+        ],
+        [
+          "2018"
+        ],
+        [
+          "2019"
+        ]
+      ],
+      "reference_answer": "N. Venkataraman, ASG, Akshay Amritanshu, Merusagar Samantray, Ms. Indira Bhakar, Manish, M. K. Maroria, Advs. for the Appellants. [1] Civil Application(for Review) No. 1 of 2020 in R/Special Civil Application No.18591 of 2018 and Order dated 10.07.2019 in R/Special Civil Application No. 18591 of 2018. [2]"
+    },
+    {
+      "id": 8,
+      "type": "double",
+      "mode": "domain",
+      "topic": "SATYAN vs DEPUTY COMMISSIONER & ORS, No. 2019 INSC 589, Supreme Court of India, 2019-04-30",
+      "notes": [
+        "It is his submission that, thus, the reading of the three paragraphs together supports the case advanced by the State Government rather than what was sought to be made out by learned senior counsel for the appellant.",
+        "What has been strongly urged before us is that the provisions contained in Section 4 insofar as the same seek to nullify transfers effected before the Act had come into force, are invalid.” 18."
+      ],
+      "question": "What should I know about SATYAN vs DEPUTY COMMISSIONER & ORS, No. 2019 INSC 589, Supreme Court of India, 2019-04-30?",
+      "answerable": true,
+      "groups": [
+        [
+          "Government"
+        ],
+        [
+          "Section"
+        ],
+        [
+          "State"
+        ]
+      ],
+      "reference_answer": "It is his submission that, thus, the reading of the three paragraphs together supports the case advanced by the State Government rather than what was sought to be made out by learned senior counsel for the appellant. [1] What has been strongly urged before us is that the provisions contained in Section 4 insofar as the same seek to nullify transfers effected before the Act had come into force, are invalid.” 18. [2]"
+    },
+    {
+      "id": 9,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "Madras fanam",
+      "notes": [
+        "The fanam (or panam in the local language of Tamil) was a currency issued by the Madras Presidency until 1815.",
+        "Counsel also highlighted that in many appeals, the DRB constituted an internal mechanism by NHAI, comprised entirely of technical personnel, nominated by it (NHAI) had also endorsed the opinion, which favoured the contractors’ interpretation.",
+        "The impugned order dated 12.11.2025 passed by the Allahabad High Court, Lucknow Bench, granting bail to respondent No.1, therefore, cannot be sustained either on facts or in law."
+      ],
+      "question": "What happened in 1815 regarding Madras fanam?",
+      "answerable": true,
+      "groups": [
+        [
+          "Presidency"
+        ],
+        [
+          "Tamil"
+        ],
+        [
+          "currency"
+        ]
+      ],
+      "reference_answer": "From the notes: The fanam (or panam in the local language of Tamil) was a currency issued by the Madras Presidency until 1815. [1]"
+    },
+    {
+      "id": 10,
+      "type": "negative",
+      "mode": "english",
+      "topic": "TARUN SHARMA vs STATE OF HARYANA, No. 2025 INSC 1139, Supreme Court of India, 2025-09-01",
+      "notes": [
+        "In Chapter VI, the expression “plant and machinery” appears in several places, but the expression “plant or machinery” is found only in Section 17(5)(d).",
+        "In our opinion, no error not to speak of any error of law could be said to have been committed upon Courts below, while determining the shares of the parties."
+      ],
+      "question": "What figures are mentioned about TARUN SHARMA vs STATE OF HARYANA, No. 2025 INSC 1139, Supreme Court of India, 2025-09-01?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not contain this information."
+    },
+    {
+      "id": 11,
+      "type": "double",
+      "mode": "domain",
+      "topic": "IMTIYAZ AHMAD MALLA vs THE STATE OF JAMMU AND KASHMIR AND OTHERS, No. 2023 INSC 179, Supreme Court of India, 2023-02-28",
+      "notes": [
+        "In that case this Court was concerned with a situation where disciplinary proceedings were initiated against a police officer.",
+        "He was acquitted in that case because of the non-examination of key witnesses."
+      ],
+      "question": "What should I know about IMTIYAZ AHMAD MALLA vs THE STATE OF JAMMU AND KASHMIR AND OTHERS, No. 2023 INSC 179, Supreme Court of India, 2023-02-28?",
+      "answerable": true,
+      "groups": [
+        [
+          "non-examination"
+        ],
+        [
+          "disciplinary"
+        ],
+        [
+          "proceedings"
+        ]
+      ],
+      "reference_answer": "In that case this Court was concerned with a situation where disciplinary proceedings were initiated against a police officer. [1] He was acquitted in that case because of the non-examination of key witnesses. [2]"
+    },
+    {
+      "id": 12,
+      "type": "single",
+      "mode": "domain",
+      "topic": "British Committee for Refugees from Czechoslovakia",
+      "notes": [
+        "The BCRC aided political refugees, especially Social Democrats and communists, as well as Jews and their families, who fled Nazi Germany or the regions it annexed during 1938 (Austria, in March, and the Sudetenland, in October)."
+      ],
+      "question": "What is mentioned about 1938 in connection with British Committee for Refugees from Czechoslovakia?",
+      "answerable": true,
+      "groups": [
+        [
+          "Sudetenland"
+        ],
+        [
+          "Democrats"
+        ],
+        [
+          "Austria"
+        ]
+      ],
+      "reference_answer": "The BCRC aided political refugees, especially Social Democrats and communists, as well as Jews and their families, who fled Nazi Germany or the regions it annexed during 1938 (Austria, in March, and the Sudetenland, in October). [1]"
+    },
+    {
+      "id": 13,
+      "type": "single",
+      "mode": "english",
+      "topic": "SUKDEB SAHA vs THE STATE OF ANDHRA PRADESH & ORS, No. 2025 INSC 893, Supreme Court of India, 2025-07-25",
+      "notes": [
+        "The background facts essential for disposal of the instant appeal are: 13.1."
+      ],
+      "question": "What figures are mentioned about SUKDEB SAHA vs THE STATE OF ANDHRA PRADESH & ORS, No. 2025 INSC 893, Supreme Court of India, 2025-07-25?",
+      "answerable": true,
+      "groups": [
+        [
+          "background"
+        ],
+        [
+          "essential"
+        ],
+        [
+          "disposal"
+        ]
+      ],
+      "reference_answer": "The background facts essential for disposal of the instant appeal are: 13.1. [1]"
+    },
+    {
+      "id": 14,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "Motor Vehicle Insurance (India)",
+      "notes": [
+        "The insurer concerned shall comply with the judgment within 30 days of receipt and report the same to the Insurance Ombudsman.",
+        "By s. 27, even if a fact is deposed to as discovered in consequence of information received, only that much of the information is admissible as di~tinctly relates tothe fact discovered."
+      ],
+      "question": "Which numbers are given for Motor Vehicle Insurance (India)?",
+      "answerable": true,
+      "groups": [
+        [
+          "Ombudsman"
+        ],
+        [
+          "concerned"
+        ],
+        [
+          "judgment"
+        ]
+      ],
+      "reference_answer": "The insurer concerned shall comply with the judgment within 30 days of receipt and report the same to the Insurance Ombudsman. [1]"
+    },
+    {
+      "id": 15,
+      "type": "negative",
+      "mode": "english",
+      "topic": "UNION OF JNDIA & ORS. vs BENGAL SHRACHI HOUSING DEVELOPMENT LIMITED &ANR, No. 2017 INSC 1084, Supreme Court of India, 2017-11-07",
+      "notes": [
+        "On 27 th May 2009, around 9.00 a.m., she and her first cousin, PW-2, had gone to a pasture to graze her goats.",
+        "The Kochi City Traffic Police is responsible for traffic management and enforcement in the city."
+      ],
+      "question": "What figures are mentioned about UNION OF JNDIA & ORS. vs BENGAL SHRACHI HOUSING DEVELOPMENT LIMITED &ANR, No. 2017 INSC 1084, Supreme Court of India, 2017-11-07?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 16,
+      "type": "double",
+      "mode": "english",
+      "topic": "Celtic language decline in England",
+      "notes": [
+        "The British name Caedbaed is found in the pedigree of the kings of Lindsey.",
+        "The names of King Penda and some other kings of Mercia have more obvious Brittonic than Germanic etymologies, but they do not correspond to known Welsh personal names."
+      ],
+      "question": "Share a couple of facts about Celtic language decline in England.",
+      "answerable": true,
+      "groups": [
+        [
+          "Brittonic"
+        ],
+        [
+          "Caedbaed"
+        ],
+        [
+          "Germanic"
+        ]
+      ],
+      "reference_answer": "The British name Caedbaed is found in the pedigree of the kings of Lindsey. [1] The names of King Penda and some other kings of Mercia have more obvious Brittonic than Germanic etymologies, but they do not correspond to known Welsh personal names. [2]"
+    },
+    {
+      "id": 17,
+      "type": "single",
+      "mode": "english",
+      "topic": "AMAZON.COM NV INVESTMENT HOLDINGS LLC vs FUTURE RETAIL LIMITED & ORS, No. 2021 INSC 385, Supreme Court of India, 2021-08-06",
+      "notes": [
+        "Para 52 of the 246th Law Commission Report reads as follows: “52."
+      ],
+      "question": "What figures are mentioned about AMAZON.COM NV INVESTMENT HOLDINGS LLC vs FUTURE RETAIL LIMITED & ORS, No. 2021 INSC 385, Supreme Court of India, 2021-08-06?",
+      "answerable": true,
+      "groups": [
+        [
+          "246th"
+        ],
+        [
+          "Commission"
+        ],
+        [
+          "Report"
+        ]
+      ],
+      "reference_answer": "From the notes: Para 52 of the 246th Law Commission Report reads as follows: “52. [1]"
+    },
+    {
+      "id": 18,
+      "type": "double",
+      "mode": "domain",
+      "topic": "POPAT BAHIRU GOVARDHANE ETC. vs SPECIAL LAND ACQUISITION OFFICER & ANR, No. 2013 INSC 554, Supreme Court of India, 2013-08-22",
+      "notes": [
+        "The appellants' case before the High Court as well as before us has been that the limitation would commence from the date of acquisition of knowledge and not from the 'date of award.",
+        "F 7. The issue involved herein is no more res-integra."
+      ],
+      "question": "Give me a short overview of POPAT BAHIRU GOVARDHANE ETC. vs SPECIAL LAND ACQUISITION OFFICER & ANR, No. 2013 INSC 554, Supreme Court of India, 2013-08-22.",
+      "answerable": true,
+      "groups": [
+        [
+          "High"
+        ],
+        [
+          "appellants'"
+        ],
+        [
+          "res-integra"
+        ]
+      ],
+      "reference_answer": "The appellants' case before the High Court as well as before us has been that the limitation would commence from the date of acquisition of knowledge and not from the 'date of award. [1] F 7. The issue involved herein is no more res-integra. [2]"
+    },
+    {
+      "id": 19,
+      "type": "single",
+      "mode": "english",
+      "topic": "Banking in India",
+      "notes": [
+        "In 1840 it established an agency at Singapore, and closed the one at Mirzapore that it had opened in the previous year."
+      ],
+      "question": "What happened in 1840 regarding Banking in India?",
+      "answerable": true,
+      "groups": [
+        [
+          "Mirzapore"
+        ],
+        [
+          "Singapore"
+        ],
+        [
+          "established"
+        ]
+      ],
+      "reference_answer": "According to [1]: In 1840 it established an agency at Singapore, and closed the one at Mirzapore that it had opened in the previous year."
+    },
+    {
+      "id": 20,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "Pamban Lighthouse",
+      "notes": [
+        "Adaikala Madha Shrine, Elakurichi is a Catholic church located in the village of Elakurichi near Ariyalur, Tamil Nadu, India.",
+        "The tribunal has taken her income at the rate ofRs.25/-per day and assessed the monthly income at Rs.650/ -per month.",
+        "The deponent does not at all disclose as to when the en velope containing the dasti Notice was ever opened."
+      ],
+      "question": "Which numbers are given for Pamban Lighthouse?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not say."
+    },
+    {
+      "id": 21,
+      "type": "double",
+      "mode": "domain",
+      "topic": "NAVTEJ SINGH JOHAR & ORS. vs UNION OF INDIA THR. SECRETARY MINISTRY OF LAW AND JUSTICE, No. 2018 INSC 790, Supreme Court of India, 2018-09-06",
+      "notes": [
+        "This, as per the intervenor, would be contrary t o the decision of this Court in Iqbal Singh Marwah and another v. Meenakshi Marwah and another 17 .",
+        "Another application for intervention, being I.A No. 91250 of 2018, was filed and the same was allowed."
+      ],
+      "question": "Give me a short overview of NAVTEJ SINGH JOHAR & ORS. vs UNION OF INDIA THR. SECRETARY MINISTRY OF LAW AND JUSTICE, No. 2018 INSC 790, Supreme Court of India, 2018-09-06.",
+      "answerable": true,
+      "groups": [
+        [
+          "91250"
+        ],
+        [
+          "Meenakshi"
+        ],
+        [
+          "Marwah"
+        ]
+      ],
+      "reference_answer": "This, as per the intervenor, would be contrary t o the decision of this Court in Iqbal Singh Marwah and another v. Meenakshi Marwah and another 17 . [1] Another application for intervention, being I.A No. 91250 of 2018, was filed and the same was allowed. [2]"
+    },
+    {
+      "id": 22,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "GURMEL SINGH vs BRANCH MANAGER, NATIONAL INSURANCE CO. LTD, No. 2022 INSC 619, Supreme Court of India, 2022-05-20",
+      "notes": [
+        "A FIR was immediately lodged in the Police Station Kumhari, which was registered as FIR No. 57/13.",
+        "The stated reason for the nationalization was to give the government more control of credit delivery.",
+        "Therefore, on the strength of Section 85(2)(a) of 1996 Act, it was held that the provisions of the repealed enactments including 1940 Act would continue to apply in relation to such arbitral proceedings."
+      ],
+      "question": "What figures are mentioned about GURMEL SINGH vs BRANCH MANAGER, NATIONAL INSURANCE CO. LTD, No. 2022 INSC 619, Supreme Court of India, 2022-05-20?",
+      "answerable": true,
+      "groups": [
+        [
+          "Kumhari"
+        ],
+        [
+          "Station"
+        ],
+        [
+          "Police"
+        ]
+      ],
+      "reference_answer": "According to [1]: A FIR was immediately lodged in the Police Station Kumhari, which was registered as FIR No. 57/13."
+    },
+    {
+      "id": 23,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "UNION OF INDIA & ANR. vs M/S INDUSIND BANK LTD. & ANR, No. 2016 INSC 869, Supreme Court of India, 2016-09-15",
+      "notes": [
+        "The current guidelines are to examine and screen the babies with birth weight(1500 gm and (32 weeks gestational age, starting at 31 weeks post-conceptiona l age (PCA) or 4 weeks after birth, whichever is later.",
+        "According to learned coun5eJ, the Division Bench, having reiterated that the amended Section 28(b) would apply, was not B correct in its conclusion that such clause in the bank guarantees would not be void.",
+        "Mr. K.T.S. Tutsi, learned senior counsel appearing on behalf of the State, has informed the Court that as of today, the prosecution wishes to examine total 186 witnesses, out of which 92 are eye-witnesses."
+      ],
+      "question": "Which numbers are given for UNION OF INDIA & ANR. vs M/S INDUSIND BANK LTD. & ANR, No. 2016 INSC 869, Supreme Court of India, 2016-09-15?",
+      "answerable": true,
+      "groups": [
+        [
+          "Division"
+        ],
+        [
+          "Section"
+        ],
+        [
+          "Bench"
+        ]
+      ],
+      "reference_answer": "According to [2]: According to learned coun5eJ, the Division Bench, having reiterated that the amended Section 28(b) would apply, was not B correct in its conclusion that such clause in the bank guarantees would not be void."
+    },
+    {
+      "id": 24,
+      "type": "double",
+      "mode": "domain",
+      "topic": "THE STATE OF TELANGANA & ORS. vs M/S TIRUMALA CONSTRUCTIONS, No. 2023 INSC 942, Supreme Court of India, 2023-10-20",
+      "notes": [
+        "It was argued on behalf of the State of Maharashtra that what is material is the existence of a power to legislate and not t he manner of exercise of that power.",
+        "The reasoning of the Telangana and Gujarat High Courts that the power of amendment was limited to bringing the existing enactments, i.e. State V AT Acts in conformity with the express terms of the 101st amendment, was erroneous."
+      ],
+      "question": "Give me two facts about THE STATE OF TELANGANA & ORS. vs M/S TIRUMALA CONSTRUCTIONS, No. 2023 INSC 942, Supreme Court of India, 2023-10-20.",
+      "answerable": true,
+      "groups": [
+        [
+          "101st"
+        ],
+        [
+          "Maharashtra"
+        ],
+        [
+          "Gujarat"
+        ]
+      ],
+      "reference_answer": "It was argued on behalf of the State of Maharashtra that what is material is the existence of a power to legislate and not t he manner of exercise of that power. The reasoning of the Telangana and Gujarat High Courts that the power of amendment was limited to bringing the existing enactments, i.e. State V AT Acts in conformity with the express terms of the 101st amendment, was erroneous."
+    },
+    {
+      "id": 25,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "GANGADHAR NARAYAN NAYAK @ GANGADHAR HIREGUTTI vs STATE OF KARNATAKA & ORS, No. 2022 INSC 318, Supreme Court of India, 2022-03-21",
+      "notes": [
+        "As there was neither any d efense evidence and nor any explanation given by the appellants unde r Section 313 Cr.P.C. proceedings, the two Courts bel ow were justified in holding the fourth circumstance as pro ved.",
+        "So, on 26.12.1949, the same thirty-five Rulers entered into another agreement abrogating their G covenant and dissolving the newly created State as from 01.01.1950."
+      ],
+      "question": "What figures are mentioned about GANGADHAR NARAYAN NAYAK @ GANGADHAR HIREGUTTI vs STATE OF KARNATAKA & ORS, No. 2022 INSC 318, Supreme Court of India, 2022-03-21?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "Not mentioned in the notes."
+    },
+    {
+      "id": 26,
+      "type": "single",
+      "mode": "domain",
+      "topic": "SUBRAMANIAN SWAMY vs UNION OF INDIA, MINISTRY OF LAW & ORS, No. 2016 INSC 427, Supreme Court of India, 2016-05-13",
+      "notes": [
+        "Furthermore, it would help in ensuring due social order and would also not impinge upon the rights of the others, as contemplated under Atiicle 21 of the Constitution oflndia."
+      ],
+      "question": "What figures are mentioned about SUBRAMANIAN SWAMY vs UNION OF INDIA, MINISTRY OF LAW & ORS, No. 2016 INSC 427, Supreme Court of India, 2016-05-13?",
+      "answerable": true,
+      "groups": [
+        [
+          "Constitution"
+        ],
+        [
+          "Atiicle"
+        ],
+        [
+          "contemplated"
+        ]
+      ],
+      "reference_answer": "Furthermore, it would help in ensuring due social order and would also not impinge upon the rights of the others, as contemplated under Atiicle 21 of the Constitution oflndia. [1]"
+    },
+    {
+      "id": 27,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Backchannel (linguistics)",
+      "notes": [
+        "English allows for the reduplication, or repetition, of syllables within a non-lexical backchannel, such as in responses like uh-huh, mm-hm, or um-hm, as well as for single-syllable backchanneling.",
+        "In contrast, mm-hm is generally used as a backchannel to signal that the speaker is yielding their conversational turn and allowing the other speaker to maintain control of the conversational floor."
+      ],
+      "question": "Give me a short overview of Backchannel (linguistics).",
+      "answerable": true,
+      "groups": [
+        [
+          "single-syllable"
+        ],
+        [
+          "backchanneling"
+        ],
+        [
+          "conversational"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: English allows for the reduplication, or repetition, of syllables within a non-lexical backchannel, such as in responses like uh-huh, mm-hm, or um-hm, as well as for single-syllable backchanneling. In contrast, mm-hm is generally used as a backchannel to signal that the speaker is yielding their conversational turn and allowing the other speaker to maintain control of the conversational floor."
+    },
+    {
+      "id": 28,
+      "type": "double",
+      "mode": "domain",
+      "topic": "DEPUTY COMMISSIONER OF INCOME TAX, CHENNAIT. JAYACHANDRAN vs T. JAYACHANDRAN, No. 2018 INSC 401, Supreme Court of India, 2018-04-24",
+      "notes": [
+        "Significantly, Section 80A itself uses the expression ‘from his gross total income’ as it states that deduction is to be allowed to an assessee ‘from his gross total income’.",
+        "Now, coming to the question of relationship between the India n Bank and the Respondent, the normal settlement process in G overnment securities is that during transaction banks make payments and deliver the securities directly to each other.",
+        "The broker’s only f unction is to bring the buyer and seller together and help them to negotiate the terms for which he earns a commission from both the parties."
+      ],
+      "question": "Give me two facts about DEPUTY COMMISSIONER OF INCOME TAX, CHENNAIT. JAYACHANDRAN vs T. JAYACHANDRAN, No. 2018 INSC 401, Supreme Court of India, 2018-04-24.",
+      "answerable": true,
+      "groups": [
+        [
+          "Respondent"
+        ],
+        [
+          "Bank"
+        ],
+        [
+          "relationship"
+        ]
+      ],
+      "reference_answer": "Now, coming to the question of relationship between the India n Bank and the Respondent, the normal settlement process in G overnment securities is that during transaction banks make payments and deliver the securities directly to each other. [2] The broker’s only f unction is to bring the buyer and seller together and help them to negotiate the terms for which he earns a commission from both the parties. [3]"
+    },
+    {
+      "id": 29,
+      "type": "double",
+      "mode": "domain",
+      "topic": "SUJAL VISHWAS ATTAVAR & ANR. vs THE STATE OF MAHARASHTRA & ORS, No. 2026 INSC 442, Supreme Court of India, 2026-05-04",
+      "notes": [
+        "Ltd., a Company in which respondent no.7 2 is the Director.",
+        "Ltd., executed a sub-lease deed dated 14.10.2022 in favour of respondent no.7 – Mrs. Sheetal Vishwas Attavar."
+      ],
+      "question": "Tell me more about SUJAL VISHWAS ATTAVAR & ANR. vs THE STATE OF MAHARASHTRA & ORS, No. 2026 INSC 442, Supreme Court of India, 2026-05-04.",
+      "answerable": true,
+      "groups": [
+        [
+          "2022"
+        ],
+        [
+          "Director"
+        ],
+        [
+          "Company"
+        ]
+      ],
+      "reference_answer": "Ltd., a Company in which respondent no.7 2 is the Director. Ltd., executed a sub-lease deed dated 14.10.2022 in favour of respondent no.7 – Mrs. Sheetal Vishwas Attavar."
+    },
+    {
+      "id": 30,
+      "type": "negative",
+      "mode": "english",
+      "topic": "STATE OF TAMIL NADU vs STATE OF KERALA & ANR, No. 2014 INSC 373, Supreme Court of India, 2014-05-07",
+      "notes": [
+        "This Court held that if they had cleared the test, the respondents would not have raised any objection to the selection process or to the methodology adopted.",
+        "Under no circumstances should the rights of ind ividual citizens be trodden upon arbitrarily and any curtailment of them must be scrutinized with utmost care."
+      ],
+      "question": "What numbers does the text give about STATE OF TAMIL NADU vs STATE OF KERALA & ANR, No. 2014 INSC 373, Supreme Court of India, 2014-05-07?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not answer this question."
+    },
+    {
+      "id": 31,
+      "type": "single",
+      "mode": "domain",
+      "topic": "GADDIPATI DIVIJA & ANR. vs PATHURI SAMRAJYAM & ORS, No. 2023 INSC 385, Supreme Court of India, 2023-04-18",
+      "notes": [
+        "The 2018 Amendment to the Spec ific Relief Act made certain amendments to Section 16 as well."
+      ],
+      "question": "Tell me about GADDIPATI DIVIJA & ANR. vs PATHURI SAMRAJYAM & ORS, No. 2023 INSC 385, Supreme Court of India, 2023-04-18 in 2018.",
+      "answerable": true,
+      "groups": [
+        [
+          "Amendment"
+        ],
+        [
+          "Section"
+        ],
+        [
+          "Relief"
+        ]
+      ],
+      "reference_answer": "The 2018 Amendment to the Spec ific Relief Act made certain amendments to Section 16 as well."
+    },
+    {
+      "id": 32,
+      "type": "double",
+      "mode": "domain",
+      "topic": "SHIV KUMAR & ANR. vs UNION OF INDIA & ORS, No. 2019 INSC 1142, Supreme Court of India, 2019-10-14",
+      "notes": [
+        "In Sneh Prabha (Smt.) & Ors. v. State of U.P. & Anr .",
+        "Consequently, it is set tled law that it cannot challenge the validity of the notification or the SHIV KUMAR & ANR. v. UNION OF INDIA & ORS."
+      ],
+      "question": "What should I know about SHIV KUMAR & ANR. vs UNION OF INDIA & ORS, No. 2019 INSC 1142, Supreme Court of India, 2019-10-14?",
+      "answerable": true,
+      "groups": [
+        [
+          "Prabha"
+        ],
+        [
+          "State"
+        ],
+        [
+          "Sneh"
+        ]
+      ],
+      "reference_answer": "In Sneh Prabha (Smt.) & Ors. v. State of U.P. & Anr . [1] Consequently, it is set tled law that it cannot challenge the validity of the notification or the SHIV KUMAR & ANR. v. UNION OF INDIA & ORS. [2]"
+    },
+    {
+      "id": 33,
+      "type": "double",
+      "mode": "domain",
+      "topic": "DINESH SINGH THAKUR vs SONAL THAKUR, No. 2018 INSC 356, Supreme Court of India, 2018-04-17",
+      "notes": [
+        "Y. Narasimha Rao & Others vs. Y. Venkata Lakshmi and Another (1991) 3 SCC 451, this Court has held as under:- “20.",
+        "Further, in Harmeeta Singh vs. Rajat Taneja 2003 (67) DRJ 58, the Delhi High Court considering the fact that the parties have lived together for a very short time in the United States of America had granted anti suit injunction."
+      ],
+      "question": "Share a couple of facts about DINESH SINGH THAKUR vs SONAL THAKUR, No. 2018 INSC 356, Supreme Court of India, 2018-04-17.",
+      "answerable": true,
+      "groups": [
+        [
+          "1991"
+        ],
+        [
+          "2003"
+        ],
+        [
+          "451"
+        ]
+      ],
+      "reference_answer": "Y. Narasimha Rao & Others vs. Y. Venkata Lakshmi and Another (1991) 3 SCC 451, this Court has held as under:- “20. Further, in Harmeeta Singh vs. Rajat Taneja 2003 (67) DRJ 58, the Delhi High Court considering the fact that the parties have lived together for a very short time in the United States of America had granted anti suit injunction."
+    },
+    {
+      "id": 34,
+      "type": "double",
+      "mode": "english",
+      "topic": "DELHI DEVELOPMENT AUTHORITY vs KENNETH BUILDERS & DEVELOPERS LTD. & ORS, No. 2016 INSC 458, Supreme Court of India, 2016-06-29",
+      "notes": [
+        "Please note that the activity of Residential Construction Project without having valid consent under the Air & Water Acts is a punishable offence and attracts penal action under the provisions of the said Act.",
+        "Accordingly, we referred this issue to the Central Empowered Committee (CEC) set up in T.N.Gotlavarma11 v. U11io11 of l11tlia1• 26·.",
+        "The transportation F tariff notified through the BoC1rd Regulations is not applicable for CGD entity when it transports its own gas for supply to' individual customers."
+      ],
+      "question": "Tell me more about DELHI DEVELOPMENT AUTHORITY vs KENNETH BUILDERS & DEVELOPERS LTD. & ORS, No. 2016 INSC 458, Supreme Court of India, 2016-06-29.",
+      "answerable": true,
+      "groups": [
+        [
+          "Construction"
+        ],
+        [
+          "Gotlavarma11"
+        ],
+        [
+          "Residential"
+        ]
+      ],
+      "reference_answer": "Please note that the activity of Residential Construction Project without having valid consent under the Air & Water Acts is a punishable offence and attracts penal action under the provisions of the said Act. [1] Accordingly, we referred this issue to the Central Empowered Committee (CEC) set up in T.N.Gotlavarma11 v. U11io11 of l11tlia1• 26·. [2]"
+    },
+    {
+      "id": 35,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "MOHD. ALI vs STATE OF H.P. AND OTHERS, No. 2018 INSC 346, Supreme Court of India, 2018-04-16",
+      "notes": [
+        "Let such affidavit be filed within three weeks from the date, reply, if any, within two weeks thereafter with liberty to mention t he matter before me as and when I will be sitting singly.",
+        "The relevant observations are as under: \"Whereas Shiv Kumar died on 11."
+      ],
+      "question": "What figures are mentioned about MOHD. ALI vs STATE OF H.P. AND OTHERS, No. 2018 INSC 346, Supreme Court of India, 2018-04-16?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 36,
+      "type": "double",
+      "mode": "domain",
+      "topic": "UNION OF INDIA & ORS. vs K. SURI BABU, No. 2023 INSC 1033, Supreme Court of India, 2023-11-29",
+      "notes": [
+        "To uphold the special agreement would mean giving a go-by to the Act’ s principle of three-party participation in the settlement of terms of employment.",
+        "The right to privacy is intrinsic to liberty, centr al to human dignity and the core of autonomy.",
+        "As long as the Standing Order is in forc e, UNION OF INDIA & ORS. v. K. SURI BABU 1054 SUPREME COURT REPORTS 15 S.C.R. it is binding on the Company as well as the workmen."
+      ],
+      "question": "Tell me more about UNION OF INDIA & ORS. vs K. SURI BABU, No. 2023 INSC 1033, Supreme Court of India, 2023-11-29.",
+      "answerable": true,
+      "groups": [
+        [
+          "1054"
+        ],
+        [
+          "Standing"
+        ],
+        [
+          "Company"
+        ]
+      ],
+      "reference_answer": "To uphold the special agreement would mean giving a go-by to the Act’ s principle of three-party participation in the settlement of terms of employment. As long as the Standing Order is in forc e, UNION OF INDIA & ORS. v. K. SURI BABU 1054 SUPREME COURT REPORTS 15 S.C.R. it is binding on the Company as well as the workmen."
+    },
+    {
+      "id": 37,
+      "type": "double",
+      "mode": "english",
+      "topic": "K.P. KHEMKA & ANR. vs HARYANA STATE INDUSTRIAL AND INFRASTRUCTURE DEVELOPMENT CORPORATION LIMITED & ORS, No. 2024 INSC 396, Supreme Court of India, 2024-05-08",
+      "notes": [
+        "The same is the case with the provisions of the Kerala Revenue Recovery Act which fell for consideration of this Court in V.R. Kalliyanikutty (supra).",
+        "Understood in that sense, it does appear that there is an additional right to enforce the claims of the financial corporations notwithstanding the bar of limitation.",
+        "The dispute here lies with respect to the entries under Schedules I and II applicab le to the post of drivers."
+      ],
+      "question": "Share a couple of facts about K.P. KHEMKA & ANR. vs HARYANA STATE INDUSTRIAL AND INFRASTRUCTURE DEVELOPMENT CORPORATION LIMITED & ORS, No. 2024 INSC 396, Supreme Court of India, 2024-05-08.",
+      "answerable": true,
+      "groups": [
+        [
+          "Kalliyanikutty"
+        ],
+        [
+          "Recovery"
+        ],
+        [
+          "Revenue"
+        ]
+      ],
+      "reference_answer": "The same is the case with the provisions of the Kerala Revenue Recovery Act which fell for consideration of this Court in V.R. Kalliyanikutty (supra). [1] Understood in that sense, it does appear that there is an additional right to enforce the claims of the financial corporations notwithstanding the bar of limitation. [2]"
+    },
+    {
+      "id": 38,
+      "type": "double",
+      "mode": "domain",
+      "topic": "ANURAG KRISHNA SINHA vs STATE OF BIHAR & ANR, No. 2026 INSC 219, Supreme Court of India, 2026-03-10",
+      "notes": [
+        "Aggrieved by the decision of the High Court, the appellant is before us.",
+        "The present appeal gives rise to the following issues: i. Whether the Smt."
+      ],
+      "question": "What should I know about ANURAG KRISHNA SINHA vs STATE OF BIHAR & ANR, No. 2026 INSC 219, Supreme Court of India, 2026-03-10?",
+      "answerable": true,
+      "groups": [
+        [
+          "Whether"
+        ],
+        [
+          "High"
+        ],
+        [
+          "Smt"
+        ]
+      ],
+      "reference_answer": "Aggrieved by the decision of the High Court, the appellant is before us. [1] The present appeal gives rise to the following issues: i. Whether the Smt. [2]"
+    },
+    {
+      "id": 39,
+      "type": "double",
+      "mode": "domain",
+      "topic": "CBI, ACB, MUMBAI vs NARENDRA LAL JAIN & ORS, No. 2014 INSC 152, Supreme Court of India, 2014-02-28",
+      "notes": [
+        "Shri Malhotra has submitted that when a criminal offence is plainly disclosed, settlement of the civil liability, though arising from the same facts, cannot be a sufficient justification for the premature termination of the criminal case.",
+        "Shri Malhotra has also submitted that the offence under Section 120-B alleged c against the accused-respondents is not compoundable under Section 320 Cr.P.C.; so also the offences under the PC Act."
+      ],
+      "question": "Give me two facts about CBI, ACB, MUMBAI vs NARENDRA LAL JAIN & ORS, No. 2014 INSC 152, Supreme Court of India, 2014-02-28.",
+      "answerable": true,
+      "groups": [
+        [
+          "120-B"
+        ],
+        [
+          "320"
+        ],
+        [
+          "Malhotra"
+        ]
+      ],
+      "reference_answer": "Shri Malhotra has submitted that when a criminal offence is plainly disclosed, settlement of the civil liability, though arising from the same facts, cannot be a sufficient justification for the premature termination of the criminal case. [1] Shri Malhotra has also submitted that the offence under Section 120-B alleged c against the accused-respondents is not compoundable under Section 320 Cr.P.C.; so also the offences under the PC Act. [2]"
+    },
+    {
+      "id": 40,
+      "type": "negative",
+      "mode": "english",
+      "topic": "BGS SGS SOMA JV vs NHPC LTD, No. 2019 INSC 1349, Supreme Court of India, 2019-12-10",
+      "notes": [
+        "Personal liberty, as used in Article 21, is treated as a composition of rights relatable to various spheres of life to confer the meaning to the said ri'ght."
+      ],
+      "question": "What figures are mentioned about BGS SGS SOMA JV vs NHPC LTD, No. 2019 INSC 1349, Supreme Court of India, 2019-12-10?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "I cannot find that in the notes."
+    },
+    {
+      "id": 41,
+      "type": "double",
+      "mode": "domain",
+      "topic": "MAZDOOR KISAN SHAKTI SANGATHAN vs THE UNION OF INDIA & ANR, No. 2018 INSC 635, Supreme Court of India, 2018-07-23",
+      "notes": [
+        "The Supreme Court converted the SLPs filed by the party States into Civil Appeals.",
+        "In curbing such violence or dispersing unlawful assemblies, police has to accomplish its task with utmost care, deftness and precision.",
+        "Thus, on the one hand, law and order needs to be restored and at the same time, it is also to be ensured that unnecessary force or t he force beyond what is absolutely essential is not used."
+      ],
+      "question": "Share a couple of facts about MAZDOOR KISAN SHAKTI SANGATHAN vs THE UNION OF INDIA & ANR, No. 2018 INSC 635, Supreme Court of India, 2018-07-23.",
+      "answerable": true,
+      "groups": [
+        [
+          "unnecessary"
+        ],
+        [
+          "absolutely"
+        ],
+        [
+          "accomplish"
+        ]
+      ],
+      "reference_answer": "In curbing such violence or dispersing unlawful assemblies, police has to accomplish its task with utmost care, deftness and precision. [2] Thus, on the one hand, law and order needs to be restored and at the same time, it is also to be ensured that unnecessary force or t he force beyond what is absolutely essential is not used. [3]"
+    },
+    {
+      "id": 42,
+      "type": "double",
+      "mode": "english",
+      "topic": "PETROLEUM & NATURAL GAS REGULATORY BOARD vs INDRAPRASTHA GAS LIMITED & ORS, No. 2015 INSC 459, Supreme Court of India, 2015-07-01",
+      "notes": [
+        "The power to fix the tariff has not been given to the Board.",
+        "In view of that the Board cannot frame a Regulation which will cover the area pertaining to determination of network tariff for city or local gas distribution network and compression charge · F for CNG."
+      ],
+      "question": "Give me a short overview of PETROLEUM & NATURAL GAS REGULATORY BOARD vs INDRAPRASTHA GAS LIMITED & ORS, No. 2015 INSC 459, Supreme Court of India, 2015-07-01.",
+      "answerable": true,
+      "groups": [
+        [
+          "Regulation"
+        ],
+        [
+          "CNG"
+        ],
+        [
+          "determination"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: The power to fix the tariff has not been given to the Board. In view of that the Board cannot frame a Regulation which will cover the area pertaining to determination of network tariff for city or local gas distribution network and compression charge · F for CNG."
+    },
+    {
+      "id": 43,
+      "type": "double",
+      "mode": "domain",
+      "topic": "MAHAMADKHAN NATHEKHAN vs STATE OF GUJARAT, No. 2014 INSC 1002, Supreme Court of India, 2014-09-10",
+      "notes": [
+        "Both the wife and younger · brother of Firozbhai have testified that Firozbhai was fond of · hunting and on earlier occasion he had gone for hunting along with his friends.",
+        "Hence, there is no surprise that they took a decision while midway to go for hunting at Nal Sarovar and then D proceed to Savarkundla."
+      ],
+      "question": "What should I know about MAHAMADKHAN NATHEKHAN vs STATE OF GUJARAT, No. 2014 INSC 1002, Supreme Court of India, 2014-09-10?",
+      "answerable": true,
+      "groups": [
+        [
+          "Savarkundla"
+        ],
+        [
+          "Firozbhai"
+        ],
+        [
+          "Sarovar"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: Both the wife and younger · brother of Firozbhai have testified that Firozbhai was fond of · hunting and on earlier occasion he had gone for hunting along with his friends. Hence, there is no surprise that they took a decision while midway to go for hunting at Nal Sarovar and then D proceed to Savarkundla."
+    },
+    {
+      "id": 44,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "MAXOPP INVESTMENT LTD. vs COMMISSIONER OF INCOME TAX, NEW DELHI, No. 2018 INSC 131, Supreme Court of India, 2018-02-12",
+      "notes": [
+        "It was also submitted that the judgment in the case of Suraj Lamps & Industries Pvt.",
+        "This Circular has already been reproduced in Para 19 above.",
+        "Several other documents, including the registration extracts of various sale deeds executed by Annapurnamma and the sale deeds executed by defendant 15 were also exhibi ted in evidence."
+      ],
+      "question": "Which numbers are given for MAXOPP INVESTMENT LTD. vs COMMISSIONER OF INCOME TAX, NEW DELHI, No. 2018 INSC 131, Supreme Court of India, 2018-02-12?",
+      "answerable": true,
+      "groups": [
+        [
+          "Circular"
+        ],
+        [
+          "Para"
+        ],
+        [
+          "reproduced"
+        ]
+      ],
+      "reference_answer": "This Circular has already been reproduced in Para 19 above. [2]"
+    },
+    {
+      "id": 45,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "PUNJAB WAKF BOARD vs SHAM SINGH HARIKE, No. 2019 INSC 157, Supreme Court of India, 2019-02-07",
+      "notes": [
+        "It is also noticed that the PCCF & HoFF and the DIG Police, Vigilance Department had written in this regard to the Government requesting not to post the said officer in any sensitive post.",
+        "This orocess of definition, qua) ification and balancing is as much required with respect to the value of freedom of expression as it is for other values\"."
+      ],
+      "question": "What figures are mentioned about PUNJAB WAKF BOARD vs SHAM SINGH HARIKE, No. 2019 INSC 157, Supreme Court of India, 2019-02-07?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    },
+    {
+      "id": 46,
+      "type": "single",
+      "mode": "domain",
+      "topic": "MAHADEVAPPA vs STATE OF KARNATAKA REP. BY PUBLIC PROSECUTOR, No. 2019 INSC 15, Supreme Court of India, 2019-01-07",
+      "notes": [
+        "In other words, the question arises for consideration is whether Rukmini Bai’s death can be regarded as “dowry death” attracting Section 498-A IPC or/ and secondly, whether her death was “homicidal” attracting Section 302 IPC or it was “accidental death”."
+      ],
+      "question": "What figures are mentioned about MAHADEVAPPA vs STATE OF KARNATAKA REP. BY PUBLIC PROSECUTOR, No. 2019 INSC 15, Supreme Court of India, 2019-01-07?",
+      "answerable": true,
+      "groups": [
+        [
+          "498-A"
+        ],
+        [
+          "302"
+        ],
+        [
+          "Rukmini"
+        ]
+      ],
+      "reference_answer": "According to [1]: In other words, the question arises for consideration is whether Rukmini Bai’s death can be regarded as “dowry death” attracting Section 498-A IPC or/ and secondly, whether her death was “homicidal” attracting Section 302 IPC or it was “accidental death”."
+    },
+    {
+      "id": 47,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "CHUNTHURAM vs STATE OF CHHATTISGARH, No. 2020 INSC 616, Supreme Court of India, 2020-10-29",
+      "notes": [
+        "The State of Bombay 1 SCR 903 – referred to.",
+        "There is no ground today to refer the judgment of Satyawati Sharma case for consideration of a larger Bench."
+      ],
+      "question": "What figures are mentioned about CHUNTHURAM vs STATE OF CHHATTISGARH, No. 2020 INSC 616, Supreme Court of India, 2020-10-29?",
+      "answerable": true,
+      "groups": [
+        [
+          "903"
+        ],
+        [
+          "Bombay"
+        ],
+        [
+          "SCR"
+        ]
+      ],
+      "reference_answer": "According to [1]: The State of Bombay 1 SCR 903 – referred to."
+    },
+    {
+      "id": 48,
+      "type": "single",
+      "mode": "english",
+      "topic": "HARYANA FINANCIAL CORPORATION vs GURCHARAN SINGH & ANR, No. 2013 INSC 835, Supreme Court of India, 2013-12-13",
+      "notes": [
+        "SCR 206 = (1998) 7 SCC 327 - relied on."
+      ],
+      "question": "What figures are mentioned about HARYANA FINANCIAL CORPORATION vs GURCHARAN SINGH & ANR, No. 2013 INSC 835, Supreme Court of India, 2013-12-13?",
+      "answerable": true,
+      "groups": [
+        [
+          "1998"
+        ],
+        [
+          "206"
+        ],
+        [
+          "327"
+        ]
+      ],
+      "reference_answer": "According to [1]: SCR 206 = (1998) 7 SCC 327 - relied on."
+    },
+    {
+      "id": 49,
+      "type": "double",
+      "mode": "domain",
+      "topic": "EX NAVY DIRECT ENTRY ARTIFICERS ASSOCIATION & ORS. vs THE UNION OF INDIA & ORS, No. 2018 INSC 461, Supreme Court of India, 2018-05-08",
+      "notes": [
+        "SCR 129 referred to Para 29 12 SCR 991 referred to Para 29 5 SCR 1005 referred to Para 32 1 SCR 438 referred to Para 57(a) 1 Suppl.",
+        "Hence, no right of the Sailors in active service was affected or ta ken away because of the Policy dated 3-7-1976...” 27.",
+        "As found earlier, drafting of Sailors to the Reserve Fleet Service was not automatic, but dependent on a n express order to be passed by the competent authority in t hat behalf on case-to-case basis."
+      ],
+      "question": "Give me two facts about EX NAVY DIRECT ENTRY ARTIFICERS ASSOCIATION & ORS. vs THE UNION OF INDIA & ORS, No. 2018 INSC 461, Supreme Court of India, 2018-05-08.",
+      "answerable": true,
+      "groups": [
+        [
+          "3-7-1976"
+        ],
+        [
+          "Reserve"
+        ],
+        [
+          "Sailors"
+        ]
+      ],
+      "reference_answer": "Hence, no right of the Sailors in active service was affected or ta ken away because of the Policy dated 3-7-1976...” 27. [2] As found earlier, drafting of Sailors to the Reserve Fleet Service was not automatic, but dependent on a n express order to be passed by the competent authority in t hat behalf on case-to-case basis. [3]"
+    },
+    {
+      "id": 50,
+      "type": "negative",
+      "mode": "english",
+      "topic": "RAJBALA & OTHERS vs STATE OF HARYANA & OTHERS, No. 2015 INSC 912, Supreme Court of India, 2015-12-10",
+      "notes": [
+        "Finding they will be unable to meet the requirements under the Indian Accounting Standards set out in Section 5(8)(d), for the first time in its written submission before the NCLAT the contention was raised under Section 5(8)(f)."
+      ],
+      "question": "What figures are mentioned about RAJBALA & OTHERS vs STATE OF HARYANA & OTHERS, No. 2015 INSC 912, Supreme Court of India, 2015-12-10?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes do not say."
+    },
+    {
+      "id": 51,
+      "type": "double",
+      "mode": "english",
+      "topic": "Custodian bank",
+      "notes": [
+        "Custodial banks do not engage in traditional commercial or retail banking services like lending.",
+        "Custodian banks provides a wide range of value-adding or cost-saving financial services, such as fund administration, transfer agency, securities lending, and trustee services."
+      ],
+      "question": "Tell me more about Custodian bank.",
+      "answerable": true,
+      "groups": [
+        [
+          "administration"
+        ],
+        [
+          "value-adding"
+        ],
+        [
+          "cost-saving"
+        ]
+      ],
+      "reference_answer": "Custodial banks do not engage in traditional commercial or retail banking services like lending. Custodian banks provides a wide range of value-adding or cost-saving financial services, such as fund administration, transfer agency, securities lending, and trustee services."
+    },
+    {
+      "id": 52,
+      "type": "single_distractors",
+      "mode": "english",
+      "topic": "LOK PRAHARI THR. ITS GNRL. SECY, S N SHUKLA vs STATE OF UP AND ORS, No. 2016 INSC 1043, Supreme Court of India, 2016-11-21",
+      "notes": [
+        "The said Committee discussed the legal ramifications, and in some way opined in favour of the appellant-Corporation, as is apparent from the discussion aforesaid.",
+        "Providing reservation for advancement of any socially and educationally backward class in public services is not the only means and method for improving the welfare of backward class.",
+        "From the Judgment and Order dated 13.05.2013 of the Lucknow Bench of Allahabad High Court in Writ Petition No. 1235 (M/B) of 2004."
+      ],
+      "question": "Which numbers are given for LOK PRAHARI THR. ITS GNRL. SECY, S N SHUKLA vs STATE OF UP AND ORS, No. 2016 INSC 1043, Supreme Court of India, 2016-11-21?",
+      "answerable": true,
+      "groups": [
+        [
+          "1235"
+        ],
+        [
+          "2004"
+        ],
+        [
+          "2013"
+        ]
+      ],
+      "reference_answer": "According to [3]: From the Judgment and Order dated 13.05.2013 of the Lucknow Bench of Allahabad High Court in Writ Petition No. 1235 (M/B) of 2004."
+    },
+    {
+      "id": 53,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Economy of Salem, Tamil Nadu",
+      "notes": [
+        "In the recent past, home furnishing items are also woven, mainly for export purposes.",
+        "Sari, dhoti and angavasthram are made out of silk yarn and cotton yarn."
+      ],
+      "question": "Tell me more about Economy of Salem, Tamil Nadu.",
+      "answerable": true,
+      "groups": [
+        [
+          "angavasthram"
+        ],
+        [
+          "furnishing"
+        ],
+        [
+          "purposes"
+        ]
+      ],
+      "reference_answer": "In the recent past, home furnishing items are also woven, mainly for export purposes. [1] Sari, dhoti and angavasthram are made out of silk yarn and cotton yarn. [2]"
+    },
+    {
+      "id": 54,
+      "type": "double",
+      "mode": "domain",
+      "topic": "Dyscalculia",
+      "notes": [
+        "It is submitted that no employee can claim the relaxation as a matter of right.",
+        "Thus, disruption to the left angular gyrus can cause both reading impairments and difficulties in calculation.",
+        "Semantic memory: This subtype often coexists with reading disabilities such as dyslexia and is characterized by poor representation and retrieval from long-term memory."
+      ],
+      "question": "Tell me more about Dyscalculia.",
+      "answerable": true,
+      "groups": [
+        [
+          "representation"
+        ],
+        [
+          "characterized"
+        ],
+        [
+          "difficulties"
+        ]
+      ],
+      "reference_answer": "Thus, disruption to the left angular gyrus can cause both reading impairments and difficulties in calculation. [2] Semantic memory: This subtype often coexists with reading disabilities such as dyslexia and is characterized by poor representation and retrieval from long-term memory. [3]"
+    },
+    {
+      "id": 55,
+      "type": "negative",
+      "mode": "domain",
+      "topic": "UNION OF INDIA & ANOTHER vs SANJEEV vs DESHPANDE, No. 2014 INSC 538, Supreme Court of India, 2014-08-12",
+      "notes": [
+        "Learned senior counsel finally submit ted that the judgment passed by the High Court is well-versed and with in the parameters of law and no interference is sought for by this Court in the matter.",
+        "It is the effect of the law upon the fundamental right which calls the courts to ste p in and remedy the violation."
+      ],
+      "question": "Which numbers are given for UNION OF INDIA & ANOTHER vs SANJEEV vs DESHPANDE, No. 2014 INSC 538, Supreme Court of India, 2014-08-12?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "I cannot find that in the notes."
+    },
+    {
+      "id": 56,
+      "type": "double",
+      "mode": "domain",
+      "topic": "RAM PYAREY vs THE STATE OF UTTAR PRADESH, No. 2025 INSC 71, Supreme Court of India, 2025-01-08",
+      "notes": [
+        "Bharat Bhushan, the learned counsel appearing for the appellant and Mr. K. Parmeshwar, the learned senior counsel appearing for the State of Uttar Pradesh.",
+        "We have also looked into the nature of the allegations levelled against the appellant herein."
+      ],
+      "question": "Tell me more about RAM PYAREY vs THE STATE OF UTTAR PRADESH, No. 2025 INSC 71, Supreme Court of India, 2025-01-08.",
+      "answerable": true,
+      "groups": [
+        [
+          "Parmeshwar"
+        ],
+        [
+          "Bhushan"
+        ],
+        [
+          "allegations"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: Bharat Bhushan, the learned counsel appearing for the appellant and Mr. K. Parmeshwar, the learned senior counsel appearing for the State of Uttar Pradesh. We have also looked into the nature of the allegations levelled against the appellant herein."
+    },
+    {
+      "id": 57,
+      "type": "double",
+      "mode": "domain",
+      "topic": "SARABJEET SINGH MOKHA vs THE DISTRICT MAGISTRATE, JABALPUR & ORS, No. 2021 INSC 702, Supreme Court of India, 2021-10-29",
+      "notes": [
+        "The District Magistrate forwarded comments on 10 June 2021 which were received on 11 June 2021.",
+        "However, the Central Government, in its counter affidavit before the High Court, has submitted that it was received in the concerned sect ion on 1 June 2021."
+      ],
+      "question": "Give me two facts about SARABJEET SINGH MOKHA vs THE DISTRICT MAGISTRATE, JABALPUR & ORS, No. 2021 INSC 702, Supreme Court of India, 2021-10-29.",
+      "answerable": true,
+      "groups": [
+        [
+          "Government"
+        ],
+        [
+          "Central"
+        ],
+        [
+          "High"
+        ]
+      ],
+      "reference_answer": "According to [1] and [2]: The District Magistrate forwarded comments on 10 June 2021 which were received on 11 June 2021. However, the Central Government, in its counter affidavit before the High Court, has submitted that it was received in the concerned sect ion on 1 June 2021."
+    },
+    {
+      "id": 58,
+      "type": "single_distractors",
+      "mode": "domain",
+      "topic": "KHURSHEED AHMAD CHOHAN vs UNION OF TERRITORY OF JAMMU AND KASHMIR AND ORS. ETC, No. 2025 INSC 876, Supreme Court of India, 2025-07-21",
+      "notes": [
+        "However, there was a recurring damage to the main temple building from time to time.",
+        "In this regard, he has advanced the following submissions to urge: 5.1 The present case involves grave allegations of custodial torture which the perpetrators tried to cover up as a suicide attempt by the appellant."
+      ],
+      "question": "Which numbers are given for KHURSHEED AHMAD CHOHAN vs UNION OF TERRITORY OF JAMMU AND KASHMIR AND ORS. ETC, No. 2025 INSC 876, Supreme Court of India, 2025-07-21?",
+      "answerable": true,
+      "groups": [
+        [
+          "perpetrators"
+        ],
+        [
+          "allegations"
+        ],
+        [
+          "submissions"
+        ]
+      ],
+      "reference_answer": "According to [2]: In this regard, he has advanced the following submissions to urge: 5.1 The present case involves grave allegations of custodial torture which the perpetrators tried to cover up as a suicide attempt by the appellant."
+    },
+    {
+      "id": 59,
+      "type": "single",
+      "mode": "domain",
+      "topic": "CRL OP/15403/2022 of A.K.R.VETRIAZHAGAN Vs DIRECTOR OF VIGILANCE AND ANTI CORRUPTION",
+      "notes": [
+        "Crl.OP.No.15403 of 2022 the sale deed registered in favour of the Petitioner's family and the Accused Officer has also cancelled the parent document of the year 1976."
+      ],
+      "question": "What numbers does the text give about CRL OP/15403/2022 of A.K.R.VETRIAZHAGAN Vs DIRECTOR OF VIGILANCE AND ANTI CORRUPTION?",
+      "answerable": true,
+      "groups": [
+        [
+          "1976"
+        ],
+        [
+          "Petitioner's"
+        ],
+        [
+          "Accused"
+        ]
+      ],
+      "reference_answer": "According to [1]: Crl.OP.No.15403 of 2022 the sale deed registered in favour of the Petitioner's family and the Accused Officer has also cancelled the parent document of the year 1976."
+    },
+    {
+      "id": 60,
+      "type": "negative",
+      "mode": "english",
+      "topic": "DIRECTOR GENERAL OF INCOME TAX (INVESTIGATION) PUNE & ORS. vs M/S. SPACEWOOD FURNISHERS PVT. LTD. & ORS, No. 2015 INSC 407, Supreme Court of India, 2015-05-13",
+      "notes": [
+        "The misunderstanding as projected by the learned Senior Counsel for the Appellant between parties relates to use of “FX” or “991” as separate marks in the Settlement Agreement."
+      ],
+      "question": "What numbers does the text give about DIRECTOR GENERAL OF INCOME TAX (INVESTIGATION) PUNE & ORS. vs M/S. SPACEWOOD FURNISHERS PVT. LTD. & ORS, No. 2015 INSC 407, Supreme Court of India, 2015-05-13?",
+      "answerable": false,
+      "groups": [],
+      "reference_answer": "The notes don't say."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "checkpoint": "best.pt",
+  "status": "completed",
+  "weights_from_step": 3360,
+  "final_step": 3360,
+  "weights_from_epoch": 3,
+  "best_val_loss": 1.9738864555750808,
+  "tokenizer_sha256": "fb016e6073221438d7fce0553aef5d3cc227469e1baed58d9f2767b11ee2f344",
+  "vocab_size": 34855,
+  "config": {
+    "embedding_size": 384,
+    "hidden_size": 1536,
+    "sequence_length": 512,
+    "num_layers": 6,
+    "num_heads": 12,
+    "dropout": 0.1,
+    "tie_weights": true
+  },
+  "init_from": "backend\\training\\checkpoints_bpe\\legal_lm_v1\\best.pt",
+  "completed_at": "2026-10-17 13:29:34",
+  "exported_at": "2026-10-17 13:40:14",
+  "weights_only": true
+}
