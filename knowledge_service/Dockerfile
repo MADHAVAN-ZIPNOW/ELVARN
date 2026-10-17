@@ -35,5 +35,7 @@ USER elvarn
 
 # Render sets PORT itself; 10000 is only the default for local runs.
 ENV PORT=10000
+# 512 MB plan: one retrieval at a time (keyword search + reranker measured 361 MB peak; four at once was killed), a second visitor waits up to 8 s
+ENV KNOWLEDGE_MAX_CONCURRENT=1 KNOWLEDGE_QUEUE_SECONDS=8
 EXPOSE 10000
 CMD ["/bin/bash", "/app/knowledge_service/start.sh"]

@@ -126,3 +126,52 @@ def test_redis_down_does_not_break_the_chat(kb, rag_store, client_for):
 def test_without_any_store_the_chat_is_unchanged(client_for):
     body = ask(client_for(), "List the corruption cases of Test Person")
     assert body.get("stop_reason") != "knowledge_base" and not body.get("searched")
+
+
+# ---- the stored records are shown by plain code; the model only adds an optional, grounded summary and can never hide them
+def _stub_model(client, reply):
+    service = client.app.state.service
+    service.prompt_budget = lambda: (lambda t: len(t.split()), 512)                        # the tiny test model could not fit the notes: now they do
+    service.generate = lambda text, **kwargs: {"text": reply, "seconds": 0, "generated_tokens": 3}
+
+
+def test_records_are_shown_even_when_the_model_refuses(kb, rag_store, memory, client_for):
+    load(kb, rag_store)
+    c = client_for(kb, rag_store, memory)
+    _stub_model(c, "The notes do not contain this information.")                           # the failure seen on the live site
+    asked = []
+    inner = c.app.state.service.generate
+    c.app.state.service.generate = lambda text, **kw: (asked.append(text), inner(text, **kw))[1]
+    body = ask(c, "village officer trapped and arrested for demanding a bribe")
+    assert asked and "Stored records" in asked[0]                                           # the model was asked, with the records in its prompt
+    assert body["stop_reason"] == "stored_records" and body["grounding"] == "stored_records"
+    assert "The notes do not" not in body["text"]                                           # the model's refusal never reaches the person
+    assert body["text"].startswith("From the stored records:") and "Source:" in body["text"]
+    for n, s in enumerate(body["sources"], 1):
+        assert f"[{n}] {s['snippet']}" in body["text"]                                      # every retrieved item, word for word, numbered
+    assert body["sources"][0]["url"] == "https://example.org/pr12" and body["model_used"] is False
+
+
+def test_a_grounded_model_summary_is_added_below_the_records(kb, rag_store, memory, client_for):
+    load(kb, rag_store)
+    c = client_for(kb, rag_store, memory)
+    first = ask(c, "village officer trapped and arrested for demanding a bribe")
+    note = first["sources"][0]["snippet"]
+    words = note.split()
+    _stub_model(c, " ".join(words[:6] + words[8:14]) + ".")                                 # only words of the note, but not a contiguous copy
+    body = ask(c, "village officer trapped and arrested for demanding a bribe")
+    assert body["text"].startswith("From the stored records:")
+    assert "Summary (written by the model from the records above): " in body["text"] and body["model_used"] is True
+    assert body["text"].index("Summary") > body["text"].index("[1]")                        # the records come first
+
+
+def test_stream_also_shows_the_records_when_the_model_refuses(kb, rag_store, memory, client_for):
+    load(kb, rag_store)
+    c = client_for(kb, rag_store, memory)
+    _stub_model(c, "The notes do not say.")
+    with c.stream("POST", "/api/chat/stream", json={"text": "village officer trapped and arrested for demanding a bribe"}) as r:
+        events = [json.loads(line) for line in r.iter_lines() if line.strip()]
+    kinds = [e["event"] for e in events]
+    assert kinds[0] == "sources" and kinds[-1] == "done"
+    done = events[-1]
+    assert done["stop_reason"] == "stored_records" and "The notes do not" not in done["text"] and "[1]" in done["text"]

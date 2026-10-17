@@ -94,7 +94,7 @@ def mixed_corpus(kb, rag):
 def test_export_selects_official_notes_and_tamil_nadu_corruption_articles_only(kb, rag_store, tmp_path):
     mixed_corpus(kb, rag_store)
     manifest = snapshot.export_snapshot(kb, rag_store, tmp_path / "snap")
-    assert manifest["passages"] == 3 and manifest["passages_by_reason"] == {"official": 1, "project notes/files": 1, "wikipedia (Tamil Nadu + corruption)": 1}
+    assert manifest["passages"] == 3 and {k: v for k, v in manifest["passages_by_reason"].items() if not k.startswith("judgments")} == {"official": 1, "project notes/files": 1, "wikipedia (Tamil Nadu + corruption)": 1}
     ids, texts, metas, vectors = snapshot.read_passages(tmp_path / "snap")
     assert not any("Kaveri" in t for t in texts) and vectors.shape[0] == 3 and {m["title"] for m in metas} >= {"Test v. State (Madras High Court)"}
 
@@ -171,3 +171,24 @@ def test_loading_a_snapshot_needs_none_of_the_exporting_machines_code():
             "import knowledge_service.app\nprint('OK')\n")
     r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=root, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stderr[-1200:]
+
+
+def test_judgments_on_corruption_and_elections_are_capped_per_case_and_other_subjects_left_out(kb, rag_store, tmp_path, monkeypatch):
+    import gzip
+    monkeypatch.setattr(snapshot, "JUDGMENT_PASSAGES_PER_CASE", 3)
+
+    def judgment(title, subjects, count):
+        passages = [{"locator": f"chunk {i}", "text": f"Passage {i} of {title}: the matter before the court is explained in detail number {i}."} for i in range(1, count + 1)]
+        store_document(kb, rag_store, title=title, doc_type="judgment", text=" ".join(p["text"] for p in passages), passages=passages,
+                       publisher="Supreme Court of India", url="https://example.org/" + title[:6])
+        kb._run("MATCH (s:Source {title: $t}) SET s.subjects = $subs", t=title, subs=subjects)
+
+    judgment("Election Case A", ["election"], 6)
+    judgment("Family Case B", ["family"], 6)
+    manifest = snapshot.export_snapshot(kb, rag_store, tmp_path / "snap")
+    reason = next(k for k in manifest["passages_by_reason"] if k.startswith("judgments"))
+    assert manifest["passages_by_reason"][reason] == 3 and manifest["passages"] == 3                   # 3 of the 6 passages of the election case, none of the family case
+    ids, texts, metas, vectors = snapshot.read_passages(tmp_path / "snap")
+    assert all("Election Case A" in t for t in texts) and not any("Family Case B" in t for t in texts)
+    graph = gzip.open(tmp_path / "snap" / snapshot.GRAPH, "rt", encoding="utf-8").read()
+    assert "Election Case A" not in graph and "Family Case B" not in graph                               # judgments are served by the vector store only

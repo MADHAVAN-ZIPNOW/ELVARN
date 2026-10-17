@@ -150,6 +150,17 @@ def load_vectors(directory, store, marker_file=None, batch=500):
     return len(ids)
 
 
+def ensure_lexical(store, path, loaded):
+    """The BM25 keyword index (backend/knowledge/lexical.py) next to the embedded Chroma: rebuilt whenever the passages were (re)loaded,
+    built once if it is missing. Returns the Lexical to attach to the store."""
+    from backend.knowledge.lexical import Lexical, chroma_rows
+    path = Path(path)
+    if loaded or not path.is_file():
+        path.unlink(missing_ok=True)
+        Lexical.build(path, chroma_rows(store))
+    return Lexical(path)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["export", "check", "load"])
@@ -160,7 +171,9 @@ def main():
         import chromadb
         from backend.knowledge.vectorstore import RagStore
         store = RagStore(client=chromadb.PersistentClient(path=str(a.chroma_path)))
-        print("loaded", load_vectors(a.dir, store, marker_file=a.chroma_path / "snapshot.marker"), "passages;", store.count(), "in the store")
+        loaded = load_vectors(a.dir, store, marker_file=a.chroma_path / "snapshot.marker")
+        lexical = ensure_lexical(store, a.chroma_path / "lexical.db", loaded)
+        print("loaded", loaded, "passages;", store.count(), "in the store;", lexical.count(), "in the keyword index")
         return
     if a.cmd == "check":
         m = check_snapshot(a.dir)

@@ -1,0 +1,875 @@
+{
+  "description": "ELVARN retrieval benchmark: question + the evidence a correct hit must contain.",
+  "cases": [
+    {
+      "kind": "section",
+      "question": "What is said about Section 5 of the Limitation Act?",
+      "gold": "Section 5 of the Limitation Act was, therefore, held to be inapplicable to Section 34(1) of the Arbitration Act.",
+      "gold_title": "BHIMASHANKAR SAHAKARI SAKKARE KARKHANE NIYAMITA vs WALCHANDNAGAR INDUSTRIES LTD. (WIL)",
+      "section": "5",
+      "act": "Limitation Act",
+      "id": 1
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 31 of the SEBI Act provide?",
+      "gold": "Section 31 of the SEBI Act, reproduced below for the facility of reference, provides that the Rules and Regulations are to be laid before Parliament: “31.",
+      "gold_title": "UNION OF INDIA & ORS. vs M/S G S CHATHA RICE MILLS & ANR",
+      "section": "31",
+      "act": "SEBI Act",
+      "id": 2
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 38 of the Advocates Act?",
+      "gold": "Section 38 of the Advocates Act provides that even in disciplinary matters the final Appellate Authority is the Supreme Court.",
+      "gold_title": "DISTRICT BAR ASSOCIATION, DEHRADUN THROUGHITS SECRETARY vs ISHWAR SHANDILYA & ORS",
+      "section": "38",
+      "act": "Advocates Act",
+      "id": 3
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 12A of the Commercial Courts Act, 2015 provide?",
+      "gold": "Disposing of the appeals, the Court HELD: 1. Section 12A of the Commercial Courts Act, 2015 cannot be described as a mere procedural law.",
+      "gold_title": "M/S. PATIL AUTOMATION PRIVATE LIMITED AND ORS. vs RAKHEJA ENGINEERS PRIVATE LIMITED",
+      "section": "12A",
+      "act": "Commercial Courts Act, 2015",
+      "id": 4
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 34 of the Indian Penal Code, 1860 provide?",
+      "gold": "Be it stated that petitioner was convicted by the Trial Court under Sections 302, 364 and 201 read with Section 34 of the Indian Penal Code, 1860 (IPC) and sentenced to undergo imprisonment for life.",
+      "gold_title": "SUKHDEV YADAV @ PEHALWAN vs STATE OF (NCT OF DELHI) & OTHERS",
+      "section": "34",
+      "act": "Indian Penal Code, 1860",
+      "id": 5
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 3(4)(a) of the MTP Act provide?",
+      "gold": "It was further held that the woman only had “mild mental retardation” and was therefore competent to give her consent in terms of Section 3(4)(a) of the MTP Act.",
+      "gold_title": "X vs THE PRINCIPAL SECRETARY, HEALTH AND FAMILY WELFARE DEPARTMENT, GOVT. OF NCT OF DELHI & ANR",
+      "section": "3(4)(a)",
+      "act": "MTP Act",
+      "id": 6
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 31(8)(a) of the U.P. State Universities Act, 1973?",
+      "gold": "A spate of interim orders came to be passed pursuant to which the Executive Council decided to refer the recommendations of the Selection Committees to the Chancellor under the proviso to Section 31(8)(a) of the U.P. State Universities Act, 1973.",
+      "gold_title": "DINESH CHANDRA SHUKLA vs STATE OF U.P. & ORS",
+      "section": "31(8)(a)",
+      "act": "U.P. State Universities Act, 1973",
+      "id": 7
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 11(1) of the Land Acquistion Act?",
+      "gold": "Further, the proviso to Section 11(1) of the Land Acquistion Act provides that no award shall be made by the collector without the previous approval of either the appropriate Government or such officer authorised by it for the above purpose.",
+      "gold_title": "KEDAR NATH YADAV vs STATE OF WEST BENGAL & ORS",
+      "section": "11(1)",
+      "act": "Land Acquistion Act",
+      "id": 8
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 45B of the Karnataka Stamp Act, 1957 provide?",
+      "gold": "Section 2(i) defines ‘Market Value’ to mean the value determined as per the guidance value of land in accordance with Section 45B of the Karnataka Stamp Act, 1957.",
+      "gold_title": "CHADURANGA KANTHRAJ URS AND ANR. vs P. RAVI KUMAR AND ORS",
+      "section": "45B",
+      "act": "Karnataka Stamp Act, 1957",
+      "id": 9
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 26(1) of the Acquisition Act, 2013?",
+      "gold": "It holds that according to Section 26(1) of the Acquisition Act, 2013, if the market value as determined under the Stamp Act is the highest of the other computed values, it will be binding.",
+      "gold_title": "MADHYA PRADESH ROAD DEVELOPMENT CORPORATION vs VINCENT DANIEL AND OTHERS",
+      "section": "26(1)",
+      "act": "Acquisition Act, 2013",
+      "id": 10
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 128 of the RP Act provide?",
+      "gold": "After referring to Section 128 of the RP Act and Rule 39 of the Rules, this Court in S. Raghbir Sin9h Gill vs. S. Gurcharan Singh Tohra and Others 1980 (Supp) SCC 53 held as under: \"14 ...",
+      "gold_title": "PEOPLE'S UNION FOR CIVIL LIBERTIES & ANR. vs UNION OF INDIA & ANR",
+      "section": "128",
+      "act": "RP Act",
+      "id": 11
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 25 of the Land Acquisition Act?",
+      "gold": "We hold that the exclusion of Section 25 of the Land Acquisition Act from Section 34 of the Act is unconstitutional but it is severable and we sever it.",
+      "gold_title": "UNION OF INDIA & ANR. vs TARSEM SINGH & ORS",
+      "section": "25",
+      "act": "Land Acquisition Act",
+      "id": 12
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 53 of the Indian Forest Act?",
+      "gold": "This provision is similar to that of Section 53 of the Indian Forest Act as amended by the State of Madhya Pradesh.",
+      "gold_title": "THE STATE OF MADHYA PRADESH & ORS. vs SMT. KALLO BAI",
+      "section": "53",
+      "act": "Indian Forest Act",
+      "id": 13
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 141B of the Gujarat Act?",
+      "gold": "Section 141B of the Gujarat Act provides for the rate at which the general tax is leviable.",
+      "gold_title": "AHMEDABAD MUNICIPAL CORPORATION vs GTL INFRASTRUCTURE LTD. & ORS. ETC",
+      "section": "141B",
+      "act": "Gujarat Act",
+      "id": 14
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 4(1) of the L.A. Act?",
+      "gold": "On 16.01.1985, notification under Section 4(1) of the L.A. Act was issued proposing to acquire the required extent of land including Sy.No.30.",
+      "gold_title": "M/S. VINAYAK HOUSE BUILDING COOPERATIVESOCIETY LTD. vs THE STATE OF KARNATAKA & ORS",
+      "section": "4(1)",
+      "act": "L.A. Act",
+      "id": 15
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 45 of the Indian Penal Code?",
+      "gold": "Section 45 of the Indian Penal Code defines life as \"The word \"life\" denotes the life of a human being, unless the contrary appears from the context\".",
+      "gold_title": "DURYODHAN ROUT vs STATE OF ORLSSA",
+      "section": "45",
+      "act": "Indian Penal Code",
+      "id": 16
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 9 of the GST Act provide?",
+      "gold": "Under sub-Section (1) of Section 9 of the GST Act, servi ce tax is leviable on services supplied intra-state.",
+      "gold_title": "ALL INDIA HAJ UMRAH TOUR ORGANIZER ASSOCIATION MUMBAI vs UNION OF INDIA & ORS",
+      "section": "9",
+      "act": "GST Act",
+      "id": 17
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 24 of the PCA Act?",
+      "gold": "Section 24 of the PCA Act deals with the powers of th~ court to prohibit or restrict exhibition and training of performing animals.",
+      "gold_title": "ANIMAL WELFARE BOARD OF INDIA vs A. NAGARAJA & ORS",
+      "section": "24",
+      "act": "PCA Act",
+      "id": 18
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 5 of the IGST Act, 2017 provide?",
+      "gold": "This is also true in respect of the cesses imposed on inter-State supplies of goods and services covered by Section 5 of IGST Act, 2017.",
+      "gold_title": "UNION OF INDIA & ANR. vs MOHIT MINERAL PVT. LTD",
+      "section": "5",
+      "act": "IGST Act, 2017",
+      "id": 19
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 2(2) of the Karnataka State Universities Act, 2000?",
+      "gold": "By referring to the definition under Section 2(2) of Karnataka State Universities Act, 2000, it is submitted that term “College” includes ‘Constituent College’ as well as ‘affiliated College’.",
+      "gold_title": "REGISTRAR KARNATAKA UNIVERSITY & ANR.V. DR. PRABHUGOUDA & ANR. vs DR. PRABHUGOUDA & ANR",
+      "section": "2(2)",
+      "act": "Karnataka State Universities Act, 2000",
+      "id": 20
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 17 of the Provincial Small Cause Courts Act, 1887 provide?",
+      "gold": "Along with application dated 25.08.1998 filed under Order 9 Rule 13 CPC, no deposit was made by the tenant as required by Section 17 of the Provincial Small Cause Courts Act, 1887 (hereinafter referred to as “Act,1887”).",
+      "gold_title": "SUBODH KUMAR vs SHAMIM AHMED",
+      "section": "17",
+      "act": "Provincial Small Cause Courts Act, 1887",
+      "id": 21
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 73 of the Indian Evidence Act, 1872 provide?",
+      "gold": "An alteration could not have been found by the High Court merely on looking at the documents and it should have been properly analyzed with an expert as provided under Section 73 of the Indian Evidence Act, 1872.",
+      "gold_title": "SYED BASHEER AHMED vs M/S TINNI LABORATORIES PRIVATE LIMITED & ANR",
+      "section": "73",
+      "act": "Indian Evidence Act, 1872",
+      "id": 22
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 16 of the KIAD Act?",
+      "gold": "Power to Exempt:- Prior to Amendment Act 11 of 1997 (with effect from 19.02.1997), Section 16 of KIAD Act provided for exclusion of operation of other laws in respect of industrial areas.",
+      "gold_title": "BANGALORE INTERNATIONAL AIRPORT AREA PLANNING AUTHORITY vs BIRLA SUPER BULK TERMINAL (NOW A UNIT OF ULTRA TECH CEMENT LTD.) AND ORS",
+      "section": "16",
+      "act": "KIAD Act",
+      "id": 23
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 131H of the Panchayati Raj Act?",
+      "gold": "Sub-section (6) of Section 131H of the Panchayati Raj Act explicitly stipulates that the prescribed authority before whom an election petition is to be presented shall be an Assistant Collector (First Class) or a Pargana Magistrate.",
+      "gold_title": "SANDEEP SINGH BORA vs NARENDRA SINGH DEOPA & ORS",
+      "section": "131H",
+      "act": "Panchayati Raj Act",
+      "id": 24
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 53B of the Competition Act?",
+      "gold": "Similarly, Section 53B of the Competition Act provides that ‘any enterprise or any person aggrieved ’ within the statutory framework may file an appeal against any order of the CCI to the Appellate Tribunal i.e., the NCLAT.",
+      "gold_title": "INDEPENDENT SUGAR CORPORATION LTD. vs GIRISH SRIRAM JUNEJA & ORS",
+      "section": "53B",
+      "act": "Competition Act",
+      "id": 25
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 6 of the General Clauses Act, 1897?",
+      "gold": "The object of repeal is to obliterate the Act from the statutory books, except for certain purposes as provided under Section 6 of the General Clauses Act, 1897.",
+      "gold_title": "STATE OF ODISHA & ANOTHER vs ANUP KUMAR SENAPATI & ANOTHER",
+      "section": "6",
+      "act": "General Clauses Act, 1897",
+      "id": 26
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Article 194(3) of the Indian Constitution?",
+      "gold": "It is these powers from the Act of 1935, which are stated to have been adopted under Article 194(3) of the Indian Constitution, which applies to the State Government and ev ery State Assembly.",
+      "gold_title": "AJIT MOHAN & ORS. vs LEGISLATIVE ASSEMBLY NATIONAL CAPITAL TERRITORY OF DELHI & ORS",
+      "section": "194(3)",
+      "act": "Indian Constitution",
+      "id": 27
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 10 of the Kerala Act?",
+      "gold": "This Court recorded that an exemption had been granted under Section 10 of the Kerala Act and observed that the exemption applied to the payment of tax under the Act, encompassing both sales and purchase tax.",
+      "gold_title": "C.T. KOCHOUSEPH vs STATE OF KERALA AND ANOTHER ETC",
+      "section": "10",
+      "act": "Kerala Act",
+      "id": 28
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 52(7) of the RUI Act provide?",
+      "gold": "On 22.07.1982, the possession was handed over to the appellant Trust by the State Government under Section 52(7) of the RUI Act.",
+      "gold_title": "URBAN IMPROVEMENT TRUST vs SMT. VIDHYA DEVI AND ORS",
+      "section": "52(7)",
+      "act": "RUI Act",
+      "id": 29
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 3(36) of the General Clauses Act, 1897?",
+      "gold": "This Court referred to the definition of movable property in Section 3(36) of the General Clauses Act, 1897, which defines movable property as property of every description except immovable property.",
+      "gold_title": "CHIEF COMMISSIONER OF CENTRAL GOODS AND SERVICE TAX & ORS. vs M/S SAFARI RETREATS PRIVATE LTD. & ORS",
+      "section": "3(36)",
+      "act": "General Clauses Act, 1897",
+      "id": 30
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 3 of the Electricity Act provide?",
+      "gold": "Section 3 of the Electricity Act provides for the preparation, publication, review, and revision of the National Electricity Policy and tariff policy 29 Tata Power Co Ltd (supra), para 76.",
+      "gold_title": "BSES RAJDHANI POWER LTD. & ANR vs UNION OF INDIA AND ORS",
+      "section": "3",
+      "act": "Electricity Act",
+      "id": 31
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 24 of the Indian Evidence Act, 1872 provide?",
+      "gold": "Section 24 of the Indian Evidence Act, 1872 provides as follows:- “24 .",
+      "gold_title": "TOFAN SINGH vs STATE OF TAMIL NADU",
+      "section": "24",
+      "act": "Indian Evidence Act, 1872",
+      "id": 32
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 29 of the Competition Act provide?",
+      "gold": "Section 29 of the Competition Act prescribes the procedures not only for issuing show cause notice for investigation but also mandates issuing directions for investigation into the proposed combination.",
+      "gold_title": "INDEPENDENT SUGAR CORPORATION LTD. vs GIRISH SRIRAM JUNEJA & ORS",
+      "section": "29",
+      "act": "Competition Act",
+      "id": 33
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 3 of the Sports Act, 2007?",
+      "gold": "Any such view, according to Shri Rohatgi, would be counter-productive and go against the mandate of Section 3 of the Sports Act, 2007.",
+      "gold_title": "UNION OF INDIA vs BOARD OF CONTROL FOR CRICKET IN INDIA & ORS",
+      "section": "3",
+      "act": "Sports Act, 2007",
+      "id": 34
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 29A(4) of the Arbitration Act provide?",
+      "gold": "It was stated by the arbitrator that : “ The tribunal is ready to pronounce the award forthwith. ” 9. The Respondent / Contractor filed an Application under Section 29A(4) of the Arbitration Act being Arb.",
+      "gold_title": "HARYANA SPACE APPLICATION CENTRE (HARSAC) & ANR. vs M/S PAN INDIA CONSULTANTS PVT. LTD",
+      "section": "29A(4)",
+      "act": "Arbitration Act",
+      "id": 35
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 29(2) of the Limitation Act?",
+      "gold": "The view taken by Andhra Pradesh High Court in Sajida Begum vs. State Bank of lndia11 is based on applicability of Section 29(2) of the Limitation Act.",
+      "gold_title": "BALESHWAR DAYAL JAISWAL vs BANK OF INDIA & ORS",
+      "section": "29(2)",
+      "act": "Limitation Act",
+      "id": 36
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 2(zd) of the Securitisation Act, 2002 provide?",
+      "gold": "Section 2(zd) of the Securitisation Act, 2002 defines a ‘secured creditor’ to mean and include an Asset Reconstruction Company.",
+      "gold_title": "ASSET RECONSTRUCTION CO. (INDIA) LTD. vs CHIEF CONTROLLING REVENUE AUTHORITY",
+      "section": "2(zd)",
+      "act": "Securitisation Act, 2002",
+      "id": 37
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 14(2) of the Limitation Act?",
+      "gold": "Section 14(2) of the Limitation Act which provides for exclusion of time in computing the period of limitation in certain circu mstances.",
+      "gold_title": "M/S TECH SHARP ENGINEERS PVT. LTD. vs SANGHVI MOVERS LIMITED",
+      "section": "14(2)",
+      "act": "Limitation Act",
+      "id": 38
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 157 of the Himachal Pradesh Municipal Corporation Act, 1994 provide?",
+      "gold": "It is also in complete disregard of Section 157 of the Himachal Pradesh Municipal Corporation Act, 1994, which mandates the procedure for grant of lease.",
+      "gold_title": "RAKESH BIRANI (D) THROUGH LRS. vs PREM NARAIN SEHGAL & ANR",
+      "section": "157",
+      "act": "Himachal Pradesh Municipal Corporation Act, 1994",
+      "id": 39
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 6 of the Dowry Prohibition Act provide?",
+      "gold": "In view of the above, we also hold that the charge under Section 6 of the Dowry Prohibition Act, is not made out and therefore, fails.",
+      "gold_title": "MULAKALA MALLESHWARA RAO & ANR. vs STATE OF TELANGANA & ANR",
+      "section": "6",
+      "act": "Dowry Prohibition Act",
+      "id": 40
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 37(A) of the State Act?",
+      "gold": "Therefore, des pite the inconsistency, Section 37(A) of the State Act will prevail in the State.",
+      "gold_title": "ATUL CHANDRA DAS (D) THROUGH LRS. vs RABINDRA NATH BHATTACHARYA (D) THR. LRS. & ORS. ETC",
+      "section": "37(A)",
+      "act": "State Act",
+      "id": 41
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 87 of the Land Revenue Act?",
+      "gold": "Clarification : Section 87 of the Land Revenue Act 1317 Fasli does not provide definition of clerical errors and errors other than clerical errors.",
+      "gold_title": "TELANGANA HOUSING BOARD vs AZAMUNNISA BEGUM (DIED) THRU. LRS. & ORS",
+      "section": "87",
+      "act": "Land Revenue Act",
+      "id": 42
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 17 of the Limitation Act provide?",
+      "gold": "P. Ashok Kumar37, this Court held that Section 17 of the Limitation Act does not enable condonation of delay in a Section 34 application beyond 31 Consolidated Engineering Enterprises (supra), para 20.",
+      "gold_title": "MY PREFERRED TRANSFORMATION & HOSPITALITY PVT. LTD. & ANR. vs M/S FARIDABAD IMPLEMENTS PVT. LTD",
+      "section": "17",
+      "act": "Limitation Act",
+      "id": 43
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 32 of the Delhi Fire Service Act?",
+      "gold": "Section 32 of the Delhi Fire Service Act provides that notwithstanding anything to the contrary contained in the said Act, multi- storeyed buildings are to be governed by the provisions of the fire provision and fire safety measures thereafter stipulated.",
+      "gold_title": "VIKAS SINGH vs GOVT. OF NCT OF DELHI & ORS",
+      "section": "32",
+      "act": "Delhi Fire Service Act",
+      "id": 44
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 14A of the Citizenship Act?",
+      "gold": "ABDUL KUDDUS v. UNION OF INDIA AND OTHERS 672 SUPREME COURT REPORTS 8 S.C.R. 4. Section 14A of the Citizenship Act states that the Central Government may compulsorily register every citizen of India and issue national identity card to him/her.",
+      "gold_title": "ABDUL KUDDUS vs UNION OF INDIA AND OTHERS",
+      "section": "14A",
+      "act": "Citizenship Act",
+      "id": 45
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 138 of the NI Act provide?",
+      "gold": "Once the ingredie nts of Section 138 of the NI Act are fulfilled, the statute clearly stipulates that “such person shall be deemed to have committed an offence”.",
+      "gold_title": "M/S GIMPEX PRIVATE LIMITED vs MANOJ GOEL",
+      "section": "138",
+      "act": "NI Act",
+      "id": 46
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 206C of the Income Tax Act provide?",
+      "gold": "Having broadly surveyed the statutory framework of the business of arrack in the State of Karnataka, let us now deal with Section 206C of the Income Tax Act.",
+      "gold_title": "THE EXCISE COMMISSIONER KARNATAKA & ANR. vs MYSORE SALES INTERNATIONAL LTD. & ORS",
+      "section": "206C",
+      "act": "Income Tax Act",
+      "id": 47
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 25 of the Companies Act, 1956?",
+      "gold": "The conversion of Society into not for profit comp any under Section 25 of the Companies Act, 1956 was done as per the mandate of BCCI.",
+      "gold_title": "HIMACHAL PRADESH CRICKET ASSOCIATION & ANR. vs STATE OF HIMACHAL PRADESH & ORS",
+      "section": "25",
+      "act": "Companies Act, 1956",
+      "id": 48
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 10(1)(a) of the AICTE Act?",
+      "gold": "The general survey in various fields of technical educ ation contemplated under Section 10(1)(a) of the AICTE Act is not pertaining to the educational needs of any particular area in a State.",
+      "gold_title": "THE JAWAHARLAL NEHRU TECHNOLOGICAL UNIVERSITY REGISTRAR vs SANGAM LAXMI BAI VIDYAPEET & ORS",
+      "section": "10(1)(a)",
+      "act": "AICTE Act",
+      "id": 49
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 14(A)(1) of the SCST Act?",
+      "gold": "Consequently, the 9 (2003) 10 SCC 434 54 3 S.C.R. High Court held that no case was made out for interference in exercise of appellate jurisdiction under Section 14(A)(1) of the SCST Act, and affirmed the order framing charges.",
+      "gold_title": "DR. ANAND RAI vs STATE OF MADHYA PRADESH & ANR",
+      "section": "14(A)(1)",
+      "act": "SCST Act",
+      "id": 50
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 2(i) of the M.P. VAT Act, 2002?",
+      "gold": "According to the learned Counsels, since the State Government warehouses not only sells but, in any event, undisputably distributes the goods they would be “dealer” as per Explanation II to Section 2(i) of M.P. VAT Act, 2002.",
+      "gold_title": "M/S UNITED SPIRITS LTD. vs THE STATE OF MADHYA PRADESH & ORS",
+      "section": "2(i)",
+      "act": "M.P. VAT Act, 2002",
+      "id": 51
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 105 of the TP Act provide?",
+      "gold": "The Concession Agreement is a lease as defined under Section 105 of the TP Act as also under Section 2(16) of the IS Act and, therefore, would be chargeable to stamp duty, for which rate is provided under Schedule 1-A.",
+      "gold_title": "M/S REWA TOLLWAY P. LTD. vs THE STATE OF MADHYA PRADESH & ORS",
+      "section": "105",
+      "act": "TP Act",
+      "id": 52
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 11 of the PCA Act?",
+      "gold": "I 0. Section 11 of the PCA Act which occurs in Chapter Ill that deals with cruelty to animals, generally provides number of situations where animals are meted with cruelty.",
+      "gold_title": "CHIEF SECRETARY TO THE GOVT., CHENNAI TAMILNADU AND OTHERS ETC. vs ANIMAL WELFARE BOARD AND ANOTHER ETC",
+      "section": "11",
+      "act": "PCA Act",
+      "id": 53
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 11 of the MOF Act?",
+      "gold": "If the agreement provides that possession will be handed over on the execution of a conveyance as contemplated under Section 11 of the MOF Act, then the Explanation shall not be attracted at all.",
+      "gold_title": "RAMESH MISHRIMAL JAIN vs AVINASH VISHWANATH PATNE & ANR",
+      "section": "11",
+      "act": "MOF Act",
+      "id": 54
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 7 of the National Tax Tribunal Act?",
+      "gold": "In Madras Bar Association , Section 7 of the National Tax Tribunal Act 2005 provided for the process of selection and appointment of the Chairperson and members of the NTT.",
+      "gold_title": "ROJER MATHEW vs SOUTH INDIAN BANK LTD. & ORS",
+      "section": "7",
+      "act": "National Tax Tribunal Act",
+      "id": 55
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 36 of the NHB Act?",
+      "gold": "Section 36 of NHB Act provides that the provisions thereof shall have the effect notwithstanding anything inconsistent contained in any other law for the time being in force. iv.",
+      "gold_title": "PIRAMAL CAPITAL AND HOUSING FINANCE LIMITED (FORMERLY KNOWN AS DEWAN HOUSING FINANCE CORPORATION LIMITED) vs 63 MOONS TECHNOLOGIES LIMITED & OTHERS",
+      "section": "36",
+      "act": "NHB Act",
+      "id": 56
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 5(3) of the IGST Act?",
+      "gold": "Section 5(3) of the IGST Act provides the Government the power to specify categories of supply of goods or services or both on which tax shall be paid on a reverse charge basis by the reci pient.",
+      "gold_title": "UNION OF INDIA & ANR vs M/S MOHIT MINERALS PVT. LTD. THROUGH DIRECTOR",
+      "section": "5(3)",
+      "act": "IGST Act",
+      "id": 57
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 184 of the Finance Act, 2017 provide?",
+      "gold": "Section 184 of the Finance Act, 2017 provides for reappointment of Chairpersons, Vice-Chairpersons and members of the Trib unals on completion of their tenure.",
+      "gold_title": "MADRAS BAR ASSOCIATION vs UNION OF INDIA & ANR",
+      "section": "184",
+      "act": "Finance Act, 2017",
+      "id": 58
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 70 of the Army Act?",
+      "gold": "In other words, Section 70 of the Army Act provides for where the court-martial would not exercise jurisdiction (unless the case falls under the exc eptions to Section 70).",
+      "gold_title": "THE STATE OF SIKKIM vs JASBIR SINGH & ANR",
+      "section": "70",
+      "act": "Army Act",
+      "id": 59
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 2(39) of the Rajasthan Sales Tax Act?",
+      "gold": "In our view, a bare reading of Section 2(39) of the Rajasthan Sales Tax Act, which defines “sale price” clearly indicates that it is the price which is either paid or payable to a dealer as consideration for the sale.",
+      "gold_title": "M/S. UNIVERSAL CYLINDERS LIMITED vs THE COMMERCIAL TAXES OFFICER",
+      "section": "2(39)",
+      "act": "Rajasthan Sales Tax Act",
+      "id": 60
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 101 of the Punjab Gram Panchayat Act provide?",
+      "gold": "The Punjab Gram Panchayat Rules, 1965 had been framed in exercise of power under Section 101 of the Punjab Gram Panchayat Act by the State Government.",
+      "gold_title": "THE STATE OF HARYANA THROUGH SECRETARY TO GOVERNMENT OF HARYANA vs JAI SINGH & ORS",
+      "section": "101",
+      "act": "Punjab Gram Panchayat Act",
+      "id": 61
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 67 of the NDPS Act?",
+      "gold": "Similarly, in the case of Balwinder Singh3, the High Court held that his confession19 recorded under Section 67 of the NDPS Act was admissible in view of the law laid down by this Court in Kanhaiyalal33 (supra).",
+      "gold_title": "BALWINDER SINGH (BINDA) vs THE NARCOTICS CONTROL BUREAU",
+      "section": "67",
+      "act": "NDPS Act",
+      "id": 62
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 155 of the Evidence Act?",
+      "gold": "No doubt Section 155 of the Evidence Act provides scope for impeaching the cre dit of a witness by proof of an inconsistent former statement.",
+      "gold_title": "BIRBAL NATH vs THE STATE OF RAJASTHAN & ORS",
+      "section": "155",
+      "act": "Evidence Act",
+      "id": 63
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 22 of the RBI Act provide?",
+      "gold": "Sub-section (1) of Section 22 of the RBI Act provides that the RBI shall have the sole right to issue bank notes in India.",
+      "gold_title": "VIVEK NARAYAN SHARMA vs UNION OF INDIA",
+      "section": "22",
+      "act": "RBI Act",
+      "id": 64
+    },
+    {
+      "kind": "section",
+      "question": "What is said about Section 3(22) of the GC Act?",
+      "gold": "Section 3(22) of GC Act defines “good faith” is defined in the following terms: “3(22).",
+      "gold_title": "K.S. MANJUNATH AND OTHERS vs MOORASAVIRAPPA @ MUTTANNA CHENNAPPA BATIL, SINCE DECEASED BY HIS LRS AND OTHER",
+      "section": "3(22)",
+      "act": "GC Act",
+      "id": 65
+    },
+    {
+      "kind": "section",
+      "question": "What does Section 34 of the Excise Act provide?",
+      "gold": "Both stated that they had witnessed the respondent no.1 being directly involved in the creation of a false case under Section 34 of the Excise Act in order to provide the accused Ashok Dixit the benefit of an alibi.",
+      "gold_title": "OM PRAKASH YADAV vs NIRANJAN KUMAR UPADHYAY & ORS",
+      "section": "34",
+      "act": "Excise Act",
+      "id": 66
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 105 of the JJ Act?",
+      "gold": "The State Governments are directed to institutionalize the Juvenile Justice Fund established under Section 105 of the JJ Act.",
+      "gold_title": "SOCIETY FOR ENLIGHTENMENT AND VOLUNTARY ACTION & ANR. vs UNION OF INDIA & ORS",
+      "section": "105",
+      "act": "JJ Act",
+      "id": 67
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 3 of the TADA Act?",
+      "gold": "Therefore, the confession of A-6 is the only document which refers to the intention to create terror as required under Section 3 of TADA Act.",
+      "gold_title": "SEENI NAINAR MOHAMMED vs STATE REP. BY DEPUTY SUPERINTENDENT OF POLICE",
+      "section": "3",
+      "act": "TADA Act",
+      "id": 68
+    },
+    {
+      "kind": "section",
+      "question": "What do the notes say about Section 14 of the Succession Act?",
+      "gold": "A Bench of two Honourable Judges of this Court after considering the gamut of Section 14 of the Succession Act in the case of Munni Devi(supra) observed as below: - “14.",
+      "gold_title": "MUKATLAL vs KAILASH CHAND (D) THROUGH LRS. AND ORS",
+      "section": "14",
+      "act": "Succession Act",
+      "id": 69
+    },
+    {
+      "kind": "section",
+      "question": "What did the Supreme Court hold about Section 41 of the Indian Evidence Act, 1872?",
+      "gold": "Section 41 of the Indian Evidence Act, 1872 on the question of relevancy of judgments in the context of conclusiveness of a judgment, order or decree provides: “41.",
+      "gold_title": "VIDYA DROLIA AND OTHERS vs DURGA TRADING CORPORATION",
+      "section": "41",
+      "act": "Indian Evidence Act, 1872",
+      "id": 70
+    },
+    {
+      "kind": "reference",
+      "question": "Can you describe Solar radio emission?",
+      "gold": "Solar radio emission refers to radio waves that are naturally produced by the Sun, primarily from the lower and upper layers of the atmosphere called the chromosphere and corona, respectively.",
+      "gold_title": "Solar radio emission (Wikipedia)",
+      "topic": "Solar radio emission",
+      "id": 71
+    },
+    {
+      "kind": "reference",
+      "question": "Can you describe Polity data series?",
+      "gold": "The Polity data series is a data series in political science research.",
+      "gold_title": "Polity data series (Wikipedia)",
+      "topic": "Polity data series",
+      "id": 72
+    },
+    {
+      "kind": "reference",
+      "question": "Give me a short description of Mugaiyur Assembly constituency.",
+      "gold": "Mugaiyur is a state assembly constituency in Viluppuram district in Tamil Nadu.",
+      "gold_title": "Mugaiyur Assembly constituency (Wikipedia)",
+      "topic": "Mugaiyur Assembly constituency",
+      "id": 73
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Bishnuram Medhi briefly.",
+      "gold": "Bishnuram Medhi (24 April 1888 – 21 January 1981) was an Indian politician and freedom-fighter who served as the Chief Minister of Assam from 1950 to 1957 and Governor of Madras State from January 1958 till May 1964.",
+      "gold_title": "Bishnuram Medhi (Wikipedia)",
+      "topic": "Bishnuram Medhi",
+      "id": 74
+    },
+    {
+      "kind": "reference",
+      "question": "Can you describe Tiruppur City Municipal Corporation?",
+      "gold": "Tiruppur City Municipal Corporation is a civic body that governs Tiruppur, Tamil Nadu, India.",
+      "gold_title": "Tiruppur City Municipal Corporation (Wikipedia)",
+      "topic": "Tiruppur City Municipal Corporation",
+      "id": 75
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Socialist democracy briefly.",
+      "gold": "Socialist democracy, or social democracy in early writings, is a political system that aligns with principles of both socialism and democracy.",
+      "gold_title": "Socialist democracy (Wikipedia)",
+      "topic": "Socialist democracy",
+      "id": 76
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Paramathi-Velur Assembly constituency briefly.",
+      "gold": "Paramathi-Velur is a state assembly constituency in Tamil Nadu, India that was formed after constituency delimitations in 2008.",
+      "gold_title": "Paramathi-Velur Assembly constituency (Wikipedia)",
+      "topic": "Paramathi-Velur Assembly constituency",
+      "id": 77
+    },
+    {
+      "kind": "reference",
+      "question": "What is Udagamandalam railway station?",
+      "gold": "Udagamandalam railway station, also known as Ooty railway station,(station code: UAM) is an NSG–4 category Indian railway station in Salem railway division of Southern Railway zone.",
+      "gold_title": "Udagamandalam railway station (Wikipedia)",
+      "topic": "Udagamandalam railway station",
+      "id": 78
+    },
+    {
+      "kind": "reference",
+      "question": "What can you tell me about Lower Bhavani Project Canal?",
+      "gold": "Lower Bhavani Project Canal is a 201-kilometre (125 mi) long irrigation canal which runs in Erode district in Tamil Nadu, India.",
+      "gold_title": "Lower Bhavani Project Canal (Wikipedia)",
+      "topic": "Lower Bhavani Project Canal",
+      "id": 79
+    },
+    {
+      "kind": "reference",
+      "question": "Can you describe Bhilali language?",
+      "gold": "Bhilali is a Bhil language spoken in India. it has two main varieties: Bhilali proper and Rathawi (Rathwi), which are largely mutually intelligible.",
+      "gold_title": "Bhilali language (Wikipedia)",
+      "topic": "Bhilali language",
+      "id": 80
+    },
+    {
+      "kind": "reference",
+      "question": "Give me a short description of Kariapatti Assembly constituency.",
+      "gold": "Kariapatti was former state assembly constituency in Virudhunagar district, Tamil Nadu, India.",
+      "gold_title": "Kariapatti Assembly constituency (Wikipedia)",
+      "topic": "Kariapatti Assembly constituency",
+      "id": 81
+    },
+    {
+      "kind": "reference",
+      "question": "Who or what is R. M. Veerappan?",
+      "gold": "R. M. Veerappan (9 September 1926 – 9 April 2024), also referred to as RMV or Rama Veerappan, was an Indian film producer, screenwriter and politician from the Indian state of Tamil Nadu.",
+      "gold_title": "R. M. Veerappan (Wikipedia)",
+      "topic": "R. M. Veerappan",
+      "id": 82
+    },
+    {
+      "kind": "reference",
+      "question": "Can you describe Kullakar rice?",
+      "gold": "Kullakar rice is an ancient rice variety, indigenous to and primarily cultivated within India.",
+      "gold_title": "Kullakar rice (Wikipedia)",
+      "topic": "Kullakar rice",
+      "id": 83
+    },
+    {
+      "kind": "reference",
+      "question": "Tell me about R. Balakrishna Pillai.",
+      "gold": "Keezhoote Raman Balakrishna Pillai (3 April 1934 – 3 May 2021) was an Indian politician who served as minister of the state of Kerala in India, holding portfolios such as Transport and Electricity.",
+      "gold_title": "R. Balakrishna Pillai (Wikipedia)",
+      "topic": "R. Balakrishna Pillai",
+      "id": 84
+    },
+    {
+      "kind": "reference",
+      "question": "Tell me about Smith–Wilson method.",
+      "gold": "The Smith–Wilson method is a method for extrapolating forward rates.",
+      "gold_title": "Smith–Wilson method (Wikipedia)",
+      "topic": "Smith–Wilson method",
+      "id": 85
+    },
+    {
+      "kind": "reference",
+      "question": "Give me a short description of Identity politics.",
+      "gold": "Identity politics is politics based on a particular identity, such as ethnicity, race, nationality, religion, denomination, gender, sexual orientation, social background, political affiliation, caste, age, education, disability, opinion, intelligence, and social class.",
+      "gold_title": "Identity politics (Wikipedia)",
+      "topic": "Identity politics",
+      "id": 86
+    },
+    {
+      "kind": "reference",
+      "question": "Give me a short description of Fugitive Economic Offender.",
+      "gold": "A Fugitive Economic Offender is a legal term in India.",
+      "gold_title": "Fugitive Economic Offender (Wikipedia)",
+      "topic": "Fugitive Economic Offender",
+      "id": 87
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Olga Tellis v. Bombay Municipal Corporation briefly.",
+      "gold": "Olga Tellis & Ors vs Bombay Municipal Corporation & Ors.",
+      "gold_title": "Olga Tellis v. Bombay Municipal Corporation (Wikipedia)",
+      "topic": "Olga Tellis v. Bombay Municipal Corporation",
+      "id": 88
+    },
+    {
+      "kind": "reference",
+      "question": "What is Ragunathan Rajkumar?",
+      "gold": "Ragunathan \"Raj\" Rajkumar (born 1963) is the George Westinghouse Professor of Electrical and Computer Engineering at Carnegie Mellon University in Pittsburgh, Pennsylvania.",
+      "gold_title": "Ragunathan Rajkumar (Wikipedia)",
+      "topic": "Ragunathan Rajkumar",
+      "id": 89
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Villupuram Assembly constituency briefly.",
+      "gold": "Villupuram is a state legislative assembly constituency in Viluppuram district in the Indian state of Tamil Nadu.",
+      "gold_title": "Villupuram Assembly constituency (Wikipedia)",
+      "topic": "Villupuram Assembly constituency",
+      "id": 90
+    },
+    {
+      "kind": "reference",
+      "question": "Tell me about Mixed oxidant.",
+      "gold": "A mixed oxidant solution (MOS) is a type of disinfectant that has many uses including disinfecting, sterilizing, and eliminating pathogenic microorganisms in water.",
+      "gold_title": "Mixed oxidant (Wikipedia)",
+      "topic": "Mixed oxidant",
+      "id": 91
+    },
+    {
+      "kind": "reference",
+      "question": "Tell me about Yvon Sana Bangui.",
+      "gold": "Yvon Sana Bangui was installed as the sixth Governor of the Bank of Central African States (BEAC) on March 1, 2024.",
+      "gold_title": "Yvon Sana Bangui (Wikipedia)",
+      "topic": "Yvon Sana Bangui",
+      "id": 92
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Domestic tariff area briefly.",
+      "gold": "Domestic Tariff Area (DTA) or Domestic Tariff Zone (DTZ) are areas within India that are outside the Special Economic Zones and EOU/EHTP/STP/BTP.",
+      "gold_title": "Domestic tariff area (Wikipedia)",
+      "topic": "Domestic tariff area",
+      "id": 93
+    },
+    {
+      "kind": "reference",
+      "question": "What can you tell me about Erode City Municipal Corporation?",
+      "gold": "Erode City Municipal Corporation is a civic administrative body that governs the City of Erode, India.",
+      "gold_title": "Erode City Municipal Corporation (Wikipedia)",
+      "topic": "Erode City Municipal Corporation",
+      "id": 94
+    },
+    {
+      "kind": "reference",
+      "question": "Who or what is Custodian for Enemy Property for India?",
+      "gold": "The Custodian of Enemy Property for India is an Indian government department that is empowered to appropriate property under the Enemy Property Act, 1968 in India owned by Pakistani nationals.",
+      "gold_title": "Custodian for Enemy Property for India (Wikipedia)",
+      "topic": "Custodian for Enemy Property for India",
+      "id": 95
+    },
+    {
+      "kind": "reference",
+      "question": "Explain Speed limits in India briefly.",
+      "gold": "Speed limits in India vary by state and vehicle type.",
+      "gold_title": "Speed limits in India (Wikipedia)",
+      "topic": "Speed limits in India",
+      "id": 96
+    },
+    {
+      "kind": "reference",
+      "question": "Who or what is Janaagraha?",
+      "gold": "Janaagraha Centre for Citizenship and Democracy is a Bengaluru-based non-profit working to improve the quality of life in India's cities and towns.",
+      "gold_title": "Janaagraha (Wikipedia)",
+      "topic": "Janaagraha",
+      "id": 97
+    },
+    {
+      "kind": "reference",
+      "question": "What is GNS Science?",
+      "gold": "GNS Science (Māori: Te Pū Ao), officially registered as the Institute of Geological and Nuclear Sciences Limited, is a New Zealand Crown Research Institute.",
+      "gold_title": "GNS Science (Wikipedia)",
+      "topic": "GNS Science",
+      "id": 98
+    },
+    {
+      "kind": "reference",
+      "question": "Who or what is Digital self-determination?",
+      "gold": "Broadly speaking, the term describes the attempt to comprehensively project the pattern of human self-determination (as first explored in disciplines like philosophy and psychology, and in the law) into the digital age.",
+      "gold_title": "Digital self-determination (Wikipedia)",
+      "topic": "Digital self-determination",
+      "id": 99
+    },
+    {
+      "kind": "reference",
+      "question": "What can you tell me about Social insurance?",
+      "gold": "Social insurance is a form of social welfare that provides insurance against economic risks.",
+      "gold_title": "Social insurance (Wikipedia)",
+      "topic": "Social insurance",
+      "id": 100
+    }
+  ]
+}

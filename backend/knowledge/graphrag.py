@@ -16,12 +16,14 @@ names a known person or case; passages are accepted only if they are really clos
 Either branch can fail without breaking the other: the answer is then built from whatever succeeded.
 """
 import logging
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from backend.knowledge import rag
 from backend.knowledge.kb import CORRUPTION_WORDS
+from backend.knowledge.reranker import sigmoid
 
 log = logging.getLogger("elvarn.graphrag")
 
@@ -33,6 +35,7 @@ INTENTS = (("timeline", re.compile(r"timeline|what happened|stages?|progress|sta
 # Thresholds measured on the real MiniLM embeddings + the real collection (see tests and the 2026-10-14 calibration):
 # in-domain questions had >= 57% of their words covered by the best passage; questions the stores cannot answer topped out at 33-40%.
 MIN_SIM, VERY_CLOSE_SIM = 0.30, 0.72      # a passage below MIN_SIM is never used; one at VERY_CLOSE_SIM or above needs no word overlap
+RERANK_POOL = 20                          # candidates handed to the cross-encoder (from the fused keyword + vector list)
 MIN_COVERAGE = 0.55                       # otherwise it must contain at least this share of the question's content words (and 2+ words)
 MAX_LINE = 280
 
@@ -133,17 +136,31 @@ def vector_items(store, u, k=10):
         return []
     need = min(2, len(u.terms))
     out = []
-    for hit in store.query(u.resolved, k=k):
-        sim = 1.0 - hit["distance"]
+    hybrid = getattr(store, "lexical", None) is not None
+    reranker = getattr(store, "reranker", None) if hybrid and os.environ.get("ELVARN_RERANK", "1") == "1" else None
+    hits = store.hybrid_query(u.resolved, k=RERANK_POOL if reranker else k) if hybrid else store.query(u.resolved, k=k)
+    top_rrf = max([h.get("rrf", 0.0) for h in hits] or [0.0]) or 1.0
+    for hit in hits:
+        sim = None if hit["distance"] is None else 1.0 - hit["distance"]          # None: found by keywords only
         meta = hit["meta"]
         snippet = rag.best_snippet(hit["text"], u.terms)
         shared = rag.overlap(u.terms, snippet + " " + meta.get("title", ""))
-        if sim < MIN_SIM or (sim < VERY_CLOSE_SIM and (shared < need or shared / len(u.terms) < MIN_COVERAGE)):
+        if sim is None:
+            if shared < need or shared / len(u.terms) < MIN_COVERAGE:
+                continue
+        elif sim < MIN_SIM or (sim < VERY_CLOSE_SIM and (shared < need or shared / len(u.terms) < MIN_COVERAGE)):
             continue
-        score = 0.9 * sim + 0.1 * min(1.0, shared / len(u.terms))
-        out.append({"kind": "chunk", "text": snippet, "score": round(score, 4), "level": None,
+        coverage = min(1.0, shared / len(u.terms))
+        score = 0.5 + 0.4 * hit["rrf"] / top_rrf + 0.1 * coverage if "rrf" in hit else 0.9 * sim + 0.1 * coverage
+        out.append({"kind": "chunk", "text": snippet, "score": round(score, 4), "level": None, "_exact": bool(hit.get("exact")),
                     "source": {"title": meta.get("title", ""), "url": meta.get("url", ""), "label": rag.LABELS.get(meta.get("doc_type"), meta.get("doc_type")),
                                "date": meta.get("published_date"), "licence": meta.get("licence"), "source_id": meta.get("source_id")}})
+    if reranker is not None and len(out) > 1:                  # the cross-encoder reads question and passage together; an exact section match keeps a small lead
+        logits = reranker.scores(u.resolved, [f"{i['source']['title']}. {i['text']}" for i in out])
+        for item, logit in zip(out, logits):
+            item["score"] = round(0.5 + 0.4 * sigmoid(logit) + (0.1 if item["_exact"] else 0.0), 4)
+    for item in out:
+        item.pop("_exact", None)
     return out
 
 

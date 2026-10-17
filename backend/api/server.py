@@ -382,6 +382,46 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
             result["text"] = shown
             result["grounding_reasons"] = why
 
+    def model_summary(req, found, history):
+        """The model's short reading of the retrieved notes, or None. It is only an addition: a refusal, an empty reply or a reply that fails
+        the grounding check against the notes is dropped, and it can never hide or replace the retrieved records."""
+        if not (found.model_text and found.evidence_in_prompt) or not service.ready:
+            return None
+        try:
+            text, hist = model_input(req, found, history)
+            rep, _ = repetition_settings(req, found.evidence_in_prompt)
+            temp, topk, _ = sampling_settings(req, found.evidence_in_prompt)
+            out = service.generate(text, mode=req.mode, max_new_tokens=req.max_new_tokens, temperature=temp, top_k=topk,
+                                   greedy=req.greedy, history=hist, **rep)
+        except Exception:  # noqa: BLE001 - the records are shown anyway
+            return None
+        answer = (out.get("text") or "").strip()
+        if not answer or groundcheck.REFUSAL.match(answer):         # a refusal is never shown: the records above are the answer
+            return None
+        shown, grounding, _ = groundcheck.guard(answer, found.model_text, req.text, "the stored records")
+        return answer if grounding == "model" else None
+
+    def stored_answer(req, found, ctx, summary=None):
+        """The reply for a question the stored records (Chroma + knowledge graph) returned something for. Layer 1, written by plain code:
+        every retrieved item, word for word, with its number and source; the model is not asked whether the records answer the question
+        (a 24M-parameter model judged that unreliably and refused answers that were in the notes). Layer 2, optional: the model's own short
+        summary of those same notes, added below when it passes the grounding check and says something the records do not already say."""
+        parts = []
+        for n, s in enumerate(found.sources, 1):
+            title = (s.get("title") or "").strip()
+            parts.append(f"[{n}] {(s.get('snippet') or '').strip()}" + (chr(10) + f"    Source: {title}" if title else ""))
+        text = "From the stored records:" + chr(10) * 2 + (chr(10) * 2).join(parts)
+        flat = re.sub(r"\W+", " ", text).lower()
+        if summary and re.sub(r"\W+", " ", summary).lower().strip() in flat:
+            summary = None                                        # a copy of a record: it adds nothing
+        if summary:
+            text += chr(10) * 2 + "Summary (written by the model from the records above): " + summary
+        result = {"text": text, "raw_text": text, "mode": req.mode, "files": [], "file_action": None, "model_used": bool(summary),
+                  "generated_tokens": 0, "prompt_tokens": 0, "seconds": 0, "stop_reason": "stored_records", "grounding": "stored_records"}
+        result.update(found.fields())
+        result.update(kb_extra(ctx))
+        return result
+
     def kb_extra(ctx):
         """Extra response fields: the exact graph facts used (with their level and citation), the entities found, any failed branch."""
         return {"kb_facts": [{"text": i["text"], "level": i["level"], "source": i["source"]} for i in ctx.facts()],
@@ -418,6 +458,10 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
         try:
             plan = web_plan(req, history, rag)
             found, from_kb = settle(rag, search_step(plan, req, request) if plan is not None else None, note)
+            if from_kb and found.sources:
+                result = stored_answer(req, found, ctx, model_summary(req, found, history))
+                remember(req, request, result["text"], ctx)
+                return result
             text, hist = model_input(req, found, history)
             rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
             temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)
@@ -490,6 +534,11 @@ def create_app(checkpoint_dir=None, load_on_start=True, public=None, rate_limit_
                     yield json.dumps({"event": "sources", **found.fields(), **kb_extra(ctx)}) + "\n"
                 elif (plan is not None and plan.query) or note:
                     yield json.dumps({"event": "sources", **found.fields()}) + "\n"
+                if from_kb and found.sources:                         # records shown by plain code, word for word; the model only adds a summary
+                    result = stored_answer(req, found, ctx, model_summary(req, found, history))
+                    remember(req, request, result["text"], ctx)
+                    yield json.dumps({"event": "done", **result}) + "\n"
+                    return
                 text, hist = model_input(req, found, history)
                 rep, rep_source = repetition_settings(req, found.evidence_in_prompt)
                 temp, topk, sampling_source = sampling_settings(req, found.evidence_in_prompt)

@@ -88,7 +88,7 @@ class RememberRequest(BaseModel):
     entities: List[Entity] = Field(default_factory=list, max_length=6)
 
 
-def create_app(token, kb=None, rag=None, memory=None, rate_per_minute=120, max_concurrent=4):
+def create_app(token, kb=None, rag=None, memory=None, rate_per_minute=120, max_concurrent=4, queue_seconds=0.0):
     """Build the service. Tests pass fake stores; production uses create_from_env()."""
     if not isinstance(token, str) or len(token) < MIN_TOKEN_CHARS:
         raise ConfigError(f"KNOWLEDGE_TOKEN is missing or shorter than {MIN_TOKEN_CHARS} characters")
@@ -104,7 +104,9 @@ def create_app(token, kb=None, rag=None, memory=None, rate_per_minute=120, max_c
             raise HTTPException(429, "too many requests")
 
     def busy():
-        if not slots.acquire(blocking=False):
+        # a free slot at once, or (queue_seconds > 0) wait that long for one: on the 512 MB plan only ONE retrieval runs at a time, so a second
+        # visitor waits a moment instead of getting an error
+        if not (slots.acquire(timeout=queue_seconds) if queue_seconds > 0 else slots.acquire(blocking=False)):
             raise HTTPException(503, "busy")
 
     def populated():
@@ -187,6 +189,9 @@ def stores_from_snapshot(directory):
     chroma_path.mkdir(parents=True, exist_ok=True)
     rag = RagStore(client=chromadb.PersistentClient(path=str(chroma_path)))
     loaded = snapshot.load_vectors(directory, rag, marker_file=chroma_path / "snapshot.marker")
+    rag.lexical = snapshot.ensure_lexical(rag, chroma_path / "lexical.db", loaded)          # BM25 next to the vectors (built at image build time)
+    from backend.knowledge.reranker import Reranker
+    rag.reranker = Reranker.from_env()                                                      # the 23 MB cross-encoder bundled in knowledge_service/models
     graph = SnapshotGraph(Path(directory) / snapshot.GRAPH)
     log.info("snapshot %s: graph %s, %d passages (%d loaded now)", manifest["created_at"], manifest["graph"], rag.count(), loaded)
     return graph, rag
@@ -216,4 +221,5 @@ def create_from_env():
     log.info("mode=%s stores: graph=%s vector=%s memory=%s", "snapshot" if directory is not None else "live", kb is not None, rag is not None, memory is not None)
     return create_app(os.environ.get("KNOWLEDGE_TOKEN", ""), kb, rag, memory,
                       rate_per_minute=int(os.environ.get("KNOWLEDGE_RATE_PER_MINUTE", "120")),
-                      max_concurrent=int(os.environ.get("KNOWLEDGE_MAX_CONCURRENT", "4")))
+                      max_concurrent=int(os.environ.get("KNOWLEDGE_MAX_CONCURRENT", "4")),
+                      queue_seconds=float(os.environ.get("KNOWLEDGE_QUEUE_SECONDS", "0")))
