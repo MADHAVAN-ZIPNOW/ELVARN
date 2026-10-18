@@ -1,0 +1,11 @@
+﻿.venv/
+__pycache__/
+.pytest_cache/
+web/node_modules/
+web/dist/
+.env
+.env.*
+!.env.example
+# Firebase client config: local builds only. Never commit the SERVICE ACCOUNT private key (it belongs in a Render env var).
+mobile/android/app/google-services.json
+mobile/build/

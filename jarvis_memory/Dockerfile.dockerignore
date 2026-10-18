@@ -1,0 +1,10 @@
+**
+!jarvis_memory/requirements.txt
+!jarvis_memory/app/**
+!jarvis_memory/migrations/**
+!jarvis_memory/web/package.json
+!jarvis_memory/web/package-lock.json
+!jarvis_memory/web/index.html
+!jarvis_memory/web/vite.config.js
+!jarvis_memory/web/src/**
+**/__pycache__
