@@ -11,11 +11,14 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
+from . import creative
+from .config import Settings
 from .mailer import Mailbox
 from .schemas import MemoryCreate
 from .service import CapacityError, MemoryService
 
 log = logging.getLogger("jarvis_memory.jobs")
+_NO_AI = Settings()  # no API key: build_checkin() falls back to the built-in wording
 SEND_ATTEMPTS = 2
 LOG_KEEP = 200
 
@@ -26,13 +29,16 @@ def in_quiet_hours(hour: int, start: int, end: int) -> bool:
     return (hour >= start or hour < end) if start > end else (start <= hour < end)
 
 
-def build_checkin(owner_name: str, token: str, open_tasks: list[str]) -> tuple[str, str]:
-    lines = [f"Hi {owner_name or 'there'},", "", "What have you done in the last hour, and what is next?",
-             "Just reply to this e-mail in your own words. JARVIS saves it as a memory.", ""]
+def build_checkin(owner_name: str, token: str, open_tasks: list[str], checkin: Optional[creative.Checkin] = None
+                  ) -> tuple[str, str, str]:
+    """(subject, plain text, colourful HTML). The [JM-token] in the subject links the owner's reply back to this e-mail."""
+    c = checkin or creative.compose(_NO_AI, owner_name, open_tasks, 12, seed=0)
+    lines = [f"{c.emoji} {c.headline}", "", f"Hi {owner_name or 'there'},", "", c.question, "", c.nudge, ""]
     if open_tasks:
-        lines += ["Still open:"] + [f"  - {t}" for t in open_tasks[:5]] + [""]
-    lines += ["(Reply from your own address only; anything else is ignored.)"]
-    return f"JARVIS check-in [JM-{token}]", "\n".join(lines)
+        lines += ["Still on your list:"] + [f"  - {t}" for t in open_tasks[:5]] + [""]
+    lines += ["Just reply to this e-mail in your own words. JARVIS saves it as a memory.",
+              "(Replies from other addresses are ignored.)"]
+    return f"{c.emoji} {c.subject} [JM-{token}]", "\n".join(lines), creative.render_html(c, owner_name, open_tasks)
 
 
 def _log(svc: MemoryService, job: str, ok: bool, detail: str) -> None:
@@ -72,11 +78,13 @@ def send_checkin_if_due(svc: MemoryService, mailbox: Mailbox, now: datetime) -> 
     count = s["email_sent_count"] if s["email_sent_day"] == local.date() else 0
     if count >= s["max_emails_per_day"]:
         return {"sent": False, "why": "daily_limit"}
-    subject, body = build_checkin(s["owner_name"], uuid.uuid4().hex[:12], svc.open_task_texts())
+    tasks = svc.open_task_texts()
+    wording = creative.compose(svc.settings, s["owner_name"], tasks, local.hour)
+    subject, body, html_body = build_checkin(s["owner_name"], uuid.uuid4().hex[:12], tasks, wording)
     last_error: Optional[Exception] = None
     for _ in range(SEND_ATTEMPTS):
         try:
-            mailbox.send(s["owner_email"], subject, body)
+            mailbox.send(s["owner_email"], subject, body, html_body)
             with svc.db() as conn:
                 conn.execute("UPDATE memory_settings SET last_email_at = %s, email_sent_day = %s, email_sent_count = %s "
                              "WHERE owner_id = %s", (now, local.date(), count + 1, svc.owner_id))

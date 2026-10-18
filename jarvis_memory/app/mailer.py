@@ -31,7 +31,7 @@ class Reply:
 
 
 class Mailbox(Protocol):
-    def send(self, to: str, subject: str, body: str) -> str: ...
+    def send(self, to: str, subject: str, body: str, html: Optional[str] = None) -> str: ...
     def fetch_replies(self, from_address: str) -> list[Reply]: ...
 
 
@@ -85,11 +85,13 @@ class GmailMailbox:
     def __init__(self, address: str, app_password: str) -> None:
         self.address, self._password = address, app_password
 
-    def send(self, to: str, subject: str, body: str) -> str:
+    def send(self, to: str, subject: str, body: str, html: Optional[str] = None) -> str:
         msg = EmailMessage()
         msg["From"], msg["To"], msg["Subject"] = f"JARVIS <{self.address}>", to, subject
         msg["Message-ID"] = email.utils.make_msgid(domain="jarvis-memory.local")
         msg.set_content(body)
+        if html:
+            msg.add_alternative(html, subtype="html")
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as smtp:
             smtp.login(self.address, self._password)
             smtp.send_message(msg)

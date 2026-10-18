@@ -14,11 +14,11 @@ class FakeMailbox:
     def __init__(self, replies=(), fail_sends=0):
         self.sent, self.replies, self.fail_sends = [], list(replies), fail_sends
 
-    def send(self, to, subject, body):
+    def send(self, to, subject, body, html=None):
         if self.fail_sends:
             self.fail_sends -= 1
             raise OSError("smtp down")
-        self.sent.append((to, subject, body))
+        self.sent.append((to, subject, body, html))
         return "<id@x>"
 
     def fetch_replies(self, from_address):
@@ -132,5 +132,43 @@ def test_job_log_is_kept_small(client):
 
 
 def test_checkin_text_lists_open_tasks():
-    subject, body = build_checkin("Madhavan", "abc123", ["Call Ravi"])
-    assert "[JM-abc123]" in subject and "Call Ravi" in body and body.startswith("Hi Madhavan")
+    subject, body, html = build_checkin("Madhavan", "abc123", ["Call Ravi"])
+    assert "[JM-abc123]" in subject and "Call Ravi" in body and "Hi Madhavan" in body and "Call Ravi" in html
+
+
+def test_creative_wording_comes_from_groq_when_available_and_is_sanitised():
+    import json
+    import httpx
+    from app import creative
+    from app.config import Settings
+
+    reply = {"subject": "Time check!", "headline": "Hour <b>done</b>", "question": "What did you ship? https://evil.example",
+             "nudge": "Go on.", "spoken": "Madhavan, what did you ship?", "emoji": "🔥"}
+
+    def handler(request):
+        return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(reply)}}]})
+
+    s = Settings(groq_api_key="k")
+    c = creative.compose(s, "Madhavan", [], 10, client=httpx.Client(transport=httpx.MockTransport(handler)))
+    assert c.headline == "Hour done" and "evil" not in c.question and c.spoken.startswith("Madhavan")
+
+
+def test_creative_falls_back_when_groq_fails_and_html_escapes_everything():
+    import httpx
+    from app import creative
+    from app.config import Settings
+
+    boom = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(500)))
+    c = creative.compose(Settings(groq_api_key="k"), "Madhavan", [], 10, seed=1, client=boom)
+    assert c.question and "Madhavan" in c.spoken
+    page = creative.render_html(c, "<script>x</script>", ["<img src=x onerror=1>"])
+    assert "<script>" not in page and "&lt;script&gt;" in page and "<img src=x" not in page
+    assert "linear-gradient" in page and "Reply" in page
+
+
+def test_checkin_email_carries_html_and_the_thread_token(client):
+    enable(client)
+    box = FakeMailbox()
+    tick(client, box, DAY)
+    to, subject, body, html = box.sent[0]
+    assert "[JM-" in subject and "<table" in html and "reply" in body
