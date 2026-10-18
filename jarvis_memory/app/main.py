@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import Settings, get_settings
 from .db import connect, run_migrations
+from . import mailer
 from .extraction import Extractor
 from .routes import install_error_handlers, make_router
 from .security import Guard
@@ -40,6 +41,7 @@ def create_app(settings: Optional[Settings] = None, extractor: Optional[Extracto
     app = FastAPI(title="Jarvis Memory", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.state.settings = settings
     app.state.service = MemoryService(settings, extractor)
+    app.state.mailbox = mailer.from_settings(settings)  # None until GMAIL_ADDRESS / GMAIL_APP_PASSWORD are set
 
     if settings.allowed_origins:
         app.add_middleware(CORSMiddleware, allow_origins=list(settings.allowed_origins),

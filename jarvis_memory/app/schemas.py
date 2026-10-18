@@ -194,3 +194,24 @@ class SettingsUpdate(BaseModel):
         except Exception as exc:
             raise ValueError("unknown timezone") from exc
         return v
+
+
+class ReminderCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=300)
+    remind_at: datetime
+
+    @field_validator("text")
+    @classmethod
+    def _squash(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if not v:
+            raise ValueError("text must not be empty")
+        return v
+
+
+class SnoozeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    minutes: int = Field(10, ge=1, le=1440)

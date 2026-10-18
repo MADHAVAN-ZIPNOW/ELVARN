@@ -30,6 +30,8 @@ class Settings:
     owner_phone: str = ""               # stored for later stages; never logged
     timezone: str = "Asia/Kolkata"
     groq_api_key: str = ""
+    gmail_address: str = ""            # the Gmail account that sends the check-ins and receives replies
+    gmail_app_password: str = ""       # a Google App Password (never your normal password); Render env var only
     llm_model: str = "qwen/qwen3.8-27b"
     llm_base_url: str = "https://api.groq.com/openai/v1"
     llm_timeout_s: float = 20.0
@@ -58,6 +60,8 @@ def get_settings() -> Settings:
         owner_phone=_env("JARVIS_OWNER_PHONE"),
         timezone=_env("JARVIS_TIMEZONE", "Asia/Kolkata"),
         groq_api_key=_env("GROQ_API_KEY"),
+        gmail_address=_env("GMAIL_ADDRESS"),
+        gmail_app_password=_env("GMAIL_APP_PASSWORD").replace(" ", ""),
         llm_model=_env("JM_LLM_MODEL", "qwen/qwen3.8-27b"),
         llm_base_url=_env("JM_LLM_BASE_URL", "https://api.groq.com/openai/v1"),
         allowed_origins=origins,

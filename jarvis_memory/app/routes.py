@@ -9,7 +9,8 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from .db import DatabaseNotConfigured
-from .schemas import (MemoryCreate, MemoryOut, MemoryUpdate, SearchRequest, SearchResponse, SettingsUpdate, Source)
+from .schemas import (MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
+                      SnoozeRequest, Source)
 from .service import CapacityError, MemoryService, NotFound
 
 log = logging.getLogger("jarvis_memory.routes")
@@ -62,6 +63,34 @@ def make_router(guard) -> APIRouter:
         if not confirm:
             raise HTTPException(428, "Deleting every memory requires confirm=true.")
         return {"deleted": svc.delete_all()}
+
+    @router.post("/tick")
+    def tick(request: Request, svc: MemoryService = Depends(service_of)):
+        """Called by the scheduler: read e-mail replies, send the hourly check-in if due, report reminders that are due."""
+        from . import jobs
+
+        return jobs.run_tick(svc, request.app.state.mailbox)
+
+    @router.post("/reminders", status_code=201)
+    def add_reminder(body: ReminderCreate, svc: MemoryService = Depends(service_of)):
+        return svc.add_reminder(body.text, body.remind_at)
+
+    @router.get("/reminders")
+    def list_reminders(status: Optional[str] = Query(None, pattern="^(pending|sent|done)$"),
+                       svc: MemoryService = Depends(service_of)):
+        return svc.list_reminders(status)
+
+    @router.post("/reminders/{reminder_id}/done")
+    def reminder_done(reminder_id: uuid.UUID, svc: MemoryService = Depends(service_of)):
+        return svc.update_reminder(str(reminder_id), done=True)
+
+    @router.post("/reminders/{reminder_id}/snooze")
+    def reminder_snooze(reminder_id: uuid.UUID, body: SnoozeRequest, svc: MemoryService = Depends(service_of)):
+        return svc.update_reminder(str(reminder_id), snooze_minutes=body.minutes)
+
+    @router.delete("/reminders/{reminder_id}", status_code=204)
+    def reminder_delete(reminder_id: uuid.UUID, svc: MemoryService = Depends(service_of)):
+        svc.delete_reminder(str(reminder_id))
 
     @router.get("/{memory_id}", response_model=MemoryOut)
     def get_memory(memory_id: uuid.UUID, svc: MemoryService = Depends(service_of)):

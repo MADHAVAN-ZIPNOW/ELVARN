@@ -74,23 +74,31 @@ class MemoryService:
             )
 
     # ------------------------------------------------------------------------------------------ create
-    def create(self, data: MemoryCreate, now: Optional[datetime] = None) -> dict[str, Any]:
-        """Save the memory FIRST (raw text is never lost), then enrich it with AI in a second step."""
+    def create(self, data: MemoryCreate, now: Optional[datetime] = None, *, external_reference_id: Optional[str] = None,
+               when: Optional[datetime] = None) -> Optional[dict[str, Any]]:
+        """Save the memory FIRST (raw text is never lost), then enrich it with AI in a second step.
+
+        With ``external_reference_id`` (an e-mail Message-ID) the call is idempotent: a repeat stores nothing, returns None."""
         now = now or datetime.now(timezone.utc)
         raw_transcript = data.raw_transcript if data.source == "voice" else None
         with self.db() as conn:
             self._assert_capacity(conn)
+            if external_reference_id and conn.execute(
+                    "SELECT 1 FROM memory_entries WHERE owner_id = %s AND external_reference_id = %s",
+                    (self.owner_id, external_reference_id)).fetchone():
+                return None
             row = conn.execute(
                 f"""INSERT INTO memory_entries
                     (owner_id, source, title, content, raw_transcript, summary, start_time, end_time, timezone, thread_id,
-                     sentiment, tags, projects, people, next_steps, tasks, metadata_json)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING {COLUMNS}""",
+                     sentiment, tags, projects, people, next_steps, tasks, metadata_json, external_reference_id, created_at)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING {COLUMNS}""",
                 (
                     self.owner_id, data.source, data.title or fallback_title(data.content), data.content, raw_transcript,
                     data.summary or "", data.start_time, data.end_time, self.settings.timezone, data.thread_id,
                     data.sentiment, data.tags or [], data.projects or [], data.people or [], data.next_steps or [],
                     Jsonb([t.model_dump(mode="json") for t in (data.tasks or [])]),
                     Jsonb({"extraction": {"status": "pending" if data.extract else "skipped"}}),
+                    external_reference_id, when or now,
                 ),
             ).fetchone()
         memory = _memory(row)
@@ -312,3 +320,56 @@ class MemoryService:
                 conn.execute(f"UPDATE memory_settings SET {sets}, updated_at = now() WHERE owner_id = %s",
                              list(changes.values()) + [self.owner_id])
         return self.get_settings()
+
+    # ------------------------------------------------------------------------------------------ stage 2 helpers
+    def open_task_texts(self, limit: int = 5) -> list[str]:
+        """Pending tasks from the newest memories, for the check-in e-mail."""
+        with self.db() as conn:
+            rows = conn.execute(
+                "SELECT t ->> 'task' AS task FROM (SELECT tasks FROM memory_entries WHERE owner_id = %s AND deleted_at IS NULL "
+                "AND tasks <> '[]'::jsonb ORDER BY created_at DESC LIMIT 20) m, jsonb_array_elements(m.tasks) t "
+                "WHERE t ->> 'status' = 'pending' LIMIT %s", (self.owner_id, limit)).fetchall()
+        return [r["task"] for r in rows]
+
+    def add_reminder(self, text: str, remind_at: datetime) -> dict[str, Any]:
+        with self.db() as conn:
+            row = conn.execute("INSERT INTO reminders (owner_id, text, remind_at) VALUES (%s,%s,%s) "
+                               "RETURNING id, text, remind_at, status, created_at, sent_at", (self.owner_id, text, remind_at)).fetchone()
+        return {**row, "id": str(row["id"])}
+
+    def list_reminders(self, status: Optional[str] = None, limit: int = 50) -> list[dict[str, Any]]:
+        with self.db() as conn:
+            rows = conn.execute(
+                "SELECT id, text, remind_at, status, created_at, sent_at FROM reminders WHERE owner_id = %s "
+                "AND (%s::text IS NULL OR status = %s) ORDER BY remind_at DESC LIMIT %s",
+                (self.owner_id, status, status, limit)).fetchall()
+        return [{**r, "id": str(r["id"])} for r in rows]
+
+    def update_reminder(self, reminder_id: str, *, done: bool = False, snooze_minutes: Optional[int] = None) -> dict[str, Any]:
+        """Done closes it; Snooze puts it back to pending a few minutes later (the call-style screen's buttons)."""
+        with self.db() as conn:
+            if done:
+                row = conn.execute("UPDATE reminders SET status = 'done' WHERE id = %s AND owner_id = %s "
+                                   "RETURNING id, text, remind_at, status, created_at, sent_at", (reminder_id, self.owner_id)).fetchone()
+            else:
+                row = conn.execute(
+                    "UPDATE reminders SET status = 'pending', sent_at = NULL, remind_at = now() + make_interval(mins => %s) "
+                    "WHERE id = %s AND owner_id = %s RETURNING id, text, remind_at, status, created_at, sent_at",
+                    (snooze_minutes or 10, reminder_id, self.owner_id)).fetchone()
+        if not row:
+            raise NotFound()
+        return {**row, "id": str(row["id"])}
+
+    def delete_reminder(self, reminder_id: str) -> None:
+        with self.db() as conn:
+            if not conn.execute("DELETE FROM reminders WHERE id = %s AND owner_id = %s RETURNING 1",
+                                (reminder_id, self.owner_id)).fetchone():
+                raise NotFound()
+
+    def claim_due_reminders(self, now: datetime) -> list[dict[str, Any]]:
+        """Reminders whose time has come, marked 'sent' in the same statement so each fires exactly once."""
+        with self.db() as conn:
+            rows = conn.execute(
+                "UPDATE reminders SET status = 'sent', sent_at = %s WHERE owner_id = %s AND status = 'pending' "
+                "AND remind_at <= %s RETURNING id, text, remind_at", (now, self.owner_id, now)).fetchall()
+        return [{**r, "id": str(r["id"])} for r in rows]

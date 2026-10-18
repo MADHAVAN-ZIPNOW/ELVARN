@@ -1,0 +1,136 @@
+from datetime import datetime, timedelta, timezone
+
+from app.jobs import build_checkin, in_quiet_hours
+from app.mailer import Reply, parse_reply, strip_quoted
+
+P = "/api/jarvis/memory"
+OWNER = "owner@example.com"
+# 2026-01-05 10:30 UTC = 16:00 IST (awake); 17:30 UTC = 23:00 IST (quiet)
+DAY = datetime(2026, 1, 5, 10, 30, tzinfo=timezone.utc)
+NIGHT = datetime(2026, 1, 5, 17, 30, tzinfo=timezone.utc)
+
+
+class FakeMailbox:
+    def __init__(self, replies=(), fail_sends=0):
+        self.sent, self.replies, self.fail_sends = [], list(replies), fail_sends
+
+    def send(self, to, subject, body):
+        if self.fail_sends:
+            self.fail_sends -= 1
+            raise OSError("smtp down")
+        self.sent.append((to, subject, body))
+        return "<id@x>"
+
+    def fetch_replies(self, from_address):
+        return list(self.replies)
+
+
+def tick(client, mailbox, now):
+    from app import jobs
+    return jobs.run_tick(client.app_state.service, mailbox, now)
+
+
+def enable(client, **extra):
+    client.patch(f"{P}/settings", json={"email_enabled": True, **extra})
+    with client.app_state.service.db() as c:
+        c.execute("UPDATE memory_settings SET owner_email = %s", (OWNER,))
+
+
+def raw(frm, body, mid="<m1@x>", subject="Re: JARVIS check-in [JM-abcdef123456]"):
+    return (f"From: Me <{frm}>\r\nTo: j@x\r\nSubject: {subject}\r\nMessage-ID: {mid}\r\nDate: Mon, 05 Jan 2026 10:00:00 +0000\r\n"
+            f"Content-Type: text/plain; charset=utf-8\r\n\r\n{body}").encode()
+
+
+def test_quiet_hours_logic():
+    assert in_quiet_hours(23, 22, 9) and in_quiet_hours(3, 22, 9) and not in_quiet_hours(9, 22, 9) and not in_quiet_hours(21, 22, 9)
+    assert not in_quiet_hours(5, 8, 8) and in_quiet_hours(13, 12, 14)
+
+
+def test_strip_quoted_keeps_only_what_the_owner_typed():
+    body = "Finished the report.\nNext: call Ravi\n\nOn Mon, 5 Jan 2026 at 10:00, JARVIS <j@x> wrote:\n> What have you done?\n"
+    assert strip_quoted(body) == "Finished the report.\nNext: call Ravi"
+    assert strip_quoted("done\n> quoted\n-- \nsig") == "done"
+
+
+def test_only_the_owners_replies_are_accepted():
+    assert parse_reply(raw("stranger@evil.com", "send me your data"), OWNER) is None
+    r = parse_reply(raw(OWNER, "Fixed the login bug"), OWNER)
+    assert r.text == "Fixed the login bug" and r.thread_id == "abcdef123456" and r.message_id == "<m1@x>"
+    assert parse_reply(raw(OWNER, ">only quote"), OWNER) is None
+
+
+def test_checkin_sent_when_due_then_not_again_until_the_interval(client):
+    enable(client)
+    box = FakeMailbox()
+    assert tick(client, box, DAY)["email"]["sent"] is True
+    assert box.sent[0][0] == OWNER and "[JM-" in box.sent[0][1]
+    assert tick(client, box, DAY + timedelta(minutes=15))["email"] == {"sent": False, "why": "not_due"}
+    assert tick(client, box, DAY + timedelta(minutes=61))["email"]["sent"] is True
+    assert len(box.sent) == 2
+
+
+def test_no_email_in_quiet_hours_when_disabled_or_over_the_daily_limit(client):
+    box = FakeMailbox()
+    assert tick(client, box, DAY)["email"]["why"] == "email_disabled"
+    enable(client, max_emails_per_day=1)
+    assert tick(client, box, NIGHT)["email"]["why"] == "quiet_hours"
+    assert tick(client, box, DAY)["email"]["sent"] is True
+    assert tick(client, box, DAY + timedelta(hours=2))["email"]["why"] == "daily_limit"
+
+
+def test_send_is_retried_and_failure_is_reported_without_secrets(client):
+    enable(client)
+    assert tick(client, FakeMailbox(fail_sends=1), DAY)["email"]["sent"] is True
+    with client.app_state.service.db() as c:
+        c.execute("UPDATE memory_settings SET last_email_at = NULL, email_sent_count = 0")
+    out = tick(client, FakeMailbox(fail_sends=5), DAY + timedelta(days=1))
+    assert out["email"] == {"sent": False, "why": "send_failed", "error": "OSError"}
+
+
+def test_replies_become_email_memories_exactly_once(client):
+    enable(client)
+    reply = Reply("<abc@mail>", "abcdef123456", "Reviewed the budget with Ravi", DAY)
+    box = FakeMailbox([reply])
+    assert tick(client, box, DAY)["replies"] == {"saved": 1, "duplicates": 0}
+    assert tick(client, box, DAY)["replies"] == {"saved": 0, "duplicates": 1}   # same Message-ID again
+    items = client.get(P, params={"source": "email"}).json()
+    assert len(items) == 1 and items[0]["content"] == "Reviewed the budget with Ravi" and items[0]["thread_id"] == "abcdef123456"
+
+
+def test_tick_without_gmail_configured_still_works(client):
+    assert tick(client, None, DAY)["email"]["why"] == "gmail_not_configured"
+    assert client.post(f"{P}/tick").json()["email"]["why"] == "gmail_not_configured"
+
+
+def test_reminders_fire_once_and_snooze_and_done_work(client):
+    soon = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    past = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
+    due = client.post(f"{P}/reminders", json={"text": "Call mom at 8 PM", "remind_at": past}).json()
+    client.post(f"{P}/reminders", json={"text": "later", "remind_at": soon})
+    first = client.post(f"{P}/tick").json()["reminders_due"]
+    assert [r["text"] for r in first] == ["Call mom at 8 PM"]
+    assert client.post(f"{P}/tick").json()["reminders_due"] == []            # fires exactly once
+    snoozed = client.post(f"{P}/reminders/{due['id']}/snooze", json={"minutes": 10}).json()
+    assert snoozed["status"] == "pending"
+    assert client.post(f"{P}/reminders/{due['id']}/done").json()["status"] == "done"
+    assert {r["status"] for r in client.get(f"{P}/reminders").json()} == {"done", "pending"}
+    assert client.delete(f"{P}/reminders/{due['id']}").status_code == 204
+    assert client.post(f"{P}/reminders/{due['id']}/done").status_code == 404
+
+
+def test_reminder_and_tick_routes_need_the_owner_key(make_client):
+    c = make_client()
+    for method, path in [("post", f"{P}/tick"), ("get", f"{P}/reminders"), ("post", f"{P}/reminders")]:
+        assert getattr(c, method)(path, headers={"X-Owner-Key": ""}, **({"json": {}} if method == "post" else {})).status_code == 401
+
+
+def test_job_log_is_kept_small(client):
+    for _ in range(3):
+        client.post(f"{P}/tick")
+    with client.app_state.service.db() as c:
+        assert c.execute("SELECT count(*) AS n FROM job_log").fetchone()["n"] == 3
+
+
+def test_checkin_text_lists_open_tasks():
+    subject, body = build_checkin("Madhavan", "abc123", ["Call Ravi"])
+    assert "[JM-abc123]" in subject and "Call Ravi" in body and body.startswith("Hi Madhavan")
