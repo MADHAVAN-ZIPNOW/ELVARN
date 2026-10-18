@@ -92,14 +92,14 @@ class GmailMailbox:
         msg.set_content(body)
         if html:
             msg.add_alternative(html, subtype="html")
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as smtp:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=8) as smtp:
             smtp.login(self.address, self._password)
             smtp.send_message(msg)
         return msg["Message-ID"]
 
     def fetch_replies(self, from_address: str) -> list[Reply]:
         replies: list[Reply] = []
-        imap = imaplib.IMAP4_SSL("imap.gmail.com", 993, timeout=20)
+        imap = imaplib.IMAP4_SSL("imap.gmail.com", 993, timeout=8)
         try:
             imap.login(self.address, self._password)
             imap.select("INBOX")
