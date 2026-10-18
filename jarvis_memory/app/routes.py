@@ -71,6 +71,13 @@ def make_router(guard) -> APIRouter:
 
         return jobs.run_tick(svc, request.app.state.mailbox)
 
+    @router.post("/mail/sent")
+    def mail_sent(svc: MemoryService = Depends(service_of)):
+        """The scheduler confirms it delivered the check-in the last tick handed it (external SMTP mode)."""
+        from datetime import datetime, timezone
+
+        return {"count_today": svc.record_email_sent(datetime.now(timezone.utc))}
+
     @router.post("/reminders", status_code=201)
     def add_reminder(body: ReminderCreate, svc: MemoryService = Depends(service_of)):
         return svc.add_reminder(body.text, body.remind_at)

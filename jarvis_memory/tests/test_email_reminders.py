@@ -172,3 +172,18 @@ def test_checkin_email_carries_html_and_the_thread_token(client):
     tick(client, box, DAY)
     to, subject, body, html = box.sent[0]
     assert "[JM-" in subject and "<table" in html and "reply" in body
+
+
+def test_external_smtp_mode_hands_the_email_to_the_scheduler_and_confirms(make_client):
+    c = make_client(smtp_mode="external")
+    enable(c)
+    box = FakeMailbox()
+    out = tick(c, box, DAY)["email"]
+    assert box.sent == [] and out["why"] == "external_delivery"          # the server itself never sends
+    assert out["deliver"]["to"] == OWNER and "[JM-" in out["deliver"]["subject"] and "<table" in out["deliver"]["html"]
+    assert tick(c, box, DAY)["email"]["why"] == "external_delivery"      # still due until confirmed (retries if the send failed)
+    assert c.post(f"{P}/mail/sent").json()["count_today"] >= 1
+    assert tick(c, box, DAY + timedelta(minutes=10))["email"]["why"] == "not_due"
+    with c.app_state.service.db() as conn:                                # the e-mail body is never written to the job log
+        log_text = " ".join(r["detail"] for r in conn.execute("SELECT detail FROM job_log").fetchall())
+        assert "<table" not in log_text and "Hi Madhavan" not in log_text and "[JM-" not in log_text

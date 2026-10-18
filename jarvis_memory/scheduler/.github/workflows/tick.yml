@@ -1,0 +1,29 @@
+name: jarvis-tick
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # GitHub may delay scheduled runs by a few minutes; the service enforces the real hourly interval
+  workflow_dispatch: {}
+
+concurrency:
+  group: jarvis-tick
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run Jarvis tick
+        env:
+          JM_URL: ${{ secrets.JM_URL }}
+          JM_OWNER_KEY: ${{ secrets.JM_OWNER_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python run_tick.py

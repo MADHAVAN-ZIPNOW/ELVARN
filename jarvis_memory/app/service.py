@@ -373,3 +373,15 @@ class MemoryService:
                 "UPDATE reminders SET status = 'sent', sent_at = %s WHERE owner_id = %s AND status = 'pending' "
                 "AND remind_at <= %s RETURNING id, text, remind_at", (now, self.owner_id, now)).fetchall()
         return [{**r, "id": str(r["id"])} for r in rows]
+
+    def record_email_sent(self, now: datetime) -> int:
+        """Bookkeeping after a check-in went out (interval + daily limit). Returns how many were sent today."""
+        from zoneinfo import ZoneInfo
+
+        s = self.get_settings()
+        today = now.astimezone(ZoneInfo(s["timezone"])).date()
+        count = (s["email_sent_count"] if s["email_sent_day"] == today else 0) + 1
+        with self.db() as conn:
+            conn.execute("UPDATE memory_settings SET last_email_at = %s, email_sent_day = %s, email_sent_count = %s "
+                         "WHERE owner_id = %s", (now, today, count, self.owner_id))
+        return count

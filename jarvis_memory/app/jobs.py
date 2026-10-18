@@ -81,14 +81,15 @@ def send_checkin_if_due(svc: MemoryService, mailbox: Mailbox, now: datetime) -> 
     tasks = svc.open_task_texts()
     wording = creative.compose(svc.settings, s["owner_name"], tasks, local.hour)
     subject, body, html_body = build_checkin(s["owner_name"], uuid.uuid4().hex[:12], tasks, wording)
+    if svc.settings.smtp_mode == "external":
+        # Render's free plan blocks outgoing SMTP, so the scheduler (GitHub Actions) sends it and then confirms via /mail/sent.
+        return {"sent": False, "why": "external_delivery",
+                "deliver": {"to": s["owner_email"], "subject": subject, "text": body, "html": html_body}}
     last_error: Optional[Exception] = None
     for _ in range(SEND_ATTEMPTS):
         try:
             mailbox.send(s["owner_email"], subject, body, html_body)
-            with svc.db() as conn:
-                conn.execute("UPDATE memory_settings SET last_email_at = %s, email_sent_day = %s, email_sent_count = %s "
-                             "WHERE owner_id = %s", (now, local.date(), count + 1, svc.owner_id))
-            return {"sent": True, "count_today": count + 1}
+            return {"sent": True, "count_today": svc.record_email_sent(now)}
         except Exception as exc:  # smtplib / network errors; only the type is reported, never credentials
             last_error = exc
     return {"sent": False, "why": "send_failed", "error": type(last_error).__name__}
@@ -112,6 +113,7 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
     result["reminders_due"] = svc.claim_due_reminders(now)
     ok = (not any(isinstance(v, dict) and v.get("error") for v in result.values())
           and result["email"].get("why") != "send_failed")
-    summary = {k: v for k, v in result.items() if k != "reminders_due"}
+    summary = {k: ({a: b for a, b in v.items() if a != "deliver"} if isinstance(v, dict) else v)
+               for k, v in result.items() if k != "reminders_due"}   # never log the e-mail body
     _log(svc, "tick", ok, f"{summary} due={len(result['reminders_due'])}")
     return result
