@@ -187,3 +187,13 @@ def test_external_smtp_mode_hands_the_email_to_the_scheduler_and_confirms(make_c
     with c.app_state.service.db() as conn:                                # the e-mail body is never written to the job log
         log_text = " ".join(r["detail"] for r in conn.execute("SELECT detail FROM job_log").fetchall())
         assert "<table" not in log_text and "Hi Madhavan" not in log_text and "[JM-" not in log_text
+
+
+def test_jarvis_own_checkin_is_not_mistaken_for_a_reply():
+    own = raw(OWNER, "What did you do this hour?", mid="<1234.5@jarvis-memory.local>", subject="Quick pulse [JM-abcdef123456]")
+    assert parse_reply(own, OWNER) is None                       # same sender address, but it is JARVIS's own mail
+    assert parse_reply(raw(OWNER, "Shipped the fix", mid="<CAB123@mail.gmail.com>"), OWNER).text == "Shipped the fix"
+
+
+def test_other_mail_from_the_owner_is_not_ingested():
+    assert parse_reply(raw(OWNER, "random note to myself", mid="<x@mail.gmail.com>", subject="Notes"), OWNER) is None

@@ -67,7 +67,7 @@ def parse_reply(raw: bytes, owner_address: str) -> Optional[Reply]:
     if parseaddr(msg.get("From", ""))[1].lower() != owner_address.lower():
         return None
     message_id = (msg.get("Message-ID") or "").strip()
-    if not message_id:
+    if not message_id or "@jarvis-memory.local" in message_id:  # JARVIS's own check-in (sent from the same address) is never a reply
         return None
     text = strip_quoted(_plain_text(msg))
     if not text:
@@ -78,7 +78,9 @@ def parse_reply(raw: bytes, owner_address: str) -> Optional[Reply]:
         sent_at = parsedate_to_datetime(msg.get("Date")) if msg.get("Date") else None
     except (TypeError, ValueError):
         sent_at = None
-    return Reply(message_id=message_id[:300], thread_id=thread.group(1) if thread else None, text=text, sent_at=sent_at)
+    if not thread:  # only answers to a JARVIS check-in count; any other mail from the owner is left alone
+        return None
+    return Reply(message_id=message_id[:300], thread_id=thread.group(1), text=text, sent_at=sent_at)
 
 
 class GmailMailbox:
@@ -103,7 +105,7 @@ class GmailMailbox:
         try:
             imap.login(self.address, self._password)
             imap.select("INBOX")
-            status, data = imap.search(None, "UNSEEN", "FROM", f'"{from_address}"')
+            status, data = imap.search(None, "UNSEEN", "FROM", f'"{from_address}"', "SUBJECT", '"[JM-"')
             for num in (data[0].split() if status == "OK" and data and data[0] else [])[:30]:
                 status, parts = imap.fetch(num, "(RFC822)")  # fetching marks it read, so it is not processed twice
                 if status != "OK" or not parts or not isinstance(parts[0], tuple):
