@@ -389,3 +389,51 @@ def test_stats_show_the_last_ai_error_for_diagnosis(client):
     LAST_BRAIN_ERROR.update(kind="timeout", status=None, code="")
     assert client.get(f"{P}/stats").json()["last_ai_error"]["kind"] == "timeout"
     LAST_BRAIN_ERROR.clear()
+
+
+# ---------------------------------------------------------------------------------------------- voice chat from the phone (audio in, answer out)
+def _stt_client(text="what did I do today", status=200):
+    import httpx
+
+    def handler(request):
+        assert request.url.host == "api.groq.com" and b"whisper-large-v3-turbo" in request.content and b"speech.m4a" in request.content
+        return httpx.Response(status, json={"text": f" {text} "})
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def _voice_client(client, answer="You fixed the login bug.", stt=None):
+    client.app_state.chat_service = ChatService(client.app_state.service, llm=Script(say(answer), say("And then?")))
+    client.app_state.stt_client = stt or _stt_client()
+    return client
+
+
+def test_a_voice_clip_is_transcribed_answered_and_kept_in_the_chat_history(client):
+    c = _voice_client(client)
+    r = c.post(f"{P}/chat/audio", content=b"M4ADATA", headers={"Content-Type": "audio/mp4"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["transcript"] == "what did I do today" and body["reply"] == "You fixed the login bug." and body["session_id"]
+    follow = c.post(f"{P}/chat/audio", params={"session_id": body["session_id"]}, content=b"M4ADATA2", headers={"Content-Type": "audio/mp4"}).json()
+    assert follow["session_id"] == body["session_id"] and follow["reply"] == "And then?"
+    msgs = c.get(f"{P}/chat/sessions/{body['session_id']}").json()["messages"]
+    assert [m["content"] for m in msgs][:2] == ["what did I do today", "You fixed the login bug."]
+
+
+def test_silence_or_bad_clips_are_handled_without_calling_the_chat(client):
+    c = _voice_client(client, stt=_stt_client(text=""))
+    quiet = c.post(f"{P}/chat/audio", content=b"M4ADATA", headers={"Content-Type": "audio/mp4"}).json()
+    assert quiet["transcript"] == "" and quiet["reply"] == ""
+    assert c.post(f"{P}/chat/audio", content=b"", headers={"Content-Type": "audio/mp4"}).status_code == 400
+    assert c.post(f"{P}/chat/audio", content=b"x", headers={"Content-Type": "text/plain"}).status_code == 415
+    assert c.post(f"{P}/chat/audio", content=b"x" * 241_000, headers={"Content-Type": "audio/mp4"}).status_code == 413
+    assert c.get(f"{P}/chat/sessions").json() == []                                       # nothing was created for the failed clips
+
+
+def test_speech_service_problems_become_clear_messages(client):
+    for status, expected in ((429, 429), (500, 502)):
+        c = _voice_client(client, stt=_stt_client(status=status))
+        assert c.post(f"{P}/chat/audio", content=b"M4ADATA", headers={"Content-Type": "audio/mp4"}).status_code == expected
+
+
+def test_voice_chat_needs_the_owner_key(make_client):
+    assert make_client().post(f"{P}/chat/audio", content=b"x", headers={"Content-Type": "audio/mp4", "X-Owner-Key": ""}).status_code == 401

@@ -81,6 +81,35 @@ def make_router(guard) -> APIRouter:
         """One turn of the shared chat (phone, desktop and the call screen all use this)."""
         return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive, attachment=body.attachment)
 
+    STT_MESSAGES = {"unsupported": (415, "Send the recording as audio/mp4, wav, webm, ogg or mp3."),
+                    "not_configured": (503, "Voice chat needs the Groq key on the server."),
+                    "rate_limit": (429, "Speech recognition is busy. Try again in a minute."),
+                    "unavailable": (502, "Speech recognition is not available right now.")}
+
+    @router.post("/chat/audio")
+    async def chat_audio(request: Request, session_id: Optional[uuid.UUID] = Query(None)):
+        """Voice turn for the phone: the raw recording is the request body. It is transcribed, answered by the shared chat (same
+        history as typing), and nothing audio is stored. Returns {transcript, reply, session_id, actions}."""
+        from starlette.concurrency import run_in_threadpool
+
+        from . import stt
+
+        data = await request.body()
+        if not data:
+            raise HTTPException(400, "The recording was empty.")
+        if len(data) > stt.MAX_AUDIO_BYTES:
+            raise HTTPException(413, "That recording is too long.")
+        try:
+            transcript = await run_in_threadpool(stt.transcribe, request.app.state.settings, data,
+                                                 request.headers.get("content-type", ""), getattr(request.app.state, "stt_client", None))
+        except stt.SttError as exc:
+            code, message = STT_MESSAGES.get(exc.kind, STT_MESSAGES["unavailable"])
+            raise HTTPException(code, message) from None
+        if not transcript:
+            return {"session_id": str(session_id) if session_id else None, "transcript": "", "reply": "", "actions": []}
+        turn = await run_in_threadpool(chat_of(request).chat, transcript, str(session_id) if session_id else None)
+        return {**turn, "transcript": transcript}
+
     @router.get("/chat/sessions")
     def chat_sessions(request: Request):
         return chat_of(request).sessions()
