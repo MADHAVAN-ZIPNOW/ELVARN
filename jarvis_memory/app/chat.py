@@ -188,7 +188,11 @@ class ChatService:
         try:
             if name == "search_memory":
                 q = str(a.get("question", ""))[:300]
-                return ask_module.answer(self.svc, q, now=now)["answer"], f"searched memories: {q[:60]}"
+                label, had_time, lines, _ids = ask_module.retrieve(self.svc, q, now)   # no second AI call: the chat model reads these itself
+                if not lines:
+                    return f"No memories found for {label}.", f"searched memories: {q[:60]}"
+                memory_text = "\n".join(lines)
+                return f"Memories for {label}:\n{memory_text}", f"searched memories: {q[:60]}"
             if name == "add_memory":
                 text = str(a.get("content", "")).strip()[:4000]
                 if not text:

@@ -78,9 +78,9 @@ def _line(m: dict[str, Any], tz: ZoneInfo) -> str:
     return f"[{when}] ({m['source']}) {body}" + (f" | tasks: {tasks}" if tasks else "")
 
 
-def answer(svc, question: str, client: Optional[httpx.Client] = None, now: Optional[datetime] = None) -> dict[str, Any]:
-    settings = svc.settings
-    tz = ZoneInfo(settings.timezone)
+def retrieve(svc, question: str, now: Optional[datetime] = None) -> tuple[str, bool, list[str], list[str]]:
+    """(period label, had_time_phrase, memory lines in time order, memory ids). Lines are empty when nothing matched."""
+    tz = ZoneInfo(svc.settings.timezone)
     now = (now or datetime.now(tz)).astimezone(tz)
     found = parse_range(question, now)
     if found:
@@ -92,11 +92,19 @@ def answer(svc, question: str, client: Optional[httpx.Client] = None, now: Optio
         req = SearchRequest(q=" or ".join(words)[:280], page_size=12)
     items = svc.search(req)["items"]
     memories = [it["memory"] for it in items]
+    lines = [_line(m, tz) for m in sorted(memories, key=lambda m: m["created_at"])]
+    return label, bool(found), lines, [str(m["id"]) for m in memories]
+
+
+def answer(svc, question: str, client: Optional[httpx.Client] = None, now: Optional[datetime] = None) -> dict[str, Any]:
+    settings = svc.settings
+    tz = ZoneInfo(settings.timezone)
+    now = (now or datetime.now(tz)).astimezone(tz)
+    label, found, lines, sources = retrieve(svc, question, now)
+    memories = lines
     if not memories:
         return {"answer": f"I don't have any memories for {label}." if found else "I couldn't find anything about that in your memories.",
                 "range": label, "sources": []}
-    lines = [_line(m, tz) for m in sorted(memories, key=lambda m: m["created_at"])]
-    sources = [str(m["id"]) for m in memories]
     if not settings.groq_api_key:
         return {"answer": f"Here is what I have for {label}:\n" + "\n".join(lines), "range": label, "sources": sources}
     payload = {"model": settings.llm_model, "temperature": 0.2, **({"reasoning_effort": "none"} if settings.llm_model.startswith("qwen") else {}),
