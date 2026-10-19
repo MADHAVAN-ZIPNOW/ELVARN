@@ -72,13 +72,18 @@ def main():
     print("replies:", result.get("replies"), "| email:", email.get("why") or ("sent" if email.get("sent") else "none"),
           "| reminders due:", len(result.get("reminders_due", [])))
     item = email.get("deliver")
+    review_mail = (result.get("review") or {}).get("email") or {}
+    if (item or review_mail.get("deliver")) and not (GMAIL and APP_PASSWORD):
+        print("GMAIL_ADDRESS / GMAIL_APP_PASSWORD secrets are missing")
+        return 1
     if item:
-        if not (GMAIL and APP_PASSWORD):
-            print("GMAIL_ADDRESS / GMAIL_APP_PASSWORD secrets are missing")
-            return 1
         send_mail(item)
         call("POST", "/api/jarvis/memory/mail/sent")
         print("check-in e-mail delivered")
+    if review_mail.get("deliver"):
+        send_mail(review_mail["deliver"])
+        call("POST", "/api/jarvis/memory/mail/review-sent?day=" + review_mail["day"])
+        print("daily review e-mail delivered")
     return 0
 
 

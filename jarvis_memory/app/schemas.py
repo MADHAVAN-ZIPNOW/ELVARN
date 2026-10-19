@@ -181,6 +181,9 @@ class SettingsUpdate(BaseModel):
     quiet_end_hour: Optional[int] = Field(None, ge=0, le=23)
     max_emails_per_day: Optional[int] = Field(None, ge=0, le=100)
     max_notifications_per_day: Optional[int] = Field(None, ge=0, le=100)
+    review_enabled: Optional[bool] = None
+    review_hour: Optional[int] = Field(None, ge=0, le=23)
+    review_minute: Optional[int] = Field(None, ge=0, le=59)
     db_soft_limit_mb: Optional[int] = Field(None, ge=50, le=5000)
 
     @field_validator("timezone")

@@ -423,3 +423,7 @@ class MemoryService:
         with self.db() as conn:
             conn.execute("UPDATE reminders SET status = 'pending', sent_at = NULL WHERE id = %s AND owner_id = %s",
                          (reminder_id, self.owner_id))
+
+    def mark_review_emailed(self, day) -> None:
+        with self.db() as conn:
+            conn.execute("UPDATE daily_reviews SET emailed = true WHERE owner_id = %s AND day = %s", (self.owner_id, day))

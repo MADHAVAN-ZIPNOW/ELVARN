@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
-from . import creative
+from . import creative, review as review_module
 from .config import Settings
 from .mailer import Mailbox
 from .schemas import MemoryCreate
@@ -155,6 +155,42 @@ def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     return out
 
 
+def send_review(svc: MemoryService, pusher, mailbox: Optional[Mailbox], now: datetime) -> dict[str, Any]:
+    """The nightly Daily Review: build it once a day at the chosen time (before quiet hours), push it, and e-mail it."""
+    s = svc.get_settings()
+    if not s["review_enabled"]:
+        return {"why": "disabled"}
+    local = now.astimezone(ZoneInfo(s["timezone"]))
+    today = local.date()
+    out: dict[str, Any] = {}
+    if s["last_review_on"] != today:
+        if (local.hour, local.minute) < (s["review_hour"], s["review_minute"]):
+            return {"why": "not_yet"}
+        if local.hour >= s["quiet_start_hour"] and s["quiet_start_hour"] > s["review_hour"]:
+            return {"why": "quiet_hours"}               # missed the evening: no review pings at night
+        built = review_module.build(svc, today)
+        with svc.db() as conn:
+            conn.execute("UPDATE memory_settings SET last_review_on = %s WHERE owner_id = %s", (today, svc.owner_id))
+        out["generated"] = True
+        title, line = review_module.push_text(built)
+        out["push"] = bool(pusher and s["push_enabled"] and svc.device_tokens()
+                           and _push_all(svc, pusher, {"type": "review", "title": title, "line": line, "day": today.isoformat()}))
+    stored = review_module.get(svc, today)
+    if stored and not stored["emailed"] and s["email_enabled"] and s["owner_email"]:
+        subject, text, html_body = review_module.render_email(stored, s["owner_name"], today)
+        if svc.settings.smtp_mode == "external":
+            out["email"] = {"why": "external_delivery", "day": today.isoformat(),
+                            "deliver": {"to": s["owner_email"], "subject": subject, "text": text, "html": html_body}}
+        elif mailbox is not None:
+            try:
+                mailbox.send(s["owner_email"], subject, text, html_body)
+                svc.mark_review_emailed(today)
+                out["email"] = {"sent": True}
+            except Exception as exc:
+                out["email"] = {"sent": False, "error": type(exc).__name__}
+    return out
+
+
 def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datetime] = None, pusher=None) -> dict[str, Any]:
     now = now or datetime.now(timezone.utc)
     result: dict[str, Any] = {}
@@ -172,7 +208,11 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
             hint = (str(exc)[:90] if isinstance(exc, imaplib.IMAP4.error) else "")   # server wording like "[AUTHENTICATIONFAILED] ...": no secrets
             result["replies"] = {"saved": 0, "error": type(exc).__name__, **({"detail": hint} if hint else {})}
         result["email"] = send_checkin_if_due(svc, mailbox, now)
-    result["push"] = send_pushes(svc, pusher, now)   # reminders are only marked "sent" when a phone actually accepted them
+    result["push"] = send_pushes(svc, pusher, now)
+    try:
+        result["review"] = send_review(svc, pusher, mailbox, now)
+    except Exception as exc:  # the review must never break calls, reminders or e-mail
+        result["review"] = {"error": type(exc).__name__}   # reminders are only marked "sent" when a phone actually accepted them
     ok = (not any(isinstance(v, dict) and v.get("error") for v in result.values())
           and result.get("email", {}).get("why") != "send_failed")
     summary = {k: ({a: b for a, b in v.items() if a != "deliver"} if isinstance(v, dict) else v) for k, v in result.items()}

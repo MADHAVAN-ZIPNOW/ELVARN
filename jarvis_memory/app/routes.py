@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from datetime import date
 from typing import Optional
 
 import psycopg
@@ -99,6 +100,38 @@ def make_router(guard) -> APIRouter:
     def chat_md(session_id: uuid.UUID, request: Request):
         return Response(chat_of(request).export_markdown(str(session_id)), media_type="text/markdown; charset=utf-8",
                         headers={"Content-Disposition": 'attachment; filename="jarvis-chat.md"'})
+
+    @router.get("/reviews")
+    def reviews_month(month: Optional[str] = Query(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$"), svc: MemoryService = Depends(service_of)):
+        """Calendar data: for each day of the month that has anything, its memory count and Daily Review."""
+        from datetime import datetime as _dt
+        from zoneinfo import ZoneInfo
+
+        from . import review
+
+        now = _dt.now(ZoneInfo(svc.settings.timezone))
+        year, mon = (int(month[:4]), int(month[5:])) if month else (now.year, now.month)
+        return {"month": f"{year:04d}-{mon:02d}", "days": review.month(svc, year, mon)}
+
+    @router.get("/reviews/{day}")
+    def review_day(day: date, svc: MemoryService = Depends(service_of)):
+        from . import review
+
+        return review.detail(svc, day)
+
+    @router.post("/reviews/{day}/generate")
+    def review_generate(day: date, svc: MemoryService = Depends(service_of)):
+        """Build (or rebuild) the review for a day right now."""
+        from . import review
+
+        review.build(svc, day)
+        return review.detail(svc, day)
+
+    @router.post("/mail/review-sent")
+    def review_mail_sent(day: date, svc: MemoryService = Depends(service_of)):
+        """The scheduler confirms it e-mailed that day's review."""
+        svc.mark_review_emailed(day)
+        return {"ok": True}
 
     @router.post("/ask")
     def ask(body: AskRequest, svc: MemoryService = Depends(service_of)):
