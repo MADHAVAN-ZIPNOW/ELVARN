@@ -1,6 +1,7 @@
 """Request/response models. Lists are cleaned and capped so one memory can never grow into a large row."""
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Any, Literal, Optional
 
@@ -227,3 +228,10 @@ class AskRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=2, max_length=500)
+
+
+class ChatRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    message: str = Field(min_length=1, max_length=4000)
+    session_id: Optional[uuid.UUID] = None

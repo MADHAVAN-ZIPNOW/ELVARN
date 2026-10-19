@@ -6,10 +6,10 @@ import uuid
 from typing import Optional
 
 import psycopg
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from .db import DatabaseNotConfigured
-from .schemas import (AskRequest, DeviceRegister, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
+from .schemas import (AskRequest, ChatRequest, DeviceRegister, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
                       SnoozeRequest, Source)
 from .service import CapacityError, MemoryService, NotFound
 
@@ -63,6 +63,42 @@ def make_router(guard) -> APIRouter:
         if not confirm:
             raise HTTPException(428, "Deleting every memory requires confirm=true.")
         return {"deleted": svc.delete_all()}
+
+    def chat_of(request: Request):
+        from .chat import ChatService
+
+        svc = request.app.state.service
+        cached = getattr(request.app.state, "chat_service", None)
+        if cached is None or cached.svc is not svc:
+            request.app.state.chat_service = cached = ChatService(svc)
+        return cached
+
+    @router.post("/chat")
+    def chat(body: ChatRequest, request: Request):
+        """One turn of the shared chat (phone, desktop and the call screen all use this)."""
+        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None)
+
+    @router.get("/chat/sessions")
+    def chat_sessions(request: Request):
+        return chat_of(request).sessions()
+
+    @router.get("/chat/sessions/{session_id}")
+    def chat_session(session_id: uuid.UUID, request: Request):
+        return chat_of(request).session(str(session_id))
+
+    @router.delete("/chat/sessions/{session_id}", status_code=204)
+    def chat_delete(session_id: uuid.UUID, request: Request):
+        chat_of(request).delete_session(str(session_id))
+
+    @router.get("/chat/sessions/{session_id}/export.pdf")
+    def chat_pdf(session_id: uuid.UUID, request: Request):
+        return Response(chat_of(request).export_pdf(str(session_id)), media_type="application/pdf",
+                        headers={"Content-Disposition": 'attachment; filename="jarvis-chat.pdf"'})
+
+    @router.get("/chat/sessions/{session_id}/export.md")
+    def chat_md(session_id: uuid.UUID, request: Request):
+        return Response(chat_of(request).export_markdown(str(session_id)), media_type="text/markdown; charset=utf-8",
+                        headers={"Content-Disposition": 'attachment; filename="jarvis-chat.md"'})
 
     @router.post("/ask")
     def ask(body: AskRequest, svc: MemoryService = Depends(service_of)):

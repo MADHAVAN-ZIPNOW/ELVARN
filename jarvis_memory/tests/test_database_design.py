@@ -13,7 +13,7 @@ def test_migrations_are_idempotent():
 def test_only_the_expected_tables_exist(db):
     tables = {r["tablename"] for r in db.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public'").fetchall()}
     # Stage 1 is deliberately two data tables: tags/projects/people/tasks live inside the memory row.
-    assert tables == {"memory_entries", "memory_settings", "schema_migrations", "reminders", "job_log", "devices"}
+    assert tables == {"memory_entries", "memory_settings", "schema_migrations", "reminders", "job_log", "devices", "chat_sessions", "chat_messages"}
 
 
 def test_expected_indexes_exist(db):

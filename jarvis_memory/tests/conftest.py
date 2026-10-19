@@ -59,7 +59,7 @@ def _schema():
 def db():
     """A raw connection for arranging/inspecting data; tables are emptied before each test."""
     with psycopg.connect(TEST_URL, autocommit=True, row_factory=psycopg.rows.dict_row) as conn:
-        conn.execute("TRUNCATE memory_entries, memory_settings, reminders, job_log, devices")
+        conn.execute("TRUNCATE memory_entries, memory_settings, reminders, job_log, devices, chat_sessions, chat_messages CASCADE")
         yield conn
 
 
