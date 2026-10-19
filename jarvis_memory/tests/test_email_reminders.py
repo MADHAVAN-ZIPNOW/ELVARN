@@ -260,3 +260,35 @@ def test_device_and_push_routes(client):
     assert client.post(f"{P}/devices", json={"token": "x"}).status_code == 422          # too short to be real
     assert client.post(f"{P}/devices", json={"token": TOKEN}).status_code == 204
     assert client.post(f"{P}/push/test").status_code == 503                              # no Firebase key configured here
+
+
+class FakeImap:
+    """Just enough of imaplib for read_checkin_replies: a mailbox of raw messages; BODY.PEEK must not mark anything read."""
+
+    def __init__(self, messages):
+        self.messages, self.read, self.full_fetches = messages, set(), []
+
+    def search(self, charset, *criteria):
+        return "OK", [b" ".join(str(i).encode() for i in self.messages)]
+
+    def fetch(self, num, what):
+        raw = self.messages[int(num)]
+        if "PEEK" in what:
+            head = b"\r\n".join(line for line in raw.split(b"\r\n") if line.split(b":")[0] in (b"Subject", b"In-Reply-To", b"References", b"Message-ID"))
+            return "OK", [(b"1 (BODY[HEADER.FIELDS])", head + b"\r\n\r\n")]
+        self.read.add(int(num))
+        self.full_fetches.append(int(num))
+        return "OK", [(b"1 (RFC822)", raw)]
+
+
+def test_only_checkin_replies_are_opened_and_other_mail_stays_unread():
+    from app.mailer import read_checkin_replies
+
+    imap = FakeImap({
+        1: raw(OWNER, "note to self", mid="<a@mail.gmail.com>", subject="Shopping list"),
+        2: raw(OWNER, "Finished the report", mid="<b@mail.gmail.com>"),                       # subject carries [JM-...]
+        3: raw(OWNER, "What did you do?", mid="<9.9@jarvis-memory.local>", subject="Pulse [JM-abcdef123456]"),   # JARVIS's own mail
+    })
+    replies = read_checkin_replies(imap, OWNER)
+    assert [r.text for r in replies] == ["Finished the report"]
+    assert imap.full_fetches == [2] and imap.read == {2}          # neither the shopping list nor JARVIS's own check-in was opened or marked read

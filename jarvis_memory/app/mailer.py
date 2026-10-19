@@ -83,6 +83,28 @@ def parse_reply(raw: bytes, owner_address: str) -> Optional[Reply]:
     return Reply(message_id=message_id[:300], thread_id=thread.group(1), text=text, sent_at=sent_at)
 
 
+def read_checkin_replies(imap, from_address: str, limit: int = 30) -> list[Reply]:
+    """Unread mail from the owner whose subject carries a [JM-...] check-in token. Other mail is never opened or marked read:
+    subjects are peeked first (BODY.PEEK does not set the read flag); only a real check-in reply is fetched in full."""
+    status, data = imap.search(None, "UNSEEN", "FROM", f'"{from_address}"')
+    numbers = data[0].split() if status == "OK" and data and data[0] else []
+    replies: list[Reply] = []
+    for num in numbers[-limit:]:
+        status, head = imap.fetch(num, "(BODY.PEEK[HEADER.FIELDS (SUBJECT IN-REPLY-TO REFERENCES MESSAGE-ID)])")
+        if status != "OK" or not head or not isinstance(head[0], tuple):
+            continue
+        header_text = head[0][1].decode("utf-8", errors="replace")
+        if "@jarvis-memory.local" in header_text or not THREAD_RE.search(header_text):   # not a check-in reply, or JARVIS's own mail
+            continue
+        status, parts = imap.fetch(num, "(RFC822)")   # this fetch marks the reply read, so it is not processed twice
+        if status != "OK" or not parts or not isinstance(parts[0], tuple):
+            continue
+        reply = parse_reply(parts[0][1], from_address)
+        if reply:
+            replies.append(reply)
+    return replies
+
+
 class GmailMailbox:
     def __init__(self, address: str, app_password: str) -> None:
         self.address, self._password = address, app_password
@@ -105,14 +127,7 @@ class GmailMailbox:
         try:
             imap.login(self.address, self._password)
             imap.select("INBOX")
-            status, data = imap.search(None, "UNSEEN", "FROM", f'"{from_address}"', "SUBJECT", '"[JM-"')
-            for num in (data[0].split() if status == "OK" and data and data[0] else [])[:30]:
-                status, parts = imap.fetch(num, "(RFC822)")  # fetching marks it read, so it is not processed twice
-                if status != "OK" or not parts or not isinstance(parts[0], tuple):
-                    continue
-                reply = parse_reply(parts[0][1], from_address)
-                if reply:
-                    replies.append(reply)
+            replies = read_checkin_replies(imap, from_address)
         finally:
             try:
                 imap.logout()
