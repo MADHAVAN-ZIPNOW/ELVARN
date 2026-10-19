@@ -161,13 +161,13 @@ def search_web(query: str, client: Optional[httpx.Client] = None, limit: int = 5
 
     Servers in data centres are often blocked by search engines, so a chain of sources keeps this working without paid services."""
     owns = client is None
-    client = client or httpx.Client(timeout=12.0, headers={"User-Agent": UA})
+    client = client or httpx.Client(timeout=5.0, headers={"User-Agent": UA})
     attempts = []
     if tavily_key:
         attempts.append(lambda: _tavily(client, query, tavily_key, limit))
     attempts += [lambda: _ddg(client, query, "https://html.duckduckgo.com/html/", limit),
-                 lambda: _ddg(client, query, "https://lite.duckduckgo.com/lite/", limit),
-                 lambda: _wikipedia(client, query, limit)]
+                 lambda: _wikipedia(client, query, limit),          # works from data centres, so it goes before the 2nd DDG try
+                 lambda: _ddg(client, query, "https://lite.duckduckgo.com/lite/", limit)]
     last: Optional[Exception] = None
     try:
         for attempt in attempts:
