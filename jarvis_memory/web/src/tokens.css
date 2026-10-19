@@ -1,0 +1,16 @@
+:root {
+  --bg: #05060A; --bg-2: #0A0D18;
+  --surface: rgba(255, 255, 255, .055); --surface-2: rgba(255, 255, 255, .09);
+  --stroke: rgba(140, 170, 255, .16); --stroke-hi: rgba(140, 170, 255, .36);
+  --text: #EAF0FF; --text-2: #A9B6D8; --text-3: #8591B6;
+  --blue: #2F7DFF; --blue-hi: #47A6FF; --cyan: #22D3EE; --violet: #8B5CF6; --pink: #FF5AA2;
+  --green: #2FBF55; --amber: #FFB62E; --red: #E5484D;
+  --src-manual: var(--blue-hi); --src-voice: var(--green); --src-email: var(--amber); --src-daily_review: var(--pink);
+  --r-card: 20px; --r-btn: 14px; --r-pill: 999px; --r-input: 14px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .08);
+  --glow-blue: 0 0 24px rgba(47, 125, 255, .4);
+  --ease: cubic-bezier(.22, .8, .3, 1); --t: 250ms;
+  --font: "Segoe UI Variable", "Segoe UI", system-ui, Roboto, sans-serif;
+  color-scheme: dark;
+}

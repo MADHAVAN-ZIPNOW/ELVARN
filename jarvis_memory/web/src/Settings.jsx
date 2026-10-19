@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { deleteAll, exportAll, forgetKey, stats } from "./api";
 import { Banner } from "./components";
+import { useVisuals } from "./visuals";
 
 export default function Settings({ onSignOut }) {
   const [s, setS] = useState(null);
   const [msg, setMsg] = useState({ kind: "", text: "" });
   const [typed, setTyped] = useState("");
+  const [visuals, setVisuals] = useVisuals();
   useEffect(() => { stats().then(setS).catch((e) => setMsg({ kind: "error", text: e.message })); }, []);
 
   const doExport = async () => {
@@ -26,6 +28,12 @@ export default function Settings({ onSignOut }) {
     <section>
       <h2>Settings</h2>
       <Banner kind={msg.kind || "error"}>{msg.text}</Banner>
+      <h3 className="section">Appearance</h3>
+      <label className="switch-row">
+        <span className="sw-text">Animated visuals<small>Background scenes and orb motion</small></span>
+        <input type="checkbox" role="switch" checked={visuals} onChange={(e) => setVisuals(e.target.checked)} />
+        <span className="switch" aria-hidden="true" />
+      </label>
       <h3 className="section">Storage</h3>
       {s && (
         <>

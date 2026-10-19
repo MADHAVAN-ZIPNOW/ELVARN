@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createMemory, listMemories } from "./api";
 import { Banner, MemoryCard, SOURCE_ICON, SOURCE_LABEL } from "./components";
 import { useSpeech } from "./speech";
+import Orb from "./Orb";
 
 const FILTERS = [["", "All"], ["manual", "Typed"], ["voice", "Voice"], ["email", "Email"], ["daily_review", "Daily review"]];
 
@@ -47,7 +48,10 @@ export default function Home({ onOpen }) {
 
   return (
     <section>
-      <h2>What did you do since the last update?</h2>
+      <div className="hero">
+        <Orb size={190} state={speech.listening ? "listening" : busy ? "thinking" : error ? "error" : saved && !text ? "success" : "idle"} />
+        <h2>What did you do since the last update?</h2>
+      </div>
       <div className="composer">
         <textarea value={text} onChange={(e) => { setText(e.target.value); baseRef.current = e.target.value; }}
           placeholder="Type it, or tap the microphone and talk. You can edit before saving." rows={5} maxLength={20000}

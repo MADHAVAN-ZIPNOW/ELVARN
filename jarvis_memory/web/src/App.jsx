@@ -5,6 +5,7 @@ import Home from "./Home";
 import Search from "./Search";
 import Settings from "./Settings";
 import { Banner } from "./components";
+import Orb from "./Orb";
 
 captureKey();
 
@@ -12,6 +13,7 @@ function KeyGate({ onDone, message }) {
   const [k, setK] = useState("");
   return (
     <main className="gate">
+      <Orb state="idle" size={150} />
       <h1>Jarvis Memory</h1>
       <p className="muted">Enter your owner key to open your memories. It is stored only in this browser.</p>
       <form onSubmit={(e) => { e.preventDefault(); if (k.trim()) { setKey(k); onDone(); } }}>

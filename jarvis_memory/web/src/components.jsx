@@ -22,7 +22,7 @@ export function Chips({ items, kind }) {
 export function MemoryCard({ memory, snippet, onOpen, fresh }) {
   const m = memory;
   return (
-    <article className={"card" + (fresh ? " fresh" : "")} onClick={() => onOpen(m.id)} tabIndex={0}
+    <article className={"card src-" + m.source + (fresh ? " fresh" : "")} onClick={() => onOpen(m.id)} tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter") onOpen(m.id); }} role="button" aria-label={"Open memory: " + m.title}>
       <header>
         <span className="src" title={SOURCE_LABEL[m.source]} aria-hidden>{SOURCE_ICON[m.source]}</span>
