@@ -443,3 +443,42 @@ class MemoryService:
             except Exception:
                 pass   # space is still reused by new rows; the size figure just drops later
         return deleted
+
+    # ------------------------------------------------------------------------------------------ tasks inside memories
+    def find_open_tasks(self, query: str, limit: int = 6) -> list[dict[str, Any]]:
+        """Open (pending/blocked) tasks whose text contains every word of ``query`` (newest memories first)."""
+        words = [w for w in query.lower().split() if len(w) > 1]
+        if not words:
+            return []
+        with self.db() as conn:
+            rows = conn.execute("SELECT id, tasks FROM memory_entries WHERE owner_id = %s AND deleted_at IS NULL AND tasks <> '[]'::jsonb "
+                                "ORDER BY created_at DESC LIMIT 300", (self.owner_id,)).fetchall()
+        found = []
+        for r in rows:
+            for i, t in enumerate(r["tasks"] or []):
+                text = str(t.get("task", ""))
+                if t.get("status", "pending") != "done" and all(w in text.lower() for w in words):
+                    found.append({"memory_id": str(r["id"]), "index": i, "task": text, "status": t.get("status", "pending")})
+        return found[:limit]
+
+    def change_task(self, memory_id: str, index: int, task_text: str, *, status: Optional[str] = None, remove: bool = False) -> bool:
+        """Mark one task done, or remove it (kept in metadata so it can be restored). False if it changed in the meantime."""
+        with self.db() as conn:
+            row = conn.execute("SELECT tasks, metadata_json FROM memory_entries WHERE id = %s AND owner_id = %s AND deleted_at IS NULL",
+                               (memory_id, self.owner_id)).fetchone()
+            if not row:
+                return False
+            tasks = list(row["tasks"] or [])
+            if index >= len(tasks) or tasks[index].get("task") != task_text:
+                return False
+            meta = dict(row["metadata_json"] or {})
+            if remove:
+                removed = list(meta.get("removed_tasks", []))
+                removed.append({**tasks[index], "removed_at": datetime.now(timezone.utc).isoformat()})
+                meta["removed_tasks"] = removed[-20:]
+                del tasks[index]
+            else:
+                tasks[index] = {**tasks[index], "status": status}
+            conn.execute("UPDATE memory_entries SET tasks = %s, metadata_json = %s, updated_at = now() WHERE id = %s AND owner_id = %s",
+                         (Jsonb(tasks), Jsonb(meta), memory_id, self.owner_id))
+        return True

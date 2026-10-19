@@ -240,6 +240,7 @@ class ChatRequest(BaseModel):
     session_id: Optional[uuid.UUID] = None
     context: Optional[str] = Field(None, max_length=400)   # e.g. the question JARVIS just asked on a call
     archive: Optional[str] = Field(None, max_length=4000)  # older memories kept on the owner's computer (data only)
+    attachment: Optional[str] = Field(None, max_length=12000)  # text of a file the owner asked about (untrusted data)
 
 
 class PruneRequest(BaseModel):

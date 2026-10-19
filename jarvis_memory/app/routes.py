@@ -77,7 +77,7 @@ def make_router(guard) -> APIRouter:
     @router.post("/chat")
     def chat(body: ChatRequest, request: Request):
         """One turn of the shared chat (phone, desktop and the call screen all use this)."""
-        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive)
+        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive, attachment=body.attachment)
 
     @router.get("/chat/sessions")
     def chat_sessions(request: Request):
@@ -100,6 +100,13 @@ def make_router(guard) -> APIRouter:
     def chat_md(session_id: uuid.UUID, request: Request):
         return Response(chat_of(request).export_markdown(str(session_id)), media_type="text/markdown; charset=utf-8",
                         headers={"Content-Disposition": 'attachment; filename="jarvis-chat.md"'})
+
+    @router.get("/analytics")
+    def analytics(range: str = Query("week", pattern="^(day|week|month)$"), svc: MemoryService = Depends(service_of)):
+        """Numbers for the desktop Insights charts (read-only aggregates)."""
+        from . import analytics as analytics_module
+
+        return analytics_module.build(svc, range)
 
     @router.get("/reviews")
     def reviews_month(month: Optional[str] = Query(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$"), svc: MemoryService = Depends(service_of)):
