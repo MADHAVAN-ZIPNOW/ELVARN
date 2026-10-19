@@ -179,3 +179,23 @@ def test_read_page_follows_redirects_safely_and_rejects_downloads(monkeypatch):
     monkeypatch.setattr(socket, "getaddrinfo", sneaky)
     with pytest.raises(webtools.WebError):
         webtools.read_page("https://example.com/go", client=c)
+
+
+def test_search_falls_back_from_a_blocked_engine_to_wikipedia():
+    import httpx
+
+    def handler(request):
+        if "duckduckgo" in request.url.host:
+            return httpx.Response(202, text="blocked")          # what data-centre addresses get
+        return httpx.Response(200, json={"query": {"search": [{"title": "Python (programming language)", "snippet": "A <b>high-level</b> language"}]}})
+
+    hits = webtools.search_web("python", client=httpx.Client(transport=httpx.MockTransport(handler)))
+    assert hits[0]["url"] == "https://en.wikipedia.org/wiki/Python_(programming_language)" and hits[0]["snippet"] == "A high-level language"
+
+
+def test_search_reports_when_every_source_is_down():
+    import httpx
+
+    down = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503)))
+    with pytest.raises(webtools.WebError):
+        webtools.search_web("python", client=down)

@@ -207,7 +207,7 @@ class ChatService:
                 return f"Reminder set for {at.strftime('%a %d %b %H:%M')}: {text}", f"reminder: {text[:50]}"
             if name == "web_search":
                 q = str(a.get("query", ""))[:200]
-                hits = self.web_search(q)
+                hits = self.web_search(q, tavily_key=self.settings.tavily_api_key) if self.web_search is webtools.search_web else self.web_search(q)
                 lines = [f"{h['title']} - {h['url']} - {h['snippet']}" for h in hits]
                 return "\n".join(lines) or "No results.", f"web search: {q[:60]}"
             if name == "read_url":

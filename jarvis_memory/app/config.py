@@ -32,6 +32,7 @@ class Settings:
     groq_api_key: str = ""
     gmail_address: str = ""            # the Gmail account that sends the check-ins and receives replies
     gmail_app_password: str = ""       # a Google App Password (never your normal password); Render env var only
+    tavily_api_key: str = ""           # optional: better web search (free tier at tavily.com)
     smtp_mode: str = "direct"          # "external": the scheduler sends the e-mail (Render free blocks outgoing SMTP)
     firebase_service_account_json: str = ""   # Firebase service-account key (Render env var only) used to ring the phone
     llm_model: str = "qwen/qwen3.8-27b"
@@ -63,6 +64,7 @@ def get_settings() -> Settings:
         timezone=_env("JARVIS_TIMEZONE", "Asia/Kolkata"),
         groq_api_key=_env("GROQ_API_KEY"),
         gmail_address=_env("GMAIL_ADDRESS"),
+        tavily_api_key=_env("TAVILY_API_KEY"),
         smtp_mode=_env("JM_SMTP_MODE", "direct").lower(),
         firebase_service_account_json=_env("FIREBASE_SERVICE_ACCOUNT_JSON"),
         gmail_app_password=_env("GMAIL_APP_PASSWORD").replace(" ", ""),

@@ -20,6 +20,7 @@ MAX_CHARS = 12_000
 MAX_REDIRECTS = 3
 TEXT_TYPES = ("text/html", "text/plain", "application/xhtml+xml", "application/json", "text/xml", "application/xml")
 UA = "Mozilla/5.0 (compatible; JarvisMemory/1.0; personal assistant)"
+WIKI_UA = "JarvisMemory/1.0 (https://github.com/MADHAVAN-ZIPNOW/Jarvis; personal assistant) httpx"
 
 
 class WebError(Exception):
@@ -120,27 +121,65 @@ def read_page(url: str, client: Optional[httpx.Client] = None) -> dict[str, str]
 _RESULT = re.compile(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)</a>.*?(?:class="result__snippet"[^>]*>(.*?)</a>)?', re.S)
 
 
-def search_web(query: str, client: Optional[httpx.Client] = None, limit: int = 5) -> list[dict[str, str]]:
-    """Top results (title, url, snippet) from DuckDuckGo's HTML endpoint (no key needed)."""
-    owns = client is None
-    client = client or httpx.Client(timeout=12.0, headers={"User-Agent": UA})
-    try:
-        resp = client.post("https://html.duckduckgo.com/html/", data={"q": query[:200]})
-        resp.raise_for_status()
-    except httpx.HTTPError as exc:
-        raise WebError(f"Web search is not available right now ({type(exc).__name__}).") from None
-    finally:
-        if owns:
-            client.close()
+def _clean(s: str) -> str:
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", "", s or "")).split())
+
+
+def _ddg(client: httpx.Client, query: str, endpoint: str, limit: int) -> list[dict[str, str]]:
+    resp = client.post(endpoint, data={"q": query[:200]})
+    resp.raise_for_status()
     results: list[dict[str, str]] = []
     for href, title, snippet in _RESULT.findall(resp.text):
         link = href
         if "uddg=" in href:
             link = unquote(parse_qs(urlparse(href if href.startswith("http") else "https:" + href).query).get("uddg", [""])[0])
-        if not link.startswith("https://"):
-            continue
-        clean = lambda s: " ".join(html.unescape(re.sub(r"<[^>]+>", "", s or "")).split())
-        results.append({"title": clean(title)[:150], "url": link[:300], "snippet": clean(snippet)[:300]})
+        if link.startswith("https://"):
+            results.append({"title": _clean(title)[:150], "url": link[:300], "snippet": _clean(snippet)[:300]})
         if len(results) >= limit:
             break
     return results
+
+
+def _wikipedia(client: httpx.Client, query: str, limit: int) -> list[dict[str, str]]:
+    resp = client.get("https://en.wikipedia.org/w/api.php", headers={"User-Agent": WIKI_UA}, params={"action": "query", "list": "search", "srsearch": query[:200],
+                                                                    "srlimit": limit, "format": "json"})
+    resp.raise_for_status()
+    return [{"title": h["title"][:150], "url": "https://en.wikipedia.org/wiki/" + quote_plus(h["title"].replace(" ", "_"), safe="_()"),
+             "snippet": _clean(h.get("snippet", ""))[:300]} for h in resp.json().get("query", {}).get("search", [])[:limit]]
+
+
+def _tavily(client: httpx.Client, query: str, key: str, limit: int) -> list[dict[str, str]]:
+    resp = client.post("https://api.tavily.com/search", json={"query": query[:300], "max_results": limit},
+                       headers={"Authorization": f"Bearer {key}"})
+    resp.raise_for_status()
+    return [{"title": _clean(r.get("title", ""))[:150], "url": r["url"][:300], "snippet": _clean(r.get("content", ""))[:300]}
+            for r in resp.json().get("results", []) if str(r.get("url", "")).startswith("https://")][:limit]
+
+
+def search_web(query: str, client: Optional[httpx.Client] = None, limit: int = 5, tavily_key: str = "") -> list[dict[str, str]]:
+    """Top results (title, url, snippet). Tries Tavily (if a key is set), DuckDuckGo, DuckDuckGo Lite, then Wikipedia.
+
+    Servers in data centres are often blocked by search engines, so a chain of sources keeps this working without paid services."""
+    owns = client is None
+    client = client or httpx.Client(timeout=12.0, headers={"User-Agent": UA})
+    attempts = []
+    if tavily_key:
+        attempts.append(lambda: _tavily(client, query, tavily_key, limit))
+    attempts += [lambda: _ddg(client, query, "https://html.duckduckgo.com/html/", limit),
+                 lambda: _ddg(client, query, "https://lite.duckduckgo.com/lite/", limit),
+                 lambda: _wikipedia(client, query, limit)]
+    last: Optional[Exception] = None
+    try:
+        for attempt in attempts:
+            try:
+                found = attempt()
+                if found:
+                    return found
+            except httpx.HTTPError as exc:
+                last = exc
+    finally:
+        if owns:
+            client.close()
+    if last is not None:
+        raise WebError(f"Web search is not available right now ({type(last).__name__}).")
+    return []
