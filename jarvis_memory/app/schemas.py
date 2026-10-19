@@ -175,6 +175,7 @@ class SettingsUpdate(BaseModel):
     timezone: Optional[str] = Field(None, max_length=60)
     email_enabled: Optional[bool] = None
     email_interval_minutes: Optional[int] = Field(None, ge=15, le=1440)
+    email_times: Optional[str] = Field(None, max_length=80)
     push_enabled: Optional[bool] = None
     push_interval_minutes: Optional[int] = Field(None, ge=15, le=1440)
     quiet_start_hour: Optional[int] = Field(None, ge=0, le=23)
@@ -185,6 +186,18 @@ class SettingsUpdate(BaseModel):
     review_hour: Optional[int] = Field(None, ge=0, le=23)
     review_minute: Optional[int] = Field(None, ge=0, le=59)
     db_soft_limit_mb: Optional[int] = Field(None, ge=50, le=5000)
+
+    @field_validator("email_times")
+    @classmethod
+    def _times(cls, v):
+        if v is None:
+            return v
+        import re
+
+        parts = [p.strip() for p in v.split(",") if p.strip()]
+        if not parts or len(parts) > 8 or not all(re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", p) for p in parts):
+            raise ValueError("email_times must look like 09:00,12:00,17:00")
+        return ",".join(sorted(set(parts)))
 
     @field_validator("timezone")
     @classmethod

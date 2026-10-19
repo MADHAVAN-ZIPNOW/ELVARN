@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
@@ -27,6 +27,20 @@ def in_quiet_hours(hour: int, start: int, end: int) -> bool:
     if start == end:
         return False
     return (hour >= start or hour < end) if start > end else (start <= hour < end)
+
+
+def latest_email_slot(local: datetime, times: str) -> Optional[datetime]:
+    """The scheduled e-mail time (local) that passed within the last 2 hours, e.g. "09:00,12:00,17:00"."""
+    best = None
+    for part in times.split(","):
+        try:
+            h, m = (int(x) for x in part.strip().split(":"))
+        except ValueError:
+            continue
+        t = local.replace(hour=h, minute=m, second=0, microsecond=0)
+        if t <= local and local - t <= timedelta(hours=2) and (best is None or t > best):   # a slot missed by more than 2 h is skipped
+            best = t
+    return best
 
 
 def build_checkin(owner_name: str, token: str, open_tasks: list[str], checkin: Optional[creative.Checkin] = None
@@ -70,10 +84,11 @@ def send_checkin_if_due(svc: MemoryService, mailbox: Mailbox, now: datetime) -> 
     if not s["owner_email"]:
         return {"sent": False, "why": "no_owner_email"}
     local = now.astimezone(ZoneInfo(s["timezone"]))
-    if in_quiet_hours(local.hour, s["quiet_start_hour"], s["quiet_end_hour"]):
-        return {"sent": False, "why": "quiet_hours"}
+    slot = latest_email_slot(local, s.get("email_times") or "")
+    if slot is None:
+        return {"sent": False, "why": "not_due"}
     last = s["last_email_at"]
-    if last and (now - last).total_seconds() < s["email_interval_minutes"] * 60 - 120:  # 2 min slack for scheduler jitter
+    if last and last >= slot.astimezone(last.tzinfo):      # this time slot's e-mail already went out
         return {"sent": False, "why": "not_due"}
     count = s["email_sent_count"] if s["email_sent_day"] == local.date() else 0
     if count >= s["max_emails_per_day"]:

@@ -31,7 +31,7 @@ def tick(client, mailbox, now):
 
 
 def enable(client, **extra):
-    client.patch(f"{P}/settings", json={"email_enabled": True, **extra})
+    client.patch(f"{P}/settings", json={"email_enabled": True, "email_times": "16:00,18:00", **extra})
     with client.app_state.service.db() as c:
         c.execute("UPDATE memory_settings SET owner_email = %s", (OWNER,))
 
@@ -59,13 +59,13 @@ def test_only_the_owners_replies_are_accepted():
     assert parse_reply(raw(OWNER, ">only quote"), OWNER) is None
 
 
-def test_checkin_sent_when_due_then_not_again_until_the_interval(client):
+def test_checkin_sent_when_due_then_not_again_until_the_next_time_slot(client):
     enable(client)
     box = FakeMailbox()
     assert tick(client, box, DAY)["email"]["sent"] is True
     assert box.sent[0][0] == OWNER and "[JM-" in box.sent[0][1]
     assert tick(client, box, DAY + timedelta(minutes=15))["email"] == {"sent": False, "why": "not_due"}
-    assert tick(client, box, DAY + timedelta(minutes=61))["email"]["sent"] is True
+    assert tick(client, box, DAY + timedelta(minutes=125))["email"]["sent"] is True
     assert len(box.sent) == 2
 
 
@@ -73,7 +73,7 @@ def test_no_email_in_quiet_hours_when_disabled_or_over_the_daily_limit(client):
     box = FakeMailbox()
     assert tick(client, box, DAY)["email"]["why"] == "email_disabled"
     enable(client, max_emails_per_day=1)
-    assert tick(client, box, NIGHT)["email"]["why"] == "quiet_hours"
+    assert tick(client, box, NIGHT)["email"]["why"] == "not_due"      # no e-mail slot near this hour
     assert tick(client, box, DAY)["email"]["sent"] is True
     assert tick(client, box, DAY + timedelta(hours=2))["email"]["why"] == "daily_limit"
 
@@ -292,3 +292,22 @@ def test_only_checkin_replies_are_opened_and_other_mail_stays_unread():
     replies = read_checkin_replies(imap, OWNER)
     assert [r.text for r in replies] == ["Finished the report"]
     assert imap.full_fetches == [2] and imap.read == {2}          # neither the shopping list nor JARVIS's own check-in was opened or marked read
+
+
+def test_emails_go_out_at_the_scheduled_times_only(client):
+    from app import jobs
+    from zoneinfo import ZoneInfo
+
+    enable(client, email_times="09:00,12:00,17:00")
+    ist = ZoneInfo("Asia/Kolkata")
+    at = lambda h, m=0: datetime(2026, 1, 5, h, m, tzinfo=ist)
+    box = FakeMailbox()
+    assert tick(client, box, at(8, 30))["email"]["why"] == "not_due"            # before the first slot
+    assert tick(client, box, at(9, 5))["email"]["sent"] is True                 # 09:00 e-mail
+    assert tick(client, box, at(9, 40))["email"]["why"] == "not_due"            # already sent for this slot
+    assert tick(client, box, at(12, 10))["email"]["sent"] is True               # 12:00 e-mail
+    assert tick(client, box, at(15, 0))["email"]["why"] == "not_due"            # nothing scheduled
+    assert tick(client, box, at(17, 3))["email"]["sent"] is True                # 17:00 e-mail
+    assert tick(client, box, at(23, 0))["email"]["why"] == "not_due"
+    assert len(box.sent) == 3
+    assert client.patch(f"{P}/settings", json={"email_times": "9am"}).status_code == 422
