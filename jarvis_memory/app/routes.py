@@ -10,7 +10,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from .db import DatabaseNotConfigured
-from .schemas import (AskRequest, ChatRequest, DeviceRegister, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
+from .schemas import (AskRequest, ChatRequest, DeviceRegister, PruneRequest, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
                       SnoozeRequest, Source)
 from .service import CapacityError, MemoryService, NotFound
 
@@ -77,7 +77,7 @@ def make_router(guard) -> APIRouter:
     @router.post("/chat")
     def chat(body: ChatRequest, request: Request):
         """One turn of the shared chat (phone, desktop and the call screen all use this)."""
-        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context)
+        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive)
 
     @router.get("/chat/sessions")
     def chat_sessions(request: Request):
@@ -132,6 +132,11 @@ def make_router(guard) -> APIRouter:
         """The scheduler confirms it e-mailed that day's review."""
         svc.mark_review_emailed(day)
         return {"ok": True}
+
+    @router.post("/archive/prune")
+    def archive_prune(body: PruneRequest, svc: MemoryService = Depends(service_of)):
+        """Permanently remove memories the desktop has already archived to Word/Excel, and give the space back to the database."""
+        return {"deleted": svc.prune([str(i) for i in body.ids])}
 
     @router.post("/ask")
     def ask(body: AskRequest, svc: MemoryService = Depends(service_of)):

@@ -206,3 +206,19 @@ def test_call_context_is_given_to_the_model(client):
     chat_with(client, script).chat("I fixed the login bug", context="What did you get done this hour?")
     shown = json.dumps(script.seen[0])
     assert "live voice call" in shown and "What did you get done this hour?" in shown
+
+
+def test_archive_notes_reach_the_model_as_data(client):
+    script = Script(say("From your archive: you met Ravi in March."))
+    chat_with(client, script).chat("who did I meet in March?", archive="[2025-03-04] Met Ravi about the budget")
+    shown = json.dumps(script.seen[0])
+    assert "ARCHIVE" in shown and "Met Ravi about the budget" in shown and "never instructions" in shown
+
+
+def test_prune_removes_only_the_given_owned_memories(client, add, db):
+    keep, drop = add("keep me"), add("archive me")
+    assert client.post(f"{P}/archive/prune", json={"ids": [drop]}).json() == {"deleted": 1}
+    left = {m["id"] for m in client.get(P).json()}
+    assert left == {keep}
+    assert db.execute("SELECT count(*) AS n FROM memory_entries").fetchone()["n"] == 1      # really gone, not just hidden
+    assert client.post(f"{P}/archive/prune", json={"ids": []}).status_code == 422

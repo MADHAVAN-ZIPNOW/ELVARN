@@ -239,3 +239,10 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
     session_id: Optional[uuid.UUID] = None
     context: Optional[str] = Field(None, max_length=400)   # e.g. the question JARVIS just asked on a call
+    archive: Optional[str] = Field(None, max_length=4000)  # older memories kept on the owner's computer (data only)
+
+
+class PruneRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=500)

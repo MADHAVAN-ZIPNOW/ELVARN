@@ -427,3 +427,19 @@ class MemoryService:
     def mark_review_emailed(self, day) -> None:
         with self.db() as conn:
             conn.execute("UPDATE daily_reviews SET emailed = true WHERE owner_id = %s AND day = %s", (self.owner_id, day))
+
+    def prune(self, ids: list[str]) -> int:
+        """Hard-delete memories by id (owner-scoped) and VACUUM so the database really shrinks. The desktop calls this only
+        after it has written those memories to its Word/Excel archive."""
+        with self.db() as conn:
+            deleted = conn.execute("DELETE FROM memory_entries WHERE owner_id = %s AND id = ANY(%s::uuid[])",
+                                   (self.owner_id, ids)).rowcount
+        if deleted:
+            import psycopg
+
+            try:   # VACUUM cannot run inside a transaction, so it gets its own autocommit connection
+                with psycopg.connect(self.settings.database_url, autocommit=True, connect_timeout=15) as conn:
+                    conn.execute("VACUUM FULL memory_entries")
+            except Exception:
+                pass   # space is still reused by new rows; the size figure just drops later
+        return deleted
