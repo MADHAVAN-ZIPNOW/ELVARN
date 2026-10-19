@@ -501,3 +501,12 @@ def test_deleting_a_task_also_cancels_its_waiting_reminder(client):
     out = chat.chat("yes delete the invoice task", sid)
     assert out["actions"][0]["summary"].startswith("deleted")
     assert client.get(f"{P}/reminders", params={"status": "pending"}).json() == []
+
+
+def test_what_you_say_on_a_call_becomes_a_memory_but_goodbyes_do_not(client):
+    chat = chat_with(client, Script(say("Nice work."), say("Bye!")))
+    sid = chat.chat("I finished the budget report and sent it to Ravi", context="What did you get done this past hour?")["session_id"]
+    chat.chat("okay thanks goodbye friend", sid, context="What did you get done this past hour?")
+    texts = [m["content"] for m in client.get(P, params={"source": "voice"}).json()]
+    assert any("budget report" in t for t in texts)
+    assert not any(t.startswith("okay thanks goodbye") for t in texts)

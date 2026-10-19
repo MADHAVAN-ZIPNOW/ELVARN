@@ -42,6 +42,8 @@ def phone_command(act: dict) -> Optional[dict[str, str]]:
     if step == "scroll":
         cmd["dir"] = "up" if str(act.get("dir", "down")).lower() == "up" else "down"
     return cmd
+
+BYE = re.compile(r"\b(bye|goodbye|good night|thanks|thank you|that's all|nothing|no)\b", re.I)
 AFFIRM = re.compile(r"\b(yes|yeah|yep|sure|confirm(ed)?|go ahead|do it|delete it|remove it|ok(ay)?|please do)\b", re.IGNORECASE)
 FALLBACK_MODELS = ("openai/gpt-oss-120b",)   # used when the main model is rate-limited or down
 BRAIN_MESSAGES = {
@@ -262,6 +264,11 @@ class ChatService:
         sid = self._ensure_session(session_id, message)
         history = self._history(sid)
         self._save(sid, "user", message)
+        if context and len(message.split()) >= 3 and not (len(message.split()) <= 6 and BYE.search(message)):
+            try:   # what you tell JARVIS on a call is a real memory: it shows in insights, the daily review and the PC archive
+                self.svc.create(MemoryCreate(content=message[:4000], source="voice", extract=True))
+            except Exception:
+                log.info("Could not save the call answer as a memory")
         if self.llm is None:
             reply = "My brain (the Groq key) is not configured on the server, so I can only keep notes for now."
             self._save(sid, "assistant", reply)
