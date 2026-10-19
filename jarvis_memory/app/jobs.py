@@ -170,6 +170,48 @@ def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     return out
 
 
+def send_news(svc: MemoryService, pusher, now: datetime, fetcher=None) -> dict[str, Any]:
+    """One fresh AI / quantum / space story as a phone notification, at most every news_interval_minutes and max_news_per_day a day."""
+    from . import news
+
+    if pusher is None or not svc.device_tokens():
+        return {"why": "no_phone"}
+    s = svc.get_settings()
+    if not s["news_enabled"]:
+        return {"why": "disabled"}
+    local = now.astimezone(ZoneInfo(s["timezone"]))
+    if in_quiet_hours(local.hour, s["quiet_start_hour"], s["quiet_end_hour"]):
+        return {"why": "quiet_hours"}
+    last = s["last_news_at"]
+    if last and (now - last).total_seconds() < s["news_interval_minutes"] * 60 - SLACK_S:
+        return {"why": "not_due"}
+    sent_today = s["news_sent_count"] if s["news_sent_day"] == local.date() else 0
+    if sent_today >= s["max_news_per_day"]:
+        return {"why": "daily_limit"}
+    topics = [t for t in s["news_topics"].split(",") if t in news.FEEDS]
+    if not topics:
+        return {"why": "no_topics"}
+    with svc.db() as conn:
+        conn.execute("DELETE FROM public.news_seen WHERE owner_id = %s AND seen_at < now() - make_interval(days => %s)", (svc.owner_id, news.KEEP_DAYS))
+        seen = {r["link_hash"] for r in conn.execute("SELECT link_hash FROM public.news_seen WHERE owner_id = %s", (svc.owner_id,)).fetchall()}
+    order = topics[sent_today % len(topics):] + topics[:sent_today % len(topics)]   # rotate topics through the day
+    fetch = fetcher or news.fetch
+    for topic in order:
+        for story in news.latest(topic, now, fetch):
+            h = news.link_hash(story["link"])
+            if h in seen:
+                continue
+            data = {"type": "news", "title": f"{news.LABEL[topic]} news", "line": story["title"], "body": story["summary"], "url": story["link"], "topic": topic}
+            if _push_all(svc, pusher, data):
+                with svc.db() as conn:
+                    conn.execute("INSERT INTO public.news_seen (owner_id, link_hash) VALUES (%s, %s) ON CONFLICT DO NOTHING", (svc.owner_id, h))
+                    conn.execute("UPDATE memory_settings SET last_news_at = %s, news_sent_day = %s, news_sent_count = %s WHERE owner_id = %s",
+                                 (now, local.date(), sent_today + 1, svc.owner_id))
+                return {"sent": True, "topic": topic, "title": story["title"][:80]}
+            return {"why": "push_failed"}
+    return {"why": "nothing_new"}
+
+
 def send_review(svc: MemoryService, pusher, mailbox: Optional[Mailbox], now: datetime) -> dict[str, Any]:
     """The nightly Daily Review: build it once a day at the chosen time (before quiet hours), push it, and e-mail it."""
     s = svc.get_settings()
@@ -224,6 +266,10 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
             result["replies"] = {"saved": 0, "error": type(exc).__name__, **({"detail": hint} if hint else {})}
         result["email"] = send_checkin_if_due(svc, mailbox, now)
     result["push"] = send_pushes(svc, pusher, now)
+    try:
+        result["news"] = send_news(svc, pusher, now)
+    except Exception as exc:  # news is a bonus: it must never break calls, reminders or e-mail
+        result["news"] = {"error": type(exc).__name__}
     try:
         result["review"] = send_review(svc, pusher, mailbox, now)
     except Exception as exc:  # the review must never break calls, reminders or e-mail

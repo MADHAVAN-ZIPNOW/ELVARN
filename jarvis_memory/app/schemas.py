@@ -176,6 +176,10 @@ class SettingsUpdate(BaseModel):
     email_enabled: Optional[bool] = None
     email_interval_minutes: Optional[int] = Field(None, ge=15, le=1440)
     email_times: Optional[str] = Field(None, max_length=80)
+    news_enabled: Optional[bool] = None
+    news_topics: Optional[str] = Field(None, max_length=60)
+    news_interval_minutes: Optional[int] = Field(None, ge=15, le=1440)
+    max_news_per_day: Optional[int] = Field(None, ge=0, le=50)
     push_enabled: Optional[bool] = None
     push_interval_minutes: Optional[int] = Field(None, ge=15, le=1440)
     quiet_start_hour: Optional[int] = Field(None, ge=0, le=23)
@@ -198,6 +202,16 @@ class SettingsUpdate(BaseModel):
         if not parts or len(parts) > 8 or not all(re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", p) for p in parts):
             raise ValueError("email_times must look like 09:00,12:00,17:00")
         return ",".join(sorted(set(parts)))
+
+    @field_validator("news_topics")
+    @classmethod
+    def _topics(cls, v):
+        if v is None:
+            return v
+        parts = [p.strip().lower() for p in v.split(",") if p.strip()]
+        if not parts or any(p not in ("ai", "quantum", "space") for p in parts):
+            raise ValueError("news_topics can contain ai, quantum, space")
+        return ",".join(dict.fromkeys(parts))
 
     @field_validator("timezone")
     @classmethod
