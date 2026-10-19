@@ -22,6 +22,7 @@ from .service import MemoryService
 log = logging.getLogger("jarvis_memory")
 WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
 MAX_BODY_BYTES = 250_000  # a memory is text; refuse anything larger before reading it
+RESTORE_MAX_BODY_BYTES = 2_000_000  # restoring archived data sends whole batches
 
 
 def create_app(settings: Optional[Settings] = None, extractor: Optional[Extractor] = None, migrate: bool = True) -> FastAPI:
@@ -51,7 +52,8 @@ def create_app(settings: Optional[Settings] = None, extractor: Optional[Extracto
     @app.middleware("http")
     async def hardening(request: Request, call_next):
         length = request.headers.get("content-length")
-        if length and length.isdigit() and int(length) > MAX_BODY_BYTES:
+        cap = RESTORE_MAX_BODY_BYTES if request.url.path.endswith("/archive/restore") else MAX_BODY_BYTES
+        if length and length.isdigit() and int(length) > cap:
             return JSONResponse({"detail": "Request too large."}, status_code=413)
         response = await call_next(request)
         response.headers.setdefault("X-Content-Type-Options", "nosniff")

@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from .db import DatabaseNotConfigured
 from .schemas import (AskRequest, ChatRequest, DeviceRegister, PruneRequest, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
                       SnoozeRequest, Source)
+from .backup import PruneExtra, RestorePayload
 from .service import CapacityError, MemoryService, NotFound
 
 log = logging.getLogger("jarvis_memory.routes")
@@ -170,6 +171,27 @@ def make_router(guard) -> APIRouter:
         """The scheduler confirms it e-mailed that day's review."""
         svc.mark_review_emailed(day)
         return {"ok": True}
+
+    @router.post("/export/all")
+    def export_all(request: Request, svc: MemoryService = Depends(service_of)):
+        """Everything (memories, chats with messages, reminders, daily reviews) for the PC archive."""
+        from . import backup
+
+        return backup.export_everything(svc)
+
+    @router.post("/archive/restore")
+    def archive_restore(body: RestorePayload, svc: MemoryService = Depends(service_of)):
+        """Put archived data back (new or empty cloud). Existing rows are never overwritten."""
+        from . import backup
+
+        return {"added": backup.restore(svc, body)}
+
+    @router.post("/archive/prune-extra")
+    def archive_prune_extra(body: PruneExtra, svc: MemoryService = Depends(service_of)):
+        """Remove old chats / finished reminders / old reviews that are safely on the PC."""
+        from . import backup
+
+        return {"deleted": backup.prune_extra(svc, body)}
 
     @router.post("/archive/prune")
     def archive_prune(body: PruneRequest, svc: MemoryService = Depends(service_of)):

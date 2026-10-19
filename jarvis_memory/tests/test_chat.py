@@ -437,3 +437,39 @@ def test_speech_service_problems_become_clear_messages(client):
 
 def test_voice_chat_needs_the_owner_key(make_client):
     assert make_client().post(f"{P}/chat/audio", content=b"x", headers={"Content-Type": "audio/mp4", "X-Owner-Key": ""}).status_code == 401
+
+
+# ---------------------------------------------------------------------------------------------- answering from earlier chats
+def _old_chat(client, title, pairs, when):
+    """Insert a finished conversation straight into the database with a chosen date."""
+    from psycopg.types.json import Jsonb
+
+    with client.app_state.service.db() as conn:
+        sid = conn.execute("INSERT INTO chat_sessions (owner_id, title, created_at, updated_at) VALUES (%s,%s,%s,%s) RETURNING id",
+                           (client.app_state.service.owner_id, title, when, when)).fetchone()["id"]
+        for i, (role, text) in enumerate(pairs):
+            conn.execute("INSERT INTO chat_messages (session_id, role, content, actions, created_at) VALUES (%s,%s,%s,%s,%s)", (sid, role, text, Jsonb([]), when))
+
+
+def test_jarvis_can_look_up_earlier_chats_and_answer_from_them(client):
+    from datetime import datetime, timedelta, timezone
+
+    when = datetime.now(timezone.utc) - timedelta(days=3)
+    _old_chat(client, "Budget talk", [("user", "Should we move the budget review to Friday?"), ("assistant", "Yes, Friday works; Ravi is free then.")], when)
+    _old_chat(client, "Lunch", [("user", "What should I eat?"), ("assistant", "Try the dosa place.")], when)
+    script = Script({"action": "search_chats", "query": "budget review"}, say("Earlier we agreed on Friday, with Ravi."))
+    out = chat_with(client, script).chat("what did we decide about the budget review?")
+    assert out["actions"][0]["summary"].startswith("searched past chats") and "Friday" in out["reply"]
+    shown = json.dumps(script.seen[1])
+    assert "Budget talk" in shown and "Ravi is free then" in shown and "dosa" not in shown     # only the matching conversation, with the reply next to it
+
+
+def test_past_chat_search_understands_time_and_reports_no_match(client):
+    from datetime import datetime, timedelta, timezone
+
+    _old_chat(client, "Old plan", [("user", "plan the Kerala trip"), ("assistant", "Book the train first.")], datetime.now(timezone.utc) - timedelta(days=40))
+    chat = chat_with(client, Script(say("x")))
+    now = datetime.now(timezone.utc)
+    assert "Kerala" in chat._past_chats("kerala trip", now)
+    assert chat._past_chats("kerala trip yesterday", now) == ""                                 # not from yesterday
+    assert chat._past_chats("something we never discussed", now) == ""

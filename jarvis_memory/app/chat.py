@@ -43,6 +43,7 @@ Tools:
 - add_memory     {{"content": "..."}}             save a note/memory the owner asked you to remember
 - add_task       {{"task": "...", "due": "optional text"}}   add a to-do
 - list_tasks     {{}}                              list open tasks
+- search_chats  {{"query": "..."}}                 look through the owner's EARLIER conversations with you (understands "last week", "yesterday") and answer from them
 - complete_task {{"task": "..."}}                mark an open task as done (match it by its words)
 - delete_task   {{"task": "...", "confirmed": true}}   permanently remove a task. FIRST ask the owner to confirm in plain words
                  (say exactly which task); only after they answer yes, call it with confirmed true. Never delete without that yes.
@@ -287,6 +288,33 @@ class ChatService:
         self._save(sid, "assistant", reply, actions)
         return {"session_id": sid, "reply": reply, "actions": actions}
 
+    def _past_chats(self, query: str, now: datetime, limit: int = 6) -> str:
+        """Earlier chat exchanges (a matching message with its neighbours) as dated lines, newest first. Optional time words narrow it."""
+        words = [w for w in re.findall(r"[a-z0-9']+", query.lower()) if len(w) > 2 and w not in ask_module._STOP and w not in ("chat", "chats", "talked", "talk", "discussed", "said")]
+        window = ask_module.parse_range(query, now)
+        if not words and not window:
+            return ""
+        where, params = ["s.owner_id = %s"], [self.svc.owner_id]
+        for w in words[:6]:
+            where.append("m.content ILIKE %s")
+            params.append(f"%{w}%")
+        if window:
+            where.append("m.created_at >= %s AND m.created_at < %s")
+            params += [window[0], window[1]]
+        with self.svc.db() as conn:
+            hits = conn.execute(f"SELECT m.id, m.session_id FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id WHERE {' AND '.join(where)} "
+                                f"ORDER BY m.created_at DESC LIMIT %s", params + [limit]).fetchall()
+            blocks = []
+            tz = ZoneInfo(self.settings.timezone)
+            for h in hits:
+                rows = conn.execute("SELECT m.role, m.content, m.created_at, s.title FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id "
+                                    "WHERE m.session_id = %s AND m.id BETWEEN %s AND %s ORDER BY m.id", (h["session_id"], h["id"] - 1, h["id"] + 1)).fetchall()
+                if rows:
+                    when = rows[0]["created_at"].astimezone(tz).strftime("%a %d %b %H:%M")
+                    blocks.append(f"[{when}] chat '{rows[0]['title'][:40]}': " + " | ".join(
+                        f"{'You' if r['role'] == 'user' else 'JARVIS'}: {r['content'][:260]}" for r in rows))
+        return "\n".join(blocks)
+
     def _task_change(self, query: str, a: dict[str, Any], message: str, *, remove: bool) -> tuple[str, str]:
         matches = self.svc.find_open_tasks(query)
         if not matches:
@@ -327,6 +355,10 @@ class ChatService:
                 body = f"Task: {text}" + (f" (due {due})" if due else "")
                 self.svc.create(MemoryCreate(content=body, title=f"Task: {text[:60]}", tasks=[Task(task=text)], extract=False))
                 return f"Task added: {text}", f"added task: {text[:60]}"
+            if name == "search_chats":
+                q = str(a.get("query", ""))[:300]
+                found = self._past_chats(q, now)
+                return (found or f"No earlier conversation matches {q!r}."), f"searched past chats: {q[:60]}"
             if name == "complete_task":
                 return self._task_change(" ".join(str(a.get("task", "")).split())[:200], a, message, remove=False)
             if name == "delete_task":
