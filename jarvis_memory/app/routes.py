@@ -80,7 +80,7 @@ def make_router(guard) -> APIRouter:
     @router.post("/chat")
     def chat(body: ChatRequest, request: Request):
         """One turn of the shared chat (phone, desktop and the call screen all use this)."""
-        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive, attachment=body.attachment)
+        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive, attachment=body.attachment, client=body.client)
 
     STT_MESSAGES = {"unsupported": (415, "Send the recording as audio/mp4, wav, webm, ogg or mp3."),
                     "not_configured": (503, "Voice chat needs the Groq key on the server."),
@@ -88,7 +88,7 @@ def make_router(guard) -> APIRouter:
                     "unavailable": (502, "Speech recognition is not available right now.")}
 
     @router.post("/chat/audio")
-    async def chat_audio(request: Request, session_id: Optional[uuid.UUID] = Query(None)):
+    async def chat_audio(request: Request, session_id: Optional[uuid.UUID] = Query(None), client: Optional[str] = Query(None, max_length=20)):
         """Voice turn for the phone: the raw recording is the request body. It is transcribed, answered by the shared chat (same
         history as typing), and nothing audio is stored. Returns {transcript, reply, session_id, actions}."""
         from starlette.concurrency import run_in_threadpool
@@ -108,7 +108,7 @@ def make_router(guard) -> APIRouter:
             raise HTTPException(code, message) from None
         if not transcript:
             return {"session_id": str(session_id) if session_id else None, "transcript": "", "reply": "", "actions": []}
-        turn = await run_in_threadpool(chat_of(request).chat, transcript, str(session_id) if session_id else None)
+        turn = await run_in_threadpool(lambda: chat_of(request).chat(transcript, str(session_id) if session_id else None, client=client))
         return {**turn, "transcript": transcript}
 
     @router.get("/chat/sessions")

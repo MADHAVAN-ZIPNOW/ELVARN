@@ -186,6 +186,56 @@ def _llm_default(settings, client: Optional[httpx.Client] = None, sleep: Callabl
     return call
 
 
+def _gemini_call(settings, messages: list[dict[str, str]], client: Optional[httpx.Client] = None) -> str:
+    """The backup brain (Google Gemini, OpenAI-compatible endpoint). Raises BrainError like the main caller does."""
+    owns = client is None
+    c = client or httpx.Client(timeout=30.0)
+    try:
+        for json_mode in (True, False):
+            payload: dict[str, Any] = {"model": settings.gemini_model, "temperature": 0.3, "messages": messages}
+            if json_mode:
+                payload["response_format"] = {"type": "json_object"}
+            try:
+                resp = c.post(settings.gemini_base_url.rstrip("/") + "/chat/completions", json=payload,
+                              headers={"Authorization": f"Bearer {settings.gemini_api_key}"})
+            except httpx.TimeoutException:
+                raise BrainError("timeout") from None
+            except httpx.HTTPError:
+                raise BrainError("unavailable") from None
+            if resp.status_code == 200:
+                try:
+                    content = str(resp.json()["choices"][0]["message"]["content"] or "")
+                except (KeyError, IndexError, ValueError, TypeError):
+                    raise BrainError("unavailable") from None
+                if content.strip():
+                    return content
+                raise BrainError("unavailable")
+            if resp.status_code == 429:
+                raise BrainError("rate_limit")
+            if resp.status_code < 500 and json_mode:
+                continue                                   # this model refused the strict JSON format: ask again plainly
+            raise BrainError("unavailable")
+        raise BrainError("unavailable")
+    finally:
+        if owns:
+            c.close()
+
+
+def _llm_with_backup(settings, client: Optional[httpx.Client] = None) -> Callable[[list[dict[str, str]]], str]:
+    """Groq first; if it is rate limited or down, Gemini answers instead (when a Gemini key is set)."""
+    primary = _llm_default(settings, client)
+
+    def call(messages: list[dict[str, str]]) -> str:
+        try:
+            return primary(messages)
+        except BrainError:
+            if not getattr(settings, "gemini_api_key", ""):
+                raise
+            log.info("Groq failed; asking Gemini instead")
+            return _gemini_call(settings, messages, client)
+    return call
+
+
 def _parse_action(raw: str) -> dict[str, Any]:
     try:
         data = json.loads(raw)
@@ -209,7 +259,7 @@ class ChatService:
                  web_read=webtools.read_page, web_search=webtools.search_web, news_fetch=None) -> None:
         self.svc = svc
         self.settings = svc.settings
-        self.llm = llm or (_llm_default(svc.settings) if svc.settings.groq_api_key else None)
+        self.llm = llm or (_llm_with_backup(svc.settings) if (svc.settings.groq_api_key or svc.settings.gemini_api_key) else None)
         self.web_read, self.web_search = web_read, web_search
         from . import news as _news
         self.news_fetch = news_fetch or _news.fetch
@@ -268,7 +318,8 @@ class ChatService:
 
     # ------------------------------------------------------------------------------------------ the turn
     def chat(self, message: str, session_id: Optional[str] = None, now: Optional[datetime] = None,
-             context: Optional[str] = None, archive: Optional[str] = None, attachment: Optional[str] = None) -> dict[str, Any]:
+             context: Optional[str] = None, archive: Optional[str] = None, attachment: Optional[str] = None, client: Optional[str] = None) -> dict[str, Any]:
+        self._client = client
         sid = self._ensure_session(session_id, message)
         history = self._history(sid)
         self._save(sid, "user", message)
@@ -283,8 +334,12 @@ class ChatService:
             return {"session_id": sid, "reply": reply, "actions": []}
         tz = ZoneInfo(self.settings.timezone)
         now = (now or datetime.now(tz)).astimezone(tz)
-        convo = [{"role": "system", "content": SYSTEM.format(owner=self.settings.owner_name or "the owner",
-                                                             now=now.strftime("%A %d %b %Y %H:%M"), tz=self.settings.timezone)}]
+        system_text = SYSTEM.format(owner=self.settings.owner_name or "the owner", now=now.strftime("%A %d %b %Y %H:%M"), tz=self.settings.timezone)
+        if client != "phone":      # only the Android app can run phone steps; the desktop has its own PC skills
+            system_text = "\n".join(line for line in system_text.split("\n") if not line.startswith("- phone "))
+            system_text += ("\nYou cannot open apps or browsers for the owner from here (that is done by the desktop's own commands, which already ran). "
+                            "If asked to open or control something, say so in one short sentence and offer to search or explain it instead.")
+        convo = [{"role": "system", "content": system_text}]
         if context:   # a live call: JARVIS opened with a question and this message answers it
             convo.append({"role": "system", "content": f"You are on a live voice call. You just asked the owner: {context[:400]!r}. "
                           "Their next message is the answer: acknowledge it warmly in one short sentence, then ask one brief follow-up or "
@@ -336,7 +391,7 @@ class ChatService:
                 actions.append({"tool": name, "summary": "blocked (web content seen)"})
             else:
                 result, summary = self._run_tool(name, act, now, message)
-                actions.append({"tool": name, "summary": summary, **({"cmd": phone_command(act)} if name == "phone" and phone_command(act) else {})})
+                actions.append({"tool": name, "summary": summary, **({"cmd": phone_command(act)} if name == "phone" and client == "phone" and phone_command(act) else {})})
             touched_web = touched_web or name in WEB_TOOLS
             label = "WEB DATA (untrusted)" if name in WEB_TOOLS else "TOOL RESULT"
             convo.append({"role": "user", "content": f"{label}: {result[:9000]}"})
@@ -445,6 +500,8 @@ class ChatService:
                 lines = [f"{h['title']} - {h['url']} - {h['snippet']}" for h in hits]
                 return "\n".join(lines) or "No results.", f"web search: {q[:60]}"
             if name == "phone":
+                if self._client != "phone":
+                    return "Phone control is only available from the phone app. Tell the owner you cannot do that from here.", "phone: not available here"
                 cmd = phone_command(a)
                 if not cmd:
                     return "Invalid phone step. Use do = open_app (app), tap (text), type (text), scroll (dir), back, home or recents.", "phone: invalid"

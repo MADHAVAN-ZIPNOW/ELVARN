@@ -34,6 +34,9 @@ class Settings:
     gmail_app_password: str = ""       # a Google App Password (never your normal password); Render env var only
     stt_language: str = "en"           # language hint for voice chat (JM_STT_LANGUAGE)
     tavily_api_key: str = ""           # optional: better web search (free tier at tavily.com)
+    gemini_api_key: str = ""           # optional backup brain: used automatically when Groq is rate limited or down
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
+    gemini_model: str = "gemini-flash-lite-latest"
     brevo_api_key: str = ""            # optional: free Brevo key (HTTPS) so the server e-mails at the exact minute, even though Render blocks SMTP
     smtp_mode: str = "direct"          # "external": the scheduler sends the e-mail (Render free blocks outgoing SMTP)
     firebase_service_account_json: str = ""   # Firebase service-account key (Render env var only) used to ring the phone
@@ -70,6 +73,9 @@ def get_settings() -> Settings:
         tavily_api_key=_env("TAVILY_API_KEY"),
         smtp_mode=_env("JM_SMTP_MODE", "direct").lower(),
         brevo_api_key=_env("BREVO_API_KEY"),
+        gemini_api_key=_env("GEMINI_API_KEY"),
+        gemini_base_url=_env("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai"),
+        gemini_model=_env("GEMINI_MODEL", "gemini-flash-lite-latest"),
         firebase_service_account_json=_env("FIREBASE_SERVICE_ACCOUNT_JSON"),
         gmail_app_password=_env("GMAIL_APP_PASSWORD").replace(" ", ""),
         llm_model=_env("JM_LLM_MODEL", "qwen/qwen3.8-27b"),
