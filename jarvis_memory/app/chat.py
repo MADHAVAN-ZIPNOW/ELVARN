@@ -351,7 +351,9 @@ class ChatService:
         if not self.svc.change_task(chosen["memory_id"], chosen["index"], chosen["task"], status=None if remove else "done", remove=remove):
             return "That task just changed; ask again.", "task changed"
         verb = "Deleted" if remove else "Marked done"
-        return f"{verb}: {chosen['task']}", f"{verb.lower()}: {chosen['task'][:60]}"
+        closed = self.svc.close_reminders_about(chosen["task"])   # a reminder for a task that is gone must not ring
+        extra = f" (also cancelled {closed} reminder{'s' if closed != 1 else ''} about it)" if closed else ""
+        return f"{verb}: {chosen['task']}{extra}", f"{verb.lower()}: {chosen['task'][:60]}"
 
     def _run_tool(self, name: str, a: dict[str, Any], now: datetime, message: str = "") -> tuple[str, str]:
         try:

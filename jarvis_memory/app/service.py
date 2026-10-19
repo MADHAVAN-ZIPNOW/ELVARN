@@ -418,6 +418,16 @@ class MemoryService:
                 (today, count, call, now, task, now, self.owner_id))
         return count
 
+    def close_reminders_about(self, task_text: str) -> int:
+        """When a task is deleted or finished, its waiting reminders must not ring any more. Returns how many were closed."""
+        words = " ".join(task_text.lower().split())
+        if len(words) < 4:
+            return 0
+        with self.db() as conn:
+            cur = conn.execute("UPDATE reminders SET status = 'done' WHERE owner_id = %s AND status IN ('pending', 'sent') "
+                               "AND (position(%s in lower(text)) > 0 OR position(lower(text) in %s) > 0)", (self.owner_id, words, words))
+            return cur.rowcount or 0
+
     def unclaim_reminder(self, reminder_id: str) -> None:
         """Put a reminder back to pending when no phone accepted the push, so it is retried on the next tick."""
         with self.db() as conn:

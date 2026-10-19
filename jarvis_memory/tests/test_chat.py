@@ -489,3 +489,15 @@ def test_a_web_page_cannot_drive_the_phone(client):
                                     {"action": "phone", "do": "open_app", "app": "Bank"}, say("Refused.")), web_read=page)
     out = chat.chat("read https://evil.example")
     assert all("cmd" not in a for a in out["actions"]) and out["actions"][1]["summary"].startswith("blocked")
+
+
+def test_deleting_a_task_also_cancels_its_waiting_reminder(client):
+    script = Script({"action": "add_task", "task": "Send the invoice to Ravi"}, say("Added."),
+                    {"action": "add_reminder", "text": "Send the invoice to Ravi", "at": "2030-01-05T20:00"}, say("Reminder set."),
+                    {"action": "delete_task", "task": "invoice", "confirmed": True}, say("Deleted."))
+    chat = chat_with(client, script)
+    sid = chat.chat("add task send the invoice to Ravi")["session_id"]
+    chat.chat("remind me to send the invoice to Ravi at 8 PM on 5 Jan 2030", sid)
+    out = chat.chat("yes delete the invoice task", sid)
+    assert out["actions"][0]["summary"].startswith("deleted")
+    assert client.get(f"{P}/reminders", params={"status": "pending"}).json() == []
