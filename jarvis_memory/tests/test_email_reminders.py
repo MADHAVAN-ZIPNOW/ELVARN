@@ -311,3 +311,20 @@ def test_emails_go_out_at_the_scheduled_times_only(client):
     assert tick(client, box, at(23, 0))["email"]["why"] == "not_due"
     assert len(box.sent) == 3
     assert client.patch(f"{P}/settings", json={"email_times": "9am"}).status_code == 422
+
+
+def test_brevo_key_makes_the_server_send_itself_over_https(monkeypatch):
+    import httpx
+
+    from app.mailer import GmailMailbox
+
+    seen = {}
+
+    def fake_post(url, json=None, headers=None, timeout=None):
+        seen.update(url=url, json=json, headers=headers)
+        return httpx.Response(201, json={"messageId": "x"})
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    mid = GmailMailbox("me@gmail.com", "pw", "key123").send("you@x.com", "Hi", "text", "<b>h</b>")
+    assert seen["url"].endswith("/v3/smtp/email") and seen["headers"]["api-key"] == "key123"
+    assert seen["json"]["to"] == [{"email": "you@x.com"}] and seen["json"]["sender"]["email"] == "me@gmail.com" and mid.startswith("<")

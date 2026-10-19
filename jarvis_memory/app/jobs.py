@@ -96,7 +96,7 @@ def send_checkin_if_due(svc: MemoryService, mailbox: Mailbox, now: datetime) -> 
     tasks = svc.open_task_texts()
     wording = creative.compose(svc.settings, s["owner_name"], tasks, local.hour)
     subject, body, html_body = build_checkin(s["owner_name"], uuid.uuid4().hex[:12], tasks, wording)
-    if svc.settings.smtp_mode == "external":
+    if svc.settings.smtp_mode == "external" and not svc.settings.brevo_api_key:
         # Render's free plan blocks outgoing SMTP, so the scheduler (GitHub Actions) sends it and then confirms via /mail/sent.
         return {"sent": False, "why": "external_delivery",
                 "deliver": {"to": s["owner_email"], "subject": subject, "text": body, "html": html_body}}
@@ -235,7 +235,7 @@ def send_review(svc: MemoryService, pusher, mailbox: Optional[Mailbox], now: dat
     stored = review_module.get(svc, today)
     if stored and not stored["emailed"] and s["email_enabled"] and s["owner_email"]:
         subject, text, html_body = review_module.render_email(stored, s["owner_name"], today)
-        if svc.settings.smtp_mode == "external":
+        if svc.settings.smtp_mode == "external" and not svc.settings.brevo_api_key:
             out["email"] = {"why": "external_delivery", "day": today.isoformat(),
                             "deliver": {"to": s["owner_email"], "subject": subject, "text": text, "html": html_body}}
         elif mailbox is not None:

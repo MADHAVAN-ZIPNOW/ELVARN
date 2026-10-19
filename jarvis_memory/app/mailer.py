@@ -106,10 +106,26 @@ def read_checkin_replies(imap, from_address: str, limit: int = 30) -> list[Reply
 
 
 class GmailMailbox:
-    def __init__(self, address: str, app_password: str) -> None:
-        self.address, self._password = address, app_password
+    def __init__(self, address: str, app_password: str, brevo_key: str = "") -> None:
+        self.address, self._password, self._brevo = address, app_password, brevo_key
+
+    def _send_https(self, to: str, subject: str, body: str, html: Optional[str]) -> str:
+        """Brevo's HTTPS e-mail API (outgoing SMTP is blocked on Render's free plan, HTTPS is not)."""
+        import httpx
+
+        message_id = email.utils.make_msgid(domain="jarvis-memory.local")
+        payload = {"sender": {"name": "JARVIS", "email": self.address}, "to": [{"email": to}], "subject": subject,
+                   "textContent": body, "headers": {"Message-ID": message_id}}
+        if html:
+            payload["htmlContent"] = html
+        r = httpx.post("https://api.brevo.com/v3/smtp/email", json=payload, headers={"api-key": self._brevo, "accept": "application/json"}, timeout=10.0)
+        if r.status_code >= 300:
+            raise OSError(f"brevo {r.status_code}")
+        return message_id
 
     def send(self, to: str, subject: str, body: str, html: Optional[str] = None) -> str:
+        if self._brevo:
+            return self._send_https(to, subject, body, html)
         msg = EmailMessage()
         msg["From"], msg["To"], msg["Subject"] = f"JARVIS <{self.address}>", to, subject
         msg["Message-ID"] = email.utils.make_msgid(domain="jarvis-memory.local")
@@ -138,5 +154,5 @@ class GmailMailbox:
 
 def from_settings(settings) -> Optional[Mailbox]:
     if settings.gmail_address and settings.gmail_app_password:
-        return GmailMailbox(settings.gmail_address, settings.gmail_app_password)
+        return GmailMailbox(settings.gmail_address, settings.gmail_app_password, getattr(settings, "brevo_api_key", ""))
     return None

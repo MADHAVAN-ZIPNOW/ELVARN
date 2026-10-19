@@ -34,6 +34,7 @@ class Settings:
     gmail_app_password: str = ""       # a Google App Password (never your normal password); Render env var only
     stt_language: str = "en"           # language hint for voice chat (JM_STT_LANGUAGE)
     tavily_api_key: str = ""           # optional: better web search (free tier at tavily.com)
+    brevo_api_key: str = ""            # optional: free Brevo key (HTTPS) so the server e-mails at the exact minute, even though Render blocks SMTP
     smtp_mode: str = "direct"          # "external": the scheduler sends the e-mail (Render free blocks outgoing SMTP)
     firebase_service_account_json: str = ""   # Firebase service-account key (Render env var only) used to ring the phone
     llm_model: str = "qwen/qwen3.8-27b"
@@ -68,6 +69,7 @@ def get_settings() -> Settings:
         stt_language=_env("JM_STT_LANGUAGE", "en"),
         tavily_api_key=_env("TAVILY_API_KEY"),
         smtp_mode=_env("JM_SMTP_MODE", "direct").lower(),
+        brevo_api_key=_env("BREVO_API_KEY"),
         firebase_service_account_json=_env("FIREBASE_SERVICE_ACCOUNT_JSON"),
         gmail_app_password=_env("GMAIL_APP_PASSWORD").replace(" ", ""),
         llm_model=_env("JM_LLM_MODEL", "qwen/qwen3.8-27b"),
