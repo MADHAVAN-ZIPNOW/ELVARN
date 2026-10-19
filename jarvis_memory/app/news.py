@@ -135,7 +135,7 @@ def cricket(query: str, fetcher: Callable[[str], str] = fetch) -> str:
     if hits:
         parts.append("MATCHES FOUND (live scores feed, newest first): " + " | ".join(hits[:6]))
     else:
-        parts.append("No match for that query in the live scores feed right now. Matches on now: " + " | ".join(live[:14]))
+        parts.append("No match for that query in the live scores feed right now. SAY THIS CLEARLY (do not ask the owner anything): there is no such match being played or just finished at the moment, then list what is being played now: " + " | ".join(live[:14]))
     if news:
         parts.append("Latest cricket headlines: " + " | ".join(news[:6]))
     return " ".join(parts) if live or news else ""
