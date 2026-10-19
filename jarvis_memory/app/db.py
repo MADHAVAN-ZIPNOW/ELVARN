@@ -6,12 +6,14 @@ Neon's free tier suspends the database when idle and has a small connection limi
 from __future__ import annotations
 
 import logging
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool, PoolTimeout
 
 log = logging.getLogger("jarvis_memory.db")
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
@@ -22,13 +24,42 @@ class DatabaseNotConfigured(RuntimeError):
     pass
 
 
+_pools: dict[str, ConnectionPool] = {}
+_pools_lock = threading.Lock()
+
+
+def _pool(database_url: str) -> ConnectionPool:
+    """One small pool per database URL. Opening a connection to Neon costs ~1 s (TLS + auth over an ocean), so connections are
+    kept and reused; each is checked before use because Neon closes idle ones."""
+    with _pools_lock:
+        pool = _pools.get(database_url)
+        if pool is None:
+            pool = ConnectionPool(
+                database_url, min_size=1, max_size=4, open=False, check=ConnectionPool.check_connection,
+                max_idle=240, max_lifetime=1800, timeout=15,
+                kwargs={"row_factory": dict_row, "connect_timeout": 15, "autocommit": False, "prepare_threshold": None})
+            pool.open(wait=False)
+            _pools[database_url] = pool
+        return pool
+
+
 @contextmanager
 def connect(database_url: str) -> Iterator[psycopg.Connection]:
-    """A connection that commits on success and rolls back on error."""
+    """A connection that commits on success and rolls back on error (borrowed from the pool, returned afterwards)."""
     if not database_url:
         raise DatabaseNotConfigured("DATABASE_URL is not set.")
-    with psycopg.connect(database_url, row_factory=dict_row, connect_timeout=15, autocommit=False) as conn:
-        yield conn
+    try:
+        with _pool(database_url).connection(timeout=20) as conn:
+            yield conn
+    except PoolTimeout:
+        raise psycopg.OperationalError("database connection timed out") from None
+
+
+def close_pools() -> None:
+    with _pools_lock:
+        for pool in _pools.values():
+            pool.close()
+        _pools.clear()
 
 
 def run_migrations(database_url: str) -> list[str]:
