@@ -78,3 +78,25 @@ def test_cricket_finds_a_live_match_or_lists_what_is_on():
     none = news.cricket("australia vs england", fetch)
     assert "No match for that query" in none and "Pakistan v Sri Lanka" in none         # lists what is actually on instead of guessing
     assert news.cricket("india", lambda u: (_ for _ in ()).throw(OSError())) == ""
+
+
+def test_ten_open_tasks_are_counted_correctly_and_the_nudges_rotate_through_them(client):
+    from tests.test_email_reminders import TOKEN
+
+    client.app_state.service.register_device(TOKEN)
+    client.patch(f"{P}/settings", json={"push_enabled": True, "timezone": "Asia/Kolkata", "push_interval_minutes": 60, "max_notifications_per_day": 60})
+    with client.app_state.service.db() as c:
+        c.execute("UPDATE memory_entries SET tasks = '[]'::jsonb WHERE tasks <> '[]'::jsonb")      # a clean slate for this test
+    names = [f"Task number {i}" for i in range(1, 11)]
+    for n in names:
+        assert client.post(f"{P}/tasks", json={"task": n}).status_code == 201
+    svc, pusher = client.app_state.service, FakePusher()
+    start = datetime(2026, 1, 5, 6, 0, tzinfo=timezone.utc)                                          # 11:30 in Kolkata, inside the call hours
+    lines = []
+    for k in range(5):                                                                                 # call at 0, nudge at +31, call at +62 ...
+        jobs.send_pushes(svc, pusher, start + timedelta(minutes=31 * k))
+    for _token, data in pusher.sent:
+        if data["type"] == "task":
+            lines.append(data["line"])
+    assert lines and all(line.startswith("You have 10 open tasks.") for line in lines)                # not "5": every task is counted
+    assert len(set(lines)) > 1                                                                         # the named task changes between nudges

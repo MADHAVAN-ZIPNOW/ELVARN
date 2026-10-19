@@ -561,3 +561,18 @@ def test_an_empty_model_answer_is_retried_not_reported_as_a_lost_train_of_though
 
     out = _llm_default(S, client=httpx.Client(transport=httpx.MockTransport(handler)))([{"role": "user", "content": "hi"}])
     assert "ok" in out and len(calls) >= 2
+
+
+def test_past_and_task_questions_are_looked_up_by_the_server_even_if_the_model_would_not(client):
+    chat0 = chat_with(client, Script(say("ok")))
+    chat0.chat("add task Pay the electricity bill")                                  # plain chat (no tool) just to have a session
+    client.post(f"{P}/tasks", json={"task": "Pay the electricity bill"})
+    script = Script(say("You have one task: Pay the electricity bill."))
+    chat = chat_with(client, script)
+    chat.chat("what tasks do I have?")
+    shown = " ".join(m["content"] for m in script.seen[0])
+    assert "OPEN TASKS" in shown and "Pay the electricity bill" in shown               # handed to the model without it asking
+    script2 = Script(say("nothing special"))
+    chat2 = chat_with(client, script2)
+    chat2.chat("what is the capital of France?")
+    assert "LOOKED UP FOR THIS QUESTION" not in " ".join(m["content"] for m in script2.seen[0])   # ordinary questions are untouched

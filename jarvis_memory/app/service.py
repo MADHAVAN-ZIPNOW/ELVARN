@@ -323,13 +323,8 @@ class MemoryService:
 
     # ------------------------------------------------------------------------------------------ stage 2 helpers
     def open_task_texts(self, limit: int = 5) -> list[str]:
-        """Pending tasks from the newest memories, for the check-in e-mail."""
-        with self.db() as conn:
-            rows = conn.execute(
-                "SELECT t ->> 'task' AS task FROM (SELECT tasks FROM memory_entries WHERE owner_id = %s AND deleted_at IS NULL "
-                "AND tasks <> '[]'::jsonb ORDER BY created_at DESC LIMIT 20) m, jsonb_array_elements(m.tasks) t "
-                "WHERE t ->> 'status' = 'pending' LIMIT %s", (self.owner_id, limit)).fetchall()
-        return [r["task"] for r in rows]
+        """Open tasks (newest first), for the check-in e-mail and the calls."""
+        return [t["task"] for t in self.list_open_tasks(limit)]
 
     def add_reminder(self, text: str, remind_at: datetime) -> dict[str, Any]:
         with self.db() as conn:

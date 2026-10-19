@@ -152,10 +152,12 @@ def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     if sent_today >= s["max_notifications_per_day"]:
         out["why"] = "daily_limit"
         return out
-    tasks = svc.open_task_texts()
+    all_tasks = svc.open_task_texts(100)                                     # every open task, so the count is right
+    shift = (sent_today // 2) % len(all_tasks) if all_tasks else 0           # each call / nudge moves on to the next tasks
+    tasks = all_tasks[shift:] + all_tasks[:shift]
     last_call = s["last_call_at"]
     if not last_call or (now - last_call).total_seconds() >= s["push_interval_minutes"] * 60 - SLACK_S:
-        wording = creative.compose(svc.settings, s["owner_name"], tasks, local.hour)
+        wording = creative.compose(svc.settings, s["owner_name"], tasks[:3], local.hour)
         if _push_all(svc, pusher, {"type": "call", "line": wording.spoken, "title": wording.headline, "emoji": wording.emoji}):
             svc.record_push(now, call=True)
             out["call"] = True
@@ -163,7 +165,8 @@ def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     contacts = [t for t in (s["last_call_at"], s["last_task_push_at"]) if t]   # a call counts as a nudge too: never closer than 30 min
     last_contact = max(contacts) if contacts else None
     if tasks and (last_contact is None or (now - last_contact).total_seconds() >= TASK_NUDGE_MINUTES * 60 - SLACK_S):
-        line = f"You still have {len(tasks)} open task{'s' if len(tasks) != 1 else ''}. First: {tasks[0]}. Tell me where it stands."
+        more = f" After that: {tasks[1]}." if len(tasks) > 1 else ""
+        line = f"You have {len(tasks)} open task{'s' if len(tasks) != 1 else ''}. Next up: {tasks[0]}.{more} Tell me where it stands."
         if _push_all(svc, pusher, {"type": "task", "line": line, "title": "Open tasks"}):
             svc.record_push(now, task=True)
             out["task_nudge"] = True
