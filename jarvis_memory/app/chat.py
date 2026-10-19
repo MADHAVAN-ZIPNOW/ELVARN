@@ -137,7 +137,8 @@ class ChatService:
         return [{"role": r["role"], "content": r["content"][:3000]} for r in reversed(rows)]
 
     # ------------------------------------------------------------------------------------------ the turn
-    def chat(self, message: str, session_id: Optional[str] = None, now: Optional[datetime] = None) -> dict[str, Any]:
+    def chat(self, message: str, session_id: Optional[str] = None, now: Optional[datetime] = None,
+             context: Optional[str] = None) -> dict[str, Any]:
         sid = self._ensure_session(session_id, message)
         history = self._history(sid)
         self._save(sid, "user", message)
@@ -149,6 +150,10 @@ class ChatService:
         now = (now or datetime.now(tz)).astimezone(tz)
         convo = [{"role": "system", "content": SYSTEM.format(owner=self.settings.owner_name or "the owner",
                                                              now=now.strftime("%A %d %b %Y %H:%M"), tz=self.settings.timezone)}]
+        if context:   # a live call: JARVIS opened with a question and this message answers it
+            convo.append({"role": "system", "content": f"You are on a live voice call. You just asked the owner: {context[:400]!r}. "
+                          "Their next message is the answer: acknowledge it warmly in one short sentence, then ask one brief follow-up or "
+                          "offer to add a task. Keep every reply under 30 words; it is spoken aloud. If they say goodbye, say a short goodbye."})
         convo += history + [{"role": "user", "content": message[:4000]}]
         actions: list[dict[str, str]] = []
         touched_web = False

@@ -235,3 +235,4 @@ class ChatRequest(BaseModel):
 
     message: str = Field(min_length=1, max_length=4000)
     session_id: Optional[uuid.UUID] = None
+    context: Optional[str] = Field(None, max_length=400)   # e.g. the question JARVIS just asked on a call

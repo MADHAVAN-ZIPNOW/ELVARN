@@ -199,3 +199,10 @@ def test_search_reports_when_every_source_is_down():
     down = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503)))
     with pytest.raises(webtools.WebError):
         webtools.search_web("python", client=down)
+
+
+def test_call_context_is_given_to_the_model(client):
+    script = Script(say("Nice work! Anything blocking you?"))
+    chat_with(client, script).chat("I fixed the login bug", context="What did you get done this hour?")
+    shown = json.dumps(script.seen[0])
+    assert "live voice call" in shown and "What did you get done this hour?" in shown
