@@ -10,7 +10,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from .db import DatabaseNotConfigured
-from .schemas import (AskRequest, ChatRequest, DeviceRegister, PruneRequest, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
+from .schemas import (AskRequest, ChatRequest, DeviceRegister, PruneRequest, TaskRef, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
                       SnoozeRequest, Source)
 from .backup import PruneExtra, RestorePayload
 from .service import CapacityError, MemoryService, NotFound
@@ -170,6 +170,18 @@ def make_router(guard) -> APIRouter:
     def review_mail_sent(day: date, svc: MemoryService = Depends(service_of)):
         """The scheduler confirms it e-mailed that day's review."""
         svc.mark_review_emailed(day)
+        return {"ok": True}
+
+    @router.get("/tasks")
+    def open_tasks(svc: MemoryService = Depends(service_of)):
+        """Open tasks from every memory (what JARVIS adds by voice or chat), for the desktop Tasks page."""
+        return svc.list_open_tasks()
+
+    @router.post("/tasks/done")
+    def finish_task(body: TaskRef, svc: MemoryService = Depends(service_of)):
+        if not svc.change_task(body.memory_id, body.index, body.task, status="done"):
+            raise HTTPException(409, "That task just changed; refresh the list.")
+        svc.close_reminders_about(body.task)
         return {"ok": True}
 
     @router.post("/export/all")

@@ -455,6 +455,19 @@ class MemoryService:
         return deleted
 
     # ------------------------------------------------------------------------------------------ tasks inside memories
+    def list_open_tasks(self, limit: int = 100) -> list[dict[str, Any]]:
+        """Every open task (newest memories first) with what is needed to finish it later."""
+        with self.db() as conn:
+            rows = conn.execute("SELECT id, created_at, tasks FROM memory_entries WHERE owner_id = %s AND deleted_at IS NULL AND tasks <> '[]'::jsonb "
+                                "ORDER BY created_at DESC LIMIT 300", (self.owner_id,)).fetchall()
+        out = []
+        for r in rows:
+            for i, t in enumerate(r["tasks"] or []):
+                if t.get("status", "pending") != "done":
+                    out.append({"memory_id": str(r["id"]), "index": i, "task": str(t.get("task", "")), "status": t.get("status", "pending"),
+                                "created_at": r["created_at"].isoformat()})
+        return out[:limit]
+
     def find_open_tasks(self, query: str, limit: int = 6) -> list[dict[str, Any]]:
         """Open (pending/blocked) tasks whose text contains every word of ``query`` (newest memories first)."""
         words = [w for w in query.lower().split() if len(w) > 1]

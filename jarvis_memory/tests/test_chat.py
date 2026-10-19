@@ -510,3 +510,14 @@ def test_what_you_say_on_a_call_becomes_a_memory_but_goodbyes_do_not(client):
     texts = [m["content"] for m in client.get(P, params={"source": "voice"}).json()]
     assert any("budget report" in t for t in texts)
     assert not any(t.startswith("okay thanks goodbye") for t in texts)
+
+
+def test_open_tasks_can_be_listed_and_finished_for_the_desktop_page(client):
+    chat = chat_with(client, Script({"action": "add_task", "task": "Book the dentist"}, say("Added.")))
+    chat.chat("add a task book the dentist")
+    tasks = client.get(f"{P}/tasks").json()
+    mine = [t for t in tasks if t["task"] == "Book the dentist"]
+    assert len(mine) == 1 and mine[0]["status"] == "pending"
+    ref = {"memory_id": mine[0]["memory_id"], "index": mine[0]["index"], "task": "Book the dentist"}
+    assert client.post(f"{P}/tasks/done", json=ref).status_code == 200
+    assert not [t for t in client.get(f"{P}/tasks").json() if t["task"] == "Book the dentist"]
