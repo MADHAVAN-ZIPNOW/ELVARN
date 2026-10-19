@@ -95,7 +95,67 @@ def send_checkin_if_due(svc: MemoryService, mailbox: Mailbox, now: datetime) -> 
     return {"sent": False, "why": "send_failed", "error": type(last_error).__name__}
 
 
-def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datetime] = None) -> dict[str, Any]:
+TASK_NUDGE_MINUTES = 30
+SLACK_S = 120   # scheduler jitter: a ping a minute or two early still counts
+
+
+def _push_all(svc: MemoryService, pusher, data: dict[str, Any]) -> bool:
+    """Ring every registered phone. Forgets phones the app was removed from. True if at least one accepted it."""
+    delivered = False
+    for token in svc.device_tokens():
+        outcome = pusher.send(token, data)
+        if outcome == "ok":
+            delivered = True
+        elif outcome == "gone":
+            svc.forget_device(token)
+    return delivered
+
+
+def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
+    """Phone alerts: due reminders (any time), the hourly call and the 30-minute open-task nudge (09:00-22:00 only)."""
+    if pusher is None:
+        return {"why": "firebase_not_configured"}
+    if not svc.device_tokens():
+        return {"why": "no_phone_registered"}
+    s = svc.get_settings()
+    out: dict[str, Any] = {"reminders": 0, "call": False, "task_nudge": False}
+    for r in svc.claim_due_reminders(now):
+        if _push_all(svc, pusher, {"type": "reminder", "id": r["id"], "line": f"Reminder: {r['text']}", "title": "JARVIS reminder"}):
+            svc.record_push(now)
+            out["reminders"] += 1
+        else:
+            svc.unclaim_reminder(r["id"])
+    if not s["push_enabled"]:
+        out["why"] = "push_disabled"
+        return out
+    local = now.astimezone(ZoneInfo(s["timezone"]))
+    if in_quiet_hours(local.hour, s["quiet_start_hour"], s["quiet_end_hour"]):
+        out["why"] = "quiet_hours"
+        return out
+    s = svc.get_settings()
+    sent_today = s["push_sent_count"] if s["push_sent_day"] == local.date() else 0
+    if sent_today >= s["max_notifications_per_day"]:
+        out["why"] = "daily_limit"
+        return out
+    tasks = svc.open_task_texts()
+    last_call = s["last_call_at"]
+    if not last_call or (now - last_call).total_seconds() >= s["push_interval_minutes"] * 60 - SLACK_S:
+        wording = creative.compose(svc.settings, s["owner_name"], tasks, local.hour)
+        if _push_all(svc, pusher, {"type": "call", "line": wording.spoken, "title": wording.headline, "emoji": wording.emoji}):
+            svc.record_push(now, call=True)
+            out["call"] = True
+            return out
+    contacts = [t for t in (s["last_call_at"], s["last_task_push_at"]) if t]   # a call counts as a nudge too: never closer than 30 min
+    last_contact = max(contacts) if contacts else None
+    if tasks and (last_contact is None or (now - last_contact).total_seconds() >= TASK_NUDGE_MINUTES * 60 - SLACK_S):
+        line = f"You still have {len(tasks)} open task{'s' if len(tasks) != 1 else ''}. First: {tasks[0]}. Tell me where it stands."
+        if _push_all(svc, pusher, {"type": "task", "line": line, "title": "Open tasks"}):
+            svc.record_push(now, task=True)
+            out["task_nudge"] = True
+    return out
+
+
+def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datetime] = None, pusher=None) -> dict[str, Any]:
     now = now or datetime.now(timezone.utc)
     result: dict[str, Any] = {}
     s = svc.get_settings()
@@ -110,10 +170,9 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
         except Exception as exc:
             result["replies"] = {"saved": 0, "error": type(exc).__name__}
         result["email"] = send_checkin_if_due(svc, mailbox, now)
-    result["reminders_due"] = svc.claim_due_reminders(now)
+    result["push"] = send_pushes(svc, pusher, now)   # reminders are only marked "sent" when a phone actually accepted them
     ok = (not any(isinstance(v, dict) and v.get("error") for v in result.values())
-          and result["email"].get("why") != "send_failed")
-    summary = {k: ({a: b for a, b in v.items() if a != "deliver"} if isinstance(v, dict) else v)
-               for k, v in result.items() if k != "reminders_due"}   # never log the e-mail body
-    _log(svc, "tick", ok, f"{summary} due={len(result['reminders_due'])}")
+          and result.get("email", {}).get("why") != "send_failed")
+    summary = {k: ({a: b for a, b in v.items() if a != "deliver"} if isinstance(v, dict) else v) for k, v in result.items()}
+    _log(svc, "tick", ok, str(summary))   # never log the e-mail body
     return result

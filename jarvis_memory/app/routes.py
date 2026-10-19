@@ -9,7 +9,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from .db import DatabaseNotConfigured
-from .schemas import (MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
+from .schemas import (AskRequest, DeviceRegister, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
                       SnoozeRequest, Source)
 from .service import CapacityError, MemoryService, NotFound
 
@@ -64,12 +64,19 @@ def make_router(guard) -> APIRouter:
             raise HTTPException(428, "Deleting every memory requires confirm=true.")
         return {"deleted": svc.delete_all()}
 
+    @router.post("/ask")
+    def ask(body: AskRequest, svc: MemoryService = Depends(service_of)):
+        """Answer a question about your own memories ("what did I do yesterday this time?")."""
+        from . import ask as ask_module
+
+        return ask_module.answer(svc, body.question)
+
     @router.post("/tick")
     def tick(request: Request, svc: MemoryService = Depends(service_of)):
         """Called by the scheduler: read e-mail replies, send the hourly check-in if due, report reminders that are due."""
         from . import jobs
 
-        return jobs.run_tick(svc, request.app.state.mailbox)
+        return jobs.run_tick(svc, request.app.state.mailbox, pusher=request.app.state.pusher)
 
     @router.post("/mail/sent")
     def mail_sent(svc: MemoryService = Depends(service_of)):
@@ -77,6 +84,25 @@ def make_router(guard) -> APIRouter:
         from datetime import datetime, timezone
 
         return {"count_today": svc.record_email_sent(datetime.now(timezone.utc))}
+
+    @router.post("/devices", status_code=204)
+    def register_device(body: DeviceRegister, svc: MemoryService = Depends(service_of)):
+        """The phone app registers its Firebase token so the server can ring it."""
+        svc.register_device(body.token)
+
+    @router.post("/push/test")
+    def push_test(request: Request, svc: MemoryService = Depends(service_of)):
+        """Rings the phone once, right now (for checking that the call alert works)."""
+        from . import jobs
+
+        pusher = request.app.state.pusher
+        if pusher is None:
+            raise HTTPException(503, "Firebase is not configured on the server (FIREBASE_SERVICE_ACCOUNT_JSON).")
+        if not svc.device_tokens():
+            raise HTTPException(409, "No phone is registered yet. Open the JARVIS app once.")
+        ok = jobs._push_all(svc, pusher, {"type": "call", "title": "JARVIS", "emoji": "⚡",
+                                          "line": "Test call. If you can hear this, I can reach you."})
+        return {"delivered": ok}
 
     @router.post("/reminders", status_code=201)
     def add_reminder(body: ReminderCreate, svc: MemoryService = Depends(service_of)):

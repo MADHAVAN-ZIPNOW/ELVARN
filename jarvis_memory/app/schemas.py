@@ -215,3 +215,15 @@ class SnoozeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     minutes: int = Field(10, ge=1, le=1440)
+
+
+class DeviceRegister(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(min_length=20, max_length=400)
+
+
+class AskRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=2, max_length=500)

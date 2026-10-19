@@ -385,3 +385,41 @@ class MemoryService:
             conn.execute("UPDATE memory_settings SET last_email_at = %s, email_sent_day = %s, email_sent_count = %s "
                          "WHERE owner_id = %s", (now, today, count, self.owner_id))
         return count
+
+    # ------------------------------------------------------------------------------------------ push (devices)
+    def register_device(self, token: str) -> None:
+        with self.db() as conn:
+            conn.execute("INSERT INTO devices (token, owner_id) VALUES (%s,%s) ON CONFLICT (token) DO UPDATE SET seen_at = now(), "
+                         "owner_id = EXCLUDED.owner_id", (token, self.owner_id))
+            # a person has one or two phones: keep the newest few so stale tokens never pile up
+            conn.execute("DELETE FROM devices WHERE owner_id = %s AND token NOT IN "
+                         "(SELECT token FROM devices WHERE owner_id = %s ORDER BY seen_at DESC LIMIT 3)", (self.owner_id, self.owner_id))
+
+    def device_tokens(self) -> list[str]:
+        with self.db() as conn:
+            return [r["token"] for r in conn.execute("SELECT token FROM devices WHERE owner_id = %s", (self.owner_id,)).fetchall()]
+
+    def forget_device(self, token: str) -> None:
+        with self.db() as conn:
+            conn.execute("DELETE FROM devices WHERE token = %s AND owner_id = %s", (token, self.owner_id))
+
+    def record_push(self, now: datetime, *, call: bool = False, task: bool = False) -> int:
+        """Counts one notification for today's limit and stamps the call / task-nudge time. Returns today's count."""
+        from zoneinfo import ZoneInfo
+
+        s = self.get_settings()
+        today = now.astimezone(ZoneInfo(s["timezone"])).date()
+        count = (s["push_sent_count"] if s["push_sent_day"] == today else 0) + 1
+        with self.db() as conn:
+            conn.execute(
+                "UPDATE memory_settings SET push_sent_day = %s, push_sent_count = %s, "
+                "last_call_at = CASE WHEN %s THEN %s ELSE last_call_at END, "
+                "last_task_push_at = CASE WHEN %s THEN %s ELSE last_task_push_at END WHERE owner_id = %s",
+                (today, count, call, now, task, now, self.owner_id))
+        return count
+
+    def unclaim_reminder(self, reminder_id: str) -> None:
+        """Put a reminder back to pending when no phone accepted the push, so it is retried on the next tick."""
+        with self.db() as conn:
+            conn.execute("UPDATE reminders SET status = 'pending', sent_at = NULL WHERE id = %s AND owner_id = %s",
+                         (reminder_id, self.owner_id))

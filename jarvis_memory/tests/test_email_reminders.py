@@ -107,9 +107,9 @@ def test_reminders_fire_once_and_snooze_and_done_work(client):
     past = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
     due = client.post(f"{P}/reminders", json={"text": "Call mom at 8 PM", "remind_at": past}).json()
     client.post(f"{P}/reminders", json={"text": "later", "remind_at": soon})
-    first = client.post(f"{P}/tick").json()["reminders_due"]
-    assert [r["text"] for r in first] == ["Call mom at 8 PM"]
-    assert client.post(f"{P}/tick").json()["reminders_due"] == []            # fires exactly once
+    first = client.post(f"{P}/tick").json()["push"]
+    assert first == {"why": "firebase_not_configured"}                       # nothing is lost when no phone can be reached
+    assert client.get(f"{P}/reminders", params={"status": "pending"}).json()[1]["text"] == "Call mom at 8 PM"
     snoozed = client.post(f"{P}/reminders/{due['id']}/snooze", json={"minutes": 10}).json()
     assert snoozed["status"] == "pending"
     assert client.post(f"{P}/reminders/{due['id']}/done").json()["status"] == "done"
@@ -197,3 +197,66 @@ def test_jarvis_own_checkin_is_not_mistaken_for_a_reply():
 
 def test_other_mail_from_the_owner_is_not_ingested():
     assert parse_reply(raw(OWNER, "random note to myself", mid="<x@mail.gmail.com>", subject="Notes"), OWNER) is None
+
+
+class FakePusher:
+    def __init__(self, outcome="ok"):
+        self.outcome, self.sent = outcome, []
+
+    def send(self, token, data, ttl_seconds=300):
+        self.sent.append((token, data))
+        return self.outcome
+
+
+TOKEN = "t" * 40
+
+
+def push_tick(client, pusher, now, **settings):
+    from app import jobs
+    client.patch(f"{P}/settings", json={"push_enabled": True, "max_notifications_per_day": 60, **settings})
+    client.app_state.service.register_device(TOKEN)
+    return jobs.run_tick(client.app_state.service, None, now, pusher=pusher)["push"]
+
+
+def test_hourly_call_rings_the_phone_between_9_and_22_only(client):
+    p = FakePusher()
+    assert push_tick(client, p, NIGHT)["why"] == "quiet_hours" and p.sent == []
+    out = push_tick(client, p, DAY)
+    assert out["call"] is True and p.sent[0][1]["type"] == "call" and p.sent[0][1]["line"]
+    assert push_tick(client, p, DAY + timedelta(minutes=20))["call"] is False       # not due again for an hour
+    assert push_tick(client, p, DAY + timedelta(minutes=61))["call"] is True
+
+
+def test_open_tasks_nudge_every_30_minutes(client, add):
+    add("note", tasks=[{"task": "Send the invoice", "status": "pending"}])
+    p = FakePusher()
+    push_tick(client, p, DAY)                                                   # the hourly call goes first
+    assert push_tick(client, p, DAY + timedelta(minutes=15))["task_nudge"] is False   # too soon after the call
+    out = push_tick(client, p, DAY + timedelta(minutes=31))
+    assert out["task_nudge"] is True and p.sent[-1][1]["type"] == "task" and "Send the invoice" in p.sent[-1][1]["line"]
+    assert push_tick(client, p, DAY + timedelta(minutes=45))["task_nudge"] is False
+    assert push_tick(client, p, DAY + timedelta(minutes=62))["call"] is True
+
+
+def test_due_reminder_rings_once_and_failed_delivery_is_retried(client):
+    past = (DAY - timedelta(minutes=1)).isoformat()
+    rid = client.post(f"{P}/reminders", json={"text": "Call mom", "remind_at": past}).json()["id"]
+    assert push_tick(client, FakePusher("error"), DAY)["reminders"] == 0
+    assert client.get(f"{P}/reminders", params={"status": "pending"}).json()[0]["id"] == rid   # back to pending
+    p = FakePusher()
+    assert push_tick(client, p, DAY)["reminders"] == 1 and p.sent[0][1]["id"] == rid
+    assert push_tick(client, p, DAY)["reminders"] == 0                          # exactly once
+
+
+def test_unregistered_phones_are_forgotten_and_daily_limit_holds(client):
+    gone = FakePusher("gone")
+    push_tick(client, gone, DAY)
+    assert client.app_state.service.device_tokens() == []
+    p = FakePusher()
+    assert push_tick(client, p, DAY + timedelta(hours=3), max_notifications_per_day=0).get("why") == "daily_limit"
+
+
+def test_device_and_push_routes(client):
+    assert client.post(f"{P}/devices", json={"token": "x"}).status_code == 422          # too short to be real
+    assert client.post(f"{P}/devices", json={"token": TOKEN}).status_code == 204
+    assert client.post(f"{P}/push/test").status_code == 503                              # no Firebase key configured here
