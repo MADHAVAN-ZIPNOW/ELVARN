@@ -168,7 +168,9 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
         except CapacityError:
             result["replies"] = {"saved": 0, "error": "database_full"}
         except Exception as exc:
-            result["replies"] = {"saved": 0, "error": type(exc).__name__}
+            import imaplib
+            hint = (str(exc)[:90] if isinstance(exc, imaplib.IMAP4.error) else "")   # server wording like "[AUTHENTICATIONFAILED] ...": no secrets
+            result["replies"] = {"saved": 0, "error": type(exc).__name__, **({"detail": hint} if hint else {})}
         result["email"] = send_checkin_if_due(svc, mailbox, now)
     result["push"] = send_pushes(svc, pusher, now)   # reminders are only marked "sent" when a phone actually accepted them
     ok = (not any(isinstance(v, dict) and v.get("error") for v in result.values())
