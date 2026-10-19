@@ -99,7 +99,7 @@ def answer(svc, question: str, client: Optional[httpx.Client] = None, now: Optio
     sources = [str(m["id"]) for m in memories]
     if not settings.groq_api_key:
         return {"answer": f"Here is what I have for {label}:\n" + "\n".join(lines), "range": label, "sources": sources}
-    payload = {"model": settings.llm_model, "temperature": 0.2,
+    payload = {"model": settings.llm_model, "temperature": 0.2, **({"reasoning_effort": "none"} if settings.llm_model.startswith("qwen") else {}),
                "messages": [{"role": "system", "content": SYSTEM},
                             {"role": "user", "content": json.dumps({"question": question[:500], "now": now.strftime("%A %d %b %Y %H:%M"),
                                                                     "period": label, "memories": lines}, ensure_ascii=False)}]}
