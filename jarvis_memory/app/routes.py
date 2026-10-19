@@ -53,7 +53,9 @@ def make_router(guard) -> APIRouter:
         """Counts, how much of the free database is used, and how much RAM the service uses."""
         from . import resources
 
-        return {**svc.stats(), **resources.status(request.app.state.settings.ram_limit_mb)}
+        from .chat import LAST_BRAIN_ERROR
+
+        return {**svc.stats(), **resources.status(request.app.state.settings.ram_limit_mb), "last_ai_error": dict(LAST_BRAIN_ERROR) or None}
 
     @router.post("/export")
     def export(svc: MemoryService = Depends(service_of)):

@@ -61,47 +61,94 @@ class BrainError(Exception):
         self.kind = kind
 
 
+LAST_BRAIN_ERROR: dict[str, Any] = {}   # the most recent AI failure (kind, HTTP status, Groq error code): shown in /stats for diagnosis
+
+
+def _error_info(resp: httpx.Response) -> tuple[str, str, str]:
+    """(code, message, failed_generation) from a Groq error body; all empty when the body is not the usual JSON."""
+    try:
+        err = resp.json().get("error", {})
+        return (str(err.get("code") or err.get("type") or "")[:60], str(err.get("message") or "")[:160], str(err.get("failed_generation") or ""))
+    except (ValueError, AttributeError):
+        return "", "", ""
+
+
+def _shrink(messages: list[dict[str, str]]) -> list[dict[str, str]]:
+    """A much smaller version of the conversation for 'request too large' errors: the system prompt, a short tail, long texts cut."""
+    system = [m for m in messages if m["role"] == "system"][:1]
+    tail = [m for m in messages if m["role"] != "system"][-5:]
+    return [{**m, "content": m["content"][:2500]} for m in system + tail] if system else [{**m, "content": m["content"][:2500]} for m in tail]
+
+
 def _llm_default(settings, client: Optional[httpx.Client] = None, sleep: Callable[[float], None] = time.sleep) -> Callable[[list[dict[str, str]]], str]:
-    """Calls the model with a retry on rate limits / timeouts / server errors, then falls back to a second model."""
+    """Calls the model and survives the failures seen in practice: rate limits and timeouts (retry), a model that fails Groq's strict
+    JSON check (salvage its text, or ask again in plain mode), a request that is too big (shrink it), and a second model as a fallback."""
     def call(messages: list[dict[str, str]]) -> str:
         models = [settings.llm_model] + [m for m in FALLBACK_MODELS if m != settings.llm_model]
         owns = client is None
         c = client or httpx.Client(timeout=25.0)
-        kind = "unavailable"
+        kinds: list[str] = []
+        status_seen: Optional[int] = None
+        code_seen = ""
         try:
             for model in models:
-                payload = {"model": model, "temperature": 0.3, "response_format": {"type": "json_object"}, "messages": messages}
-                if model.startswith("qwen"):
-                    payload["reasoning_effort"] = "none"   # skip hidden "thinking": same quality for chat, much faster
-                for attempt in range(2):
-                    try:
-                        resp = c.post(settings.llm_base_url.rstrip("/") + "/chat/completions", json=payload,
-                                      headers={"Authorization": f"Bearer {settings.groq_api_key}"})
-                    except httpx.TimeoutException:
-                        kind = "timeout"
-                        continue
-                    except httpx.HTTPError:
-                        kind = "unavailable"
-                        continue
-                    if resp.status_code == 429:
-                        kind = "rate_limit"
-                        if attempt == 0:
+                modes = [True]
+                i = 0
+                while i < len(modes):
+                    json_mode = modes[i]
+                    i += 1
+                    body_messages = messages
+                    for attempt in range(2):
+                        payload: dict[str, Any] = {"model": model, "temperature": 0.3, "messages": body_messages}
+                        if json_mode:
+                            payload["response_format"] = {"type": "json_object"}
+                        if model.startswith("qwen"):
+                            payload["reasoning_effort"] = "none"   # skip hidden "thinking": same quality for chat, much faster
+                        try:
+                            resp = c.post(settings.llm_base_url.rstrip("/") + "/chat/completions", json=payload,
+                                          headers={"Authorization": f"Bearer {settings.groq_api_key}"})
+                        except httpx.TimeoutException:
+                            kinds.append("timeout")
+                            continue
+                        except httpx.HTTPError:
+                            kinds.append("unavailable")
+                            continue
+                        status_seen = resp.status_code
+                        if resp.status_code == 200:
                             try:
-                                sleep(min(float(resp.headers.get("retry-after", "2")), 4.0))
-                            except ValueError:
-                                sleep(2.0)
-                        continue
-                    if resp.status_code >= 500:
-                        kind = "unavailable"
-                        continue
-                    if resp.status_code >= 400:
-                        kind = "unavailable"
-                        break                                   # this model refuses the request: try the next one
-                    try:
-                        return str(resp.json()["choices"][0]["message"]["content"])
-                    except (KeyError, IndexError, ValueError):
-                        kind = "unavailable"
+                                return str(resp.json()["choices"][0]["message"]["content"])
+                            except (KeyError, IndexError, ValueError):
+                                kinds.append("unavailable")
+                                break
+                        code_seen, message, failed = _error_info(resp)
+                        low = f"{code_seen} {message}".lower()
+                        if resp.status_code == 429 or "rate" in low and "limit" in low:
+                            kinds.append("rate_limit")
+                            if "too large" in low:               # a per-minute token limit hit by the size of THIS request
+                                body_messages = _shrink(messages)
+                                continue
+                            if attempt == 0:
+                                try:
+                                    sleep(min(float(resp.headers.get("retry-after", "2")), 4.0))
+                                except ValueError:
+                                    sleep(2.0)
+                            continue
+                        if resp.status_code == 413 or "too large" in low or "context" in low and "length" in low:
+                            kinds.append("unavailable")
+                            body_messages = _shrink(messages)
+                            continue
+                        if resp.status_code >= 500:
+                            kinds.append("unavailable")
+                            continue
+                        kinds.append("unavailable")                # another 4xx: this model/mode refuses the request
+                        if failed.strip():
+                            return failed                          # the model did answer; Groq only objected to the JSON format
+                        if json_mode and False not in modes:
+                            modes.append(False)                    # ask again without the strict JSON mode (parsed leniently later)
                         break
+            kind = "rate_limit" if "rate_limit" in kinds else (kinds[-1] if kinds else "unavailable")
+            LAST_BRAIN_ERROR.update(at=datetime.now().isoformat(timespec="seconds"), kind=kind, status=status_seen, code=code_seen)
+            log.warning("AI call failed: kind=%s status=%s code=%s", kind, status_seen, code_seen)
             raise BrainError(kind)
         finally:
             if owns:

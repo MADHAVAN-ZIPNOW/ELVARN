@@ -304,3 +304,88 @@ def test_when_every_model_fails_the_reason_is_spoken(client):
         svc_llm = _llm_default(Settings(groq_api_key="k"), http, sleep=lambda s: None)
         reply = chat_with(client, svc_llm).chat("hello")["reply"]
         assert reply == BRAIN_MESSAGES[kind]
+
+
+# ---------------------------------------------------------------------------------------------- every AI failure mode seen in practice
+def _llm(handler):
+    import httpx
+    from app.chat import _llm_default
+    from app.config import Settings
+
+    return _llm_default(Settings(groq_api_key="k"), httpx.Client(transport=httpx.MockTransport(handler)), sleep=lambda s: None)
+
+
+def _ok(text):
+    import httpx
+
+    return httpx.Response(200, json={"choices": [{"message": {"content": text}}]})
+
+
+def test_groq_json_check_failure_is_salvaged_from_the_models_own_text():
+    import httpx
+
+    def handler(request):
+        return httpx.Response(400, json={"error": {"code": "json_validate_failed", "message": "bad json",
+                                                   "failed_generation": "Ha, I never sleep, but you should rest."}})
+
+    out = _llm(handler)([{"role": "user", "content": "I wish you could sleep"}])
+    assert out == "Ha, I never sleep, but you should rest."                                # the model DID answer; only the format was refused
+
+
+def test_a_format_refusal_without_text_is_retried_in_plain_mode():
+    import httpx
+
+    modes = []
+
+    def handler(request):
+        body = json.loads(request.content)
+        modes.append("json" if "response_format" in body else "plain")
+        if "response_format" in body:
+            return httpx.Response(400, json={"error": {"code": "json_validate_failed", "message": "bad"}})
+        return _ok("Plain words are fine.")
+
+    assert _llm(handler)([{"role": "user", "content": "x"}]) == "Plain words are fine."
+    assert modes == ["json", "plain"]
+
+
+def test_a_too_large_request_is_shrunk_and_retried():
+    import httpx
+
+    sizes = []
+
+    def handler(request):
+        body = json.loads(request.content)
+        sizes.append(sum(len(m["content"]) for m in body["messages"]))
+        if sizes[-1] > 14000:
+            return httpx.Response(413, json={"error": {"code": "request_too_large", "message": "Request too large for model"}})
+        return _ok('{"action":"answer","text":"ok"}')
+
+    big = [{"role": "system", "content": "s" * 100}] + [{"role": "user" if i % 2 else "assistant", "content": "x" * 3000} for i in range(10)]
+    assert json.loads(_llm(handler)(big))["text"] == "ok"
+    assert sizes[0] > 14000 and sizes[-1] <= 14000
+
+
+def test_the_most_informative_failure_is_reported_and_recorded():
+    import httpx
+    from app.chat import BrainError, LAST_BRAIN_ERROR
+
+    def handler(request):
+        body = json.loads(request.content)
+        if body["model"].startswith("qwen"):
+            return httpx.Response(429, json={"error": {"code": "rate_limit_exceeded", "message": "daily limit"}})
+        return httpx.Response(503, json={})                                           # the fallback is down too
+
+    with pytest.raises(BrainError) as err:
+        _llm(handler)([{"role": "user", "content": "x"}])
+    assert err.value.kind == "rate_limit"                                              # not the misleading "unavailable"
+    assert LAST_BRAIN_ERROR["kind"] == "rate_limit" and LAST_BRAIN_ERROR["status"] == 503
+
+
+def test_stats_show_the_last_ai_error_for_diagnosis(client):
+    from app.chat import LAST_BRAIN_ERROR
+
+    LAST_BRAIN_ERROR.clear()
+    assert client.get(f"{P}/stats").json()["last_ai_error"] is None
+    LAST_BRAIN_ERROR.update(kind="timeout", status=None, code="")
+    assert client.get(f"{P}/stats").json()["last_ai_error"]["kind"] == "timeout"
+    LAST_BRAIN_ERROR.clear()
