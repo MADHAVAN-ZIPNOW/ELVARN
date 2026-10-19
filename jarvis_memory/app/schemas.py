@@ -268,6 +268,7 @@ class ChatRequest(BaseModel):
     context: Optional[str] = Field(None, max_length=400)   # e.g. the question JARVIS just asked on a call
     archive: Optional[str] = Field(None, max_length=4000)  # older memories kept on the owner's computer (data only)
     attachment: Optional[str] = Field(None, max_length=12000)  # text of a file the owner asked about (untrusted data)
+    private: Optional[bool] = None                              # True: never use the Gemini backup for this turn (screen content)
     client: Optional[str] = Field(None, max_length=20)         # "phone" when the Android app is asking (only then may JARVIS drive the phone)
 
 

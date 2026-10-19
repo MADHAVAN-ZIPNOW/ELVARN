@@ -259,7 +259,9 @@ class ChatService:
                  web_read=webtools.read_page, web_search=webtools.search_web, news_fetch=None) -> None:
         self.svc = svc
         self.settings = svc.settings
+        self._llm_plain = llm or (_llm_default(svc.settings) if svc.settings.groq_api_key else None)      # Groq only (used for private screen content)
         self.llm = llm or (_llm_with_backup(svc.settings) if (svc.settings.groq_api_key or svc.settings.gemini_api_key) else None)
+        self._turn_llm = self.llm
         self.web_read, self.web_search = web_read, web_search
         from . import news as _news
         self.news_fetch = news_fetch or _news.fetch
@@ -318,8 +320,9 @@ class ChatService:
 
     # ------------------------------------------------------------------------------------------ the turn
     def chat(self, message: str, session_id: Optional[str] = None, now: Optional[datetime] = None,
-             context: Optional[str] = None, archive: Optional[str] = None, attachment: Optional[str] = None, client: Optional[str] = None) -> dict[str, Any]:
+             context: Optional[str] = None, archive: Optional[str] = None, attachment: Optional[str] = None, client: Optional[str] = None, private: bool = False) -> dict[str, Any]:
         self._client = client
+        self._turn_llm = self._llm_plain if private else self.llm
         sid = self._ensure_session(session_id, message)
         history = self._history(sid)
         self._save(sid, "user", message)
@@ -375,7 +378,9 @@ class ChatService:
         reply = ""
         for step in range(MAX_STEPS + 1):
             try:
-                act = _parse_action(self.llm(convo))
+                if self._turn_llm is None:
+                    raise BrainError("unavailable")
+                act = _parse_action(self._turn_llm(convo))
             except Exception as exc:
                 kind = getattr(exc, "kind", "unavailable")
                 log.info("Chat model call failed (%s, %s)", type(exc).__name__, kind)

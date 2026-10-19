@@ -80,7 +80,7 @@ def make_router(guard) -> APIRouter:
     @router.post("/chat")
     def chat(body: ChatRequest, request: Request):
         """One turn of the shared chat (phone, desktop and the call screen all use this)."""
-        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive, attachment=body.attachment, client=body.client)
+        return chat_of(request).chat(body.message, str(body.session_id) if body.session_id else None, context=body.context, archive=body.archive, attachment=body.attachment, client=body.client, private=bool(body.private))
 
     STT_MESSAGES = {"unsupported": (415, "Send the recording as audio/mp4, wav, webm, ogg or mp3."),
                     "not_configured": (503, "Voice chat needs the Groq key on the server."),

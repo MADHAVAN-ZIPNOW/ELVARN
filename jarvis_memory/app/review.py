@@ -13,6 +13,8 @@ from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
 import httpx
+
+from .llm_backup import llm_post
 from psycopg.types.json import Jsonb
 
 log = logging.getLogger("jarvis_memory.review")
@@ -94,8 +96,7 @@ def compose_summary(settings, data: dict[str, Any], client: Optional[httpx.Clien
     owns = client is None
     client = client or httpx.Client(timeout=20.0)
     try:
-        resp = client.post(settings.llm_base_url.rstrip("/") + "/chat/completions", json=payload,
-                           headers={"Authorization": f"Bearer {settings.groq_api_key}"})
+        resp = llm_post(settings, client, payload)
         resp.raise_for_status()
         text = " ".join(str(resp.json()["choices"][0]["message"]["content"]).split())[:900]
         if text:

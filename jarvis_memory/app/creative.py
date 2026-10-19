@@ -16,6 +16,8 @@ from typing import Optional
 
 import httpx
 
+from .llm_backup import llm_post
+
 log = logging.getLogger("jarvis_memory.creative")
 
 _URL = re.compile(r"https?://\S+|www\.\S+", re.I)
@@ -77,8 +79,7 @@ def compose(settings, owner_name: str, open_tasks: list[str], local_hour: int, *
         owns = client is None
         client = client or httpx.Client(timeout=8.0)
         try:
-            resp = client.post(settings.llm_base_url.rstrip("/") + "/chat/completions", json=payload,
-                               headers={"Authorization": f"Bearer {settings.groq_api_key}"})
+            resp = llm_post(settings, client, payload)
             resp.raise_for_status()
             content = resp.json()["choices"][0]["message"]["content"]
             checkin = _from_model(json.loads(content))

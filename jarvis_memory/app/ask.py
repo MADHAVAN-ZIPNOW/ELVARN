@@ -15,6 +15,8 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from .llm_backup import llm_post
+
 from .schemas import SearchRequest
 
 log = logging.getLogger("jarvis_memory.ask")
@@ -114,8 +116,7 @@ def answer(svc, question: str, client: Optional[httpx.Client] = None, now: Optio
     owns = client is None
     client = client or httpx.Client(timeout=20.0)
     try:
-        resp = client.post(settings.llm_base_url.rstrip("/") + "/chat/completions", json=payload,
-                           headers={"Authorization": f"Bearer {settings.groq_api_key}"})
+        resp = llm_post(settings, client, payload)
         resp.raise_for_status()
         text = " ".join(str(resp.json()["choices"][0]["message"]["content"]).split())[:1500]
         if text:

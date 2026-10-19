@@ -19,6 +19,8 @@ from typing import Any, Optional
 
 import httpx
 
+from .llm_backup import llm_post
+
 from .config import Settings
 from .schemas import clean_list
 
@@ -223,7 +225,7 @@ class Extractor:
             last: Optional[Exception] = None
             for attempt in range(3):  # the free tier rate-limits: back off and retry
                 try:
-                    resp = client.post(url, json=payload, headers=headers)
+                    resp = llm_post(self.settings, client, payload)
                     if resp.status_code in (429, 500, 502, 503, 504):
                         raise httpx.HTTPStatusError(f"HTTP {resp.status_code}", request=resp.request, response=resp)
                     resp.raise_for_status()

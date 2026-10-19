@@ -612,3 +612,42 @@ def test_gemini_answers_when_groq_is_rate_limited():
     finally:
         chat_module.time.sleep = chat_module_sleep
     assert "generativelanguage.test" in seen
+
+
+def test_direct_ai_jobs_fall_back_to_gemini_and_private_turns_never_do():
+    import httpx
+
+    from app.llm_backup import llm_post
+
+    seen = []
+
+    def handler(request):
+        seen.append(request.url.host)
+        if request.url.host == "x.test":
+            return httpx.Response(429, json={"error": {"message": "rate limit"}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "ok from gemini"}}]})
+
+    class S:
+        llm_base_url, groq_api_key, llm_model = "https://x.test/v1", "k", "qwen/x"
+        gemini_api_key, gemini_base_url, gemini_model = "g", "https://gem.test/openai", "gemini-x"
+
+    c = httpx.Client(transport=httpx.MockTransport(handler))
+    r = llm_post(S, c, {"model": "qwen/x", "reasoning_effort": "none", "messages": []})
+    assert r.status_code == 200 and seen == ["x.test", "gem.test"]
+    S.gemini_api_key = ""
+    assert llm_post(S, c, {"model": "qwen/x", "messages": []}).status_code == 429          # no backup key: Groq's answer stands
+
+
+def test_private_chat_turns_never_use_the_gemini_backup(client):
+    from app.chat import ChatService
+
+    svc = client.app_state.service
+
+    class Boom:
+        def __call__(self, messages):
+            raise AssertionError("the backup brain must not be used for private turns")
+
+    chat = ChatService(svc, llm=Script(say("fine")))
+    chat._llm_plain = Script(say("private answer"))      # Groq only
+    chat.llm = Boom()                                     # stands for "Groq with the Gemini backup"
+    assert chat.chat("explain this", private=True)["reply"] == "private answer"
