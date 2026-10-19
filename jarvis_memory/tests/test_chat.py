@@ -521,3 +521,43 @@ def test_open_tasks_can_be_listed_and_finished_for_the_desktop_page(client):
     ref = {"memory_id": mine[0]["memory_id"], "index": mine[0]["index"], "task": "Book the dentist"}
     assert client.post(f"{P}/tasks/done", json=ref).status_code == 200
     assert not [t for t in client.get(f"{P}/tasks").json() if t["task"] == "Book the dentist"]
+
+
+def test_a_task_added_through_the_tasks_api_shows_up_and_can_be_finished(client):
+    assert client.post(f"{P}/tasks", json={"task": "Water the plants"}).status_code == 201
+    mine = [t for t in client.get(f"{P}/tasks").json() if t["task"] == "Water the plants"]
+    assert len(mine) >= 1
+    assert client.post(f"{P}/tasks/done", json={"memory_id": mine[0]["memory_id"], "index": mine[0]["index"], "task": "Water the plants"}).status_code == 200
+    assert client.post(f"{P}/tasks", json={"task": ""}).status_code == 422
+
+
+def test_what_did_i_ask_yesterday_lists_yesterdays_messages(client):
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+
+    chat = chat_with(client, Script(say("Paris."), say("Berlin.")))
+    sid = chat.chat("what is the capital of France?")["session_id"]
+    with client.app_state.service.db() as conn:        # pretend that exchange happened yesterday
+        conn.execute("UPDATE chat_messages SET created_at = created_at - interval '1 day' WHERE session_id = %s", (sid,))
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
+    found = chat._past_chats("what did I ask yesterday in chat", now)
+    assert "capital of France" in found and "You said" in found
+
+
+def test_an_empty_model_answer_is_retried_not_reported_as_a_lost_train_of_thought():
+    import httpx
+
+    from app.chat import _llm_default
+
+    calls = []
+
+    def handler(request):
+        calls.append(json.loads(request.content)["model"])
+        content = "" if len(calls) == 1 else '{"action": "answer", "text": "ok"}'
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    class S:
+        llm_model, llm_base_url, groq_api_key = "qwen/test", "https://x.test/v1", "k"
+
+    out = _llm_default(S, client=httpx.Client(transport=httpx.MockTransport(handler)))([{"role": "user", "content": "hi"}])
+    assert "ok" in out and len(calls) >= 2

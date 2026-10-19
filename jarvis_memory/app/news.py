@@ -97,6 +97,50 @@ def link_hash(link: str) -> str:
     return hashlib.sha1(link.split("?")[0].encode()).hexdigest()[:20]
 
 
+LIVE_SCORES = "http://static.cricinfo.com/rss/livescores.xml"
+CRICKET_NEWS = "https://www.espncricinfo.com/rss/content/story/feeds/0.xml"
+
+
+def _titles(xml_text: str, limit: int = 60) -> list[str]:
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return []
+    out = []
+    for item in root.iter():
+        if _tag(item) == "item":
+            t = _plain(_text(item, "title"), 160)
+            if t:
+                out.append(t)
+    return out[:limit]
+
+
+def cricket(query: str, fetcher: Callable[[str], str] = fetch) -> str:
+    """Live cricket from the free Cricinfo feeds: matches that fit the query, else what is on now plus the latest headlines."""
+    try:
+        live = _titles(fetcher(LIVE_SCORES))
+    except Exception:
+        live = []
+    try:
+        news = _titles(fetcher(CRICKET_NEWS), 8)
+    except Exception:
+        news = []
+    words = [w for w in re.findall(r"[a-z]+", query.lower()) if len(w) > 2 and w not in ("the", "match", "score", "result", "versus", "and", "game", "cricket", "live", "who", "won", "what", "was")]
+    aliases = {"ind": "india", "wi": "west indies", "aus": "australia", "sa": "south africa", "eng": "england", "pak": "pakistan", "sl": "sri lanka", "nz": "new zealand"}
+    words = [aliases.get(w, w) for w in words]
+    hits = [t for t in live if words and all(any(part in t.lower() for part in w.split()) for w in words)]
+    if not hits:
+        hits = [t for t in live if words and any(any(part in t.lower() for part in w.split()) for w in words)]
+    parts = []
+    if hits:
+        parts.append("MATCHES FOUND (live scores feed, newest first): " + " | ".join(hits[:6]))
+    else:
+        parts.append("No match for that query in the live scores feed right now. Matches on now: " + " | ".join(live[:14]))
+    if news:
+        parts.append("Latest cricket headlines: " + " | ".join(news[:6]))
+    return " ".join(parts) if live or news else ""
+
+
 def headlines(topics: list[str], now: datetime, fetcher: Callable[[str], str] = fetch, limit: int = 6, hours: int = 72) -> str:
     """A plain list of the latest stories, for JARVIS to read out when asked ("any space news?")."""
     picked: list[dict[str, Any]] = []

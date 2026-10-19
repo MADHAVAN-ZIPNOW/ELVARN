@@ -270,6 +270,12 @@ class ChatRequest(BaseModel):
     attachment: Optional[str] = Field(None, max_length=12000)  # text of a file the owner asked about (untrusted data)
 
 
+class TaskCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    task: str = Field(min_length=1, max_length=300)
+
+
 class TaskRef(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

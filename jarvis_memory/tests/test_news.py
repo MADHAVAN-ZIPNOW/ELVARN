@@ -67,3 +67,14 @@ def test_headlines_for_the_chat_tool():
     text = news.headlines(["space"], NOW, fetcher(pages))
     assert "[Space] Moon base" in text and "https://www.nasa.gov/1" in text
     assert news.headlines(["space"], NOW, lambda u: (_ for _ in ()).throw(OSError())) == ""    # feeds down: empty, no crash
+
+
+def test_cricket_finds_a_live_match_or_lists_what_is_on():
+    live = "<rss><channel><item><title>India v West Indies 52/1 *</title></item><item><title>Pakistan v Sri Lanka</title></item></channel></rss>"
+    news_xml = "<rss><channel><item><title>Bumrah strikes early</title></item></channel></rss>"
+    fetch = lambda url: live if "livescores" in url else news_xml
+    found = news.cricket("what is the result of ind vs wi match", fetch)
+    assert "India v West Indies 52/1" in found and "Bumrah strikes early" in found
+    none = news.cricket("australia vs england", fetch)
+    assert "No match for that query" in none and "Pakistan v Sri Lanka" in none         # lists what is actually on instead of guessing
+    assert news.cricket("india", lambda u: (_ for _ in ()).throw(OSError())) == ""

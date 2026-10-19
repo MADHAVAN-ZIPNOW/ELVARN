@@ -10,7 +10,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from .db import DatabaseNotConfigured
-from .schemas import (AskRequest, ChatRequest, DeviceRegister, PruneRequest, TaskRef, MemoryCreate, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
+from .schemas import (AskRequest, ChatRequest, DeviceRegister, PruneRequest, TaskRef, TaskCreate, MemoryCreate, Task, MemoryOut, MemoryUpdate, ReminderCreate, SearchRequest, SearchResponse, SettingsUpdate,
                       SnoozeRequest, Source)
 from .backup import PruneExtra, RestorePayload
 from .service import CapacityError, MemoryService, NotFound
@@ -176,6 +176,13 @@ def make_router(guard) -> APIRouter:
     def open_tasks(svc: MemoryService = Depends(service_of)):
         """Open tasks from every memory (what JARVIS adds by voice or chat), for the desktop Tasks page."""
         return svc.list_open_tasks()
+
+    @router.post("/tasks", status_code=201)
+    def add_task(body: TaskCreate, svc: MemoryService = Depends(service_of)):
+        """Add one task (the phone and desktop Tasks pages use this)."""
+        text = " ".join(body.task.split())[:300]
+        svc.create(MemoryCreate(content=f"Task: {text}", title=f"Task: {text[:60]}", tasks=[Task(task=text)], extract=False))
+        return {"ok": True}
 
     @router.post("/tasks/done")
     def finish_task(body: TaskRef, svc: MemoryService = Depends(service_of)):
