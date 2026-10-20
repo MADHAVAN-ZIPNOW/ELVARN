@@ -328,8 +328,12 @@ class MemoryService:
 
     def add_reminder(self, text: str, remind_at: datetime) -> dict[str, Any]:
         with self.db() as conn:
-            row = conn.execute("INSERT INTO reminders (owner_id, text, remind_at) VALUES (%s,%s,%s) "
-                               "RETURNING id, text, remind_at, status, created_at, sent_at", (self.owner_id, text, remind_at)).fetchone()
+            row = conn.execute("UPDATE reminders SET remind_at = %s WHERE id = (SELECT id FROM reminders WHERE owner_id = %s AND status = 'pending' "
+                               "AND lower(text) = lower(%s) ORDER BY remind_at LIMIT 1) RETURNING id, text, remind_at, status, created_at, sent_at",
+                               (remind_at, self.owner_id, text)).fetchone()
+            if row is None:
+                row = conn.execute("INSERT INTO reminders (owner_id, text, remind_at) VALUES (%s,%s,%s) "
+                                   "RETURNING id, text, remind_at, status, created_at, sent_at", (self.owner_id, text, remind_at)).fetchone()
         return {**row, "id": str(row["id"])}
 
     def list_reminders(self, status: Optional[str] = None, limit: int = 50) -> list[dict[str, Any]]:

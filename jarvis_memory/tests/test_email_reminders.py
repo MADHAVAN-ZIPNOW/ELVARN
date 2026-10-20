@@ -328,3 +328,16 @@ def test_brevo_key_makes_the_server_send_itself_over_https(monkeypatch):
     mid = GmailMailbox("me@gmail.com", "pw", "key123").send("you@x.com", "Hi", "text", "<b>h</b>")
     assert seen["url"].endswith("/v3/smtp/email") and seen["headers"]["api-key"] == "key123"
     assert seen["json"]["to"] == [{"email": "you@x.com"}] and seen["json"]["sender"]["email"] == "me@gmail.com" and mid.startswith("<")
+
+
+def test_asking_for_the_same_reminder_again_moves_it_instead_of_stacking_calls(client):
+    from datetime import timedelta
+
+    svc = client.app_state.service
+    with svc.db() as c:
+        c.execute("DELETE FROM reminders WHERE text = 'JARVIS call (you were busy)'")
+    first = svc.add_reminder("JARVIS call (you were busy)", DAY + timedelta(minutes=10))
+    again = svc.add_reminder("JARVIS call (you were busy)", DAY + timedelta(minutes=40))
+    assert again["id"] == first["id"] and again["remind_at"] > first["remind_at"]
+    pending = [r for r in svc.list_reminders("pending") if r["text"] == "JARVIS call (you were busy)"]
+    assert len(pending) == 1
