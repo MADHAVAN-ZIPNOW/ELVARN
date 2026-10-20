@@ -651,3 +651,16 @@ def test_private_chat_turns_never_use_the_gemini_backup(client):
     chat._llm_plain = Script(say("private answer"))      # Groq only
     chat.llm = Boom()                                     # stands for "Groq with the Gemini backup"
     assert chat.chat("explain this", private=True)["reply"] == "private answer"
+
+
+def test_a_day_is_listed_even_when_the_rest_of_the_sentence_matches_nothing(client):
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    chat = chat_with(client, Script(say("Paris.")))
+    sid = chat.chat("what is the capital of France?")["session_id"]
+    with client.app_state.service.db() as conn:
+        conn.execute("UPDATE chat_messages SET created_at = created_at - interval '1 day' WHERE session_id = %s", (sid,))
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
+    found = chat._past_chats("would say about the past chats I am speaking yesterday", now)       # the exact sentence that failed
+    assert "capital of France" in found

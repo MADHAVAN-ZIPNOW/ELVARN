@@ -407,18 +407,15 @@ class ChatService:
         """Earlier chat exchanges (a matching message with its neighbours) as dated lines, newest first. Optional time words narrow it."""
         weak = {"chat", "chats", "talked", "talk", "discussed", "said", "ask", "asked", "asking", "tell", "told", "say", "saying", "yesterday", "today",
                 "tonight", "morning", "evening", "afternoon", "night", "last", "week", "month", "year", "ago", "earlier", "before", "past", "previous",
-                "did", "done", "does", "what", "which", "show", "remember", "conversation", "conversations", "messages", "message", "about", "was", "were"}
+                "did", "done", "does", "what", "which", "show", "remember", "conversation", "conversations", "messages", "message", "about", "was", "were",
+                "would", "could", "should", "please", "speaking", "spoke", "spoken", "speak", "can", "you", "all", "any", "give", "list", "summary",
+                "summarise", "summarize", "explain", "know", "see", "recall", "history", "yesterdays", "stuff", "things"}
         words = [w for w in re.findall(r"[a-z0-9']+", query.lower()) if len(w) > 2 and w not in ask_module._STOP and w not in weak]
         window = ask_module.parse_range(query, now)
         if not words and not window:
             return ""
         if window and not words:      # "what did I ask yesterday": everything the owner said in that period, in order
-            tz = ZoneInfo(self.settings.timezone)
-            with self.svc.db() as conn:
-                rows = conn.execute("SELECT m.content, m.created_at, s.title FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id "
-                                    "WHERE s.owner_id = %s AND m.role = 'user' AND m.created_at >= %s AND m.created_at < %s "
-                                    "ORDER BY m.created_at LIMIT 40", (self.svc.owner_id, window[0], window[1])).fetchall()
-            return "\n".join(f"[{r['created_at'].astimezone(tz).strftime('%a %d %b %H:%M')}] You said: {r['content'][:220]}" for r in rows)
+            return self._said_in(window)
         where, params = ["s.owner_id = %s"], [self.svc.owner_id]
         for w in words[:6]:
             where.append("m.content ILIKE %s")
@@ -438,7 +435,18 @@ class ChatService:
                     when = rows[0]["created_at"].astimezone(tz).strftime("%a %d %b %H:%M")
                     blocks.append(f"[{when}] chat '{rows[0]['title'][:40]}': " + " | ".join(
                         f"{'You' if r['role'] == 'user' else 'JARVIS'}: {r['content'][:260]}" for r in rows))
+        if not blocks and window:     # the leftover words matched nothing, but the owner named a day: show what was said that day
+            return self._said_in(window)
         return "\n".join(blocks)
+
+    def _said_in(self, window) -> str:
+        """Everything the owner said in a period (oldest first), as dated lines."""
+        tz = ZoneInfo(self.settings.timezone)
+        with self.svc.db() as conn:
+            rows = conn.execute("SELECT m.content, m.created_at FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id "
+                                "WHERE s.owner_id = %s AND m.role = 'user' AND m.created_at >= %s AND m.created_at < %s "
+                                "ORDER BY m.created_at LIMIT 40", (self.svc.owner_id, window[0], window[1])).fetchall()
+        return "\n".join(f"[{r['created_at'].astimezone(tz).strftime('%a %d %b %H:%M')}] You said: {r['content'][:220]}" for r in rows)
 
     def _task_change(self, query: str, a: dict[str, Any], message: str, *, remove: bool) -> tuple[str, str]:
         matches = self.svc.find_open_tasks(query)
