@@ -23,6 +23,27 @@ def test_time_phrases_become_ranges():
     assert ask.parse_range("what is pending for the Ravi project", NOW) is None
 
 
+def test_written_out_dates_become_that_day():
+    want = (datetime(2026, 10, 28, tzinfo=IST), datetime(2026, 10, 29, tzinfo=IST))
+    for q in ("what happened on 28/10/2026", "what did I do on 28-10-2026?", "2026-10-28", "what happened on 28th of October 2026", "oct 28 2026"):
+        s, e, label = ask.parse_range(q, NOW)
+        assert (s, e) == want, q
+    assert "28 October 2026" in label
+    assert ask.parse_range("what happened on 31/02/2026", NOW) is None          # not a real day
+    assert ask.parse_range("what is pending for the Ravi project", NOW) is None
+
+
+def test_a_time_of_day_narrows_the_day():
+    s, e, label = ask.parse_range("what did I do at 3 PM on 28/10/2026", NOW)
+    assert (s, e) == (datetime(2026, 10, 28, 14, tzinfo=IST), datetime(2026, 10, 28, 16, tzinfo=IST)) and "15:00" in label
+    s, e, _ = ask.parse_range("what happened 28/10/2026 at 09:30", NOW)
+    assert (s, e) == (datetime(2026, 10, 28, 8, 30, tzinfo=IST), datetime(2026, 10, 28, 10, 30, tzinfo=IST))
+    s, e, _ = ask.parse_range("yesterday afternoon", NOW)
+    assert (s, e) == (datetime(2026, 1, 6, 12, tzinfo=IST), datetime(2026, 1, 6, 17, tzinfo=IST))
+    s, e, _ = ask.parse_range("what happened on 28/10/2026", NOW)                 # no time given: the whole day
+    assert (s, e) == (datetime(2026, 10, 28, tzinfo=IST), datetime(2026, 10, 29, tzinfo=IST))
+
+
 def test_answers_only_from_the_memories_in_the_time_window(client, add):
     add("Fixed the login bug with Ravi", created_at=datetime(2026, 1, 6, 15, 10, tzinfo=IST))
     add("Wrote the budget report", created_at=datetime(2026, 1, 3, 11, 0, tzinfo=IST))     # too old: must not appear

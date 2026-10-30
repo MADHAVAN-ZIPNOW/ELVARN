@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
-from . import creative, review as review_module
+from . import creative, dayreport, review as review_module
 from .config import Settings
 from .mailer import Mailbox
 from .schemas import MemoryCreate
@@ -60,7 +60,7 @@ def _log(svc: MemoryService, job: str, ok: bool, detail: str) -> None:
         conn.execute("INSERT INTO job_log (owner_id, job, ok, detail) VALUES (%s,%s,%s,%s)",
                      (svc.owner_id, job, ok, detail[:500]))
         conn.execute("DELETE FROM job_log WHERE owner_id = %s AND id NOT IN "
-                     "(SELECT id FROM job_log WHERE owner_id = %s ORDER BY id DESC LIMIT %s)",
+                     "(SELECT id FROM job_log WHERE owner_id = %s ORDER BY id DESC LIMIT %s) AND job <> 'team_call'",   # team_call rows are tiny: kept, they say "called today"
                      (svc.owner_id, svc.owner_id, LOG_KEEP))
 
 
@@ -173,6 +173,37 @@ def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     return out
 
 
+def _team_call_done(svc: MemoryService, day) -> bool:
+    with svc.db() as conn:
+        return conn.execute("SELECT 1 FROM job_log WHERE owner_id = %s AND job = 'team_call' AND detail = %s LIMIT 1",
+                            (svc.owner_id, day.isoformat())).fetchone() is not None
+
+
+def send_team_call(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
+    """Once a day, from JM_TEAM_CALL_TIME on: ring the phone for the team update. The call's answers go only to the team e-mail
+    (see ChatService), never into the owner's personal memories. Retried every tick until a phone accepts it, then not again that day."""
+    if not dayreport.parse_contacts(svc.settings.email_contacts):
+        return {"why": "no_team_contacts"}
+    if pusher is None or not svc.device_tokens():
+        return {"why": "no_phone"}
+    s = svc.get_settings()
+    if not s["push_enabled"]:
+        return {"why": "push_disabled"}
+    local = now.astimezone(ZoneInfo(s["timezone"]))
+    if (local.hour, local.minute) < dayreport.parse_clock(svc.settings.team_call_time):
+        return {"why": "not_yet"}
+    if in_quiet_hours(local.hour, s["quiet_start_hour"], s["quiet_end_hour"]):
+        return {"why": "quiet_hours"}
+    if _team_call_done(svc, local.date()):
+        return {"why": "done_today"}
+    line = f"{s['owner_name']}, it is time for your team update. What did you get done today?"
+    if _push_all(svc, pusher, {"type": "team", "line": line, "title": "Team update", "emoji": "📋"}):
+        svc.record_push(now, call=True)         # also counts as the hourly call, so the two never ring back to back
+        _log(svc, "team_call", True, local.date().isoformat())
+        return {"sent": True}
+    return {"why": "push_failed"}
+
+
 def send_news(svc: MemoryService, pusher, now: datetime, fetcher=None) -> dict[str, Any]:
     """One fresh AI / quantum / space story as a phone notification, at most every news_interval_minutes and max_news_per_day a day."""
     from . import news
@@ -268,6 +299,10 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
             hint = (str(exc)[:90] if isinstance(exc, imaplib.IMAP4.error) else "")   # server wording like "[AUTHENTICATIONFAILED] ...": no secrets
             result["replies"] = {"saved": 0, "error": type(exc).__name__, **({"detail": hint} if hint else {})}
         result["email"] = send_checkin_if_due(svc, mailbox, now)
+    try:
+        result["team_call"] = send_team_call(svc, pusher, now)          # before the hourly call, which it then replaces for that hour
+    except Exception as exc:  # the team call must never break the other calls, reminders or e-mail
+        result["team_call"] = {"error": type(exc).__name__}
     result["push"] = send_pushes(svc, pusher, now)
     try:
         result["news"] = send_news(svc, pusher, now)

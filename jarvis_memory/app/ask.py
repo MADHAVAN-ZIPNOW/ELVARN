@@ -21,18 +21,73 @@ from .schemas import SearchRequest
 
 log = logging.getLogger("jarvis_memory.ask")
 _WORDS = {"an": 1, "a": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "ten": 10, "twelve": 12}
-_STOP = set("what did i do the a an on in at for of to my me is was were are this that time and with about when where who how".split())
+_STOP = set("what did i do the a an on in at for of to my me is was were are this that time and with about when where who how "
+            "you your remember know tell told said say please jarvis".split())   # question filler must not widen the search ("what do you remember about X")
 
 
 def _midnight(dt: datetime) -> datetime:
     return dt.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
+_MONTHS = {m: i for i, m in enumerate("jan feb mar apr may jun jul aug sep oct nov dec".split(), 1)}
+
+
+def _explicit_day(q: str, now: datetime) -> Optional[tuple[datetime, datetime, str]]:
+    """A calendar date written out: 28/10/2026 (day first, as in India), 2026-10-28, "28 Oct 2026", "28th of October", "Oct 28"."""
+    y = mo = d = None
+    if m := re.search(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b", q):
+        y, mo, d = int(m[1]), int(m[2]), int(m[3])
+    elif m := re.search(r"\b(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4}|\d{2})\b", q):
+        d, mo, y = int(m[1]), int(m[2]), int(m[3])
+        y += 2000 if y < 100 else 0
+    elif (m := re.search(r"\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]{3})[a-z]*\.?(?:,?\s+(\d{4}))?\b", q)) and m[2] in _MONTHS:
+        d, mo, y = int(m[1]), _MONTHS[m[2]], int(m[3] or now.year)
+    elif (m := re.search(r"\b([a-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b", q)) and m[1] in _MONTHS:
+        mo, d, y = _MONTHS[m[1]], int(m[2]), int(m[3] or now.year)
+    if y is None:
+        return None
+    try:
+        start = datetime(y, mo, d, tzinfo=now.tzinfo)
+    except ValueError:
+        return None
+    return start, start + timedelta(days=1), start.strftime("%A %d %B %Y")
+
+
+_PARTS = {"morning": (5, 12), "afternoon": (12, 17), "evening": (17, 21), "night": (21, 24)}
+
+
+def _narrow(q: str, rng: tuple[datetime, datetime, str]) -> tuple[datetime, datetime, str]:
+    """A whole day plus a clock time ("at 3 PM", "15:30") or a part of the day ("afternoon") becomes just that window."""
+    start, end, label = rng
+    if start != _midnight(start) or end - start > timedelta(days=1):
+        return rng
+    hh = mm = None
+    if m := re.search(r"\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b", q):
+        hh, mm = int(m[1]) % 12 + (12 if m[3] == "pm" else 0), int(m[2] or 0)
+    elif m := re.search(r"\b([01]?\d|2[0-3]):([0-5]\d)\b", q):
+        hh, mm = int(m[1]), int(m[2])
+    if hh is not None and hh <= 23:
+        centre = start + timedelta(hours=hh, minutes=mm)
+        return max(start, centre - timedelta(hours=1)), min(end, centre + timedelta(hours=1)), f"{label} around {centre:%H:%M}"
+    for word, (a, b) in _PARTS.items():
+        if word in q:
+            return start + timedelta(hours=a), min(end, start + timedelta(hours=b)), f"{label} {word}"
+    return rng
+
+
 def parse_range(question: str, now: datetime) -> Optional[tuple[datetime, datetime, str]]:
-    """(start, end, label) in the owner's timezone, or None when the question has no time phrase."""
+    """(start, end, label) in the owner's timezone, or None when the question has no time phrase. A time of day narrows a whole day."""
+    found = _parse_range(question, now)
+    return _narrow(question.lower(), found) if found else None
+
+
+def _parse_range(question: str, now: datetime) -> Optional[tuple[datetime, datetime, str]]:
     q = question.lower()
     today = _midnight(now)
     day = timedelta(days=1)
+    explicit = _explicit_day(q, now)
+    if explicit:
+        return explicit
     same_time = "this time" in q or "same time" in q
     ago = re.search(r"(\d+|an?|one|two|three|four|five|six|ten|twelve)\s+(minute|hour|day)s?\s+ago", q)
     if ago:
