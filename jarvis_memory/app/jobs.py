@@ -312,8 +312,12 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
         result["review"] = send_review(svc, pusher, mailbox, now)
     except Exception as exc:  # the review must never break calls, reminders or e-mail
         result["review"] = {"error": type(exc).__name__}   # reminders are only marked "sent" when a phone actually accepted them
+    with svc.db() as conn:      # queued by the team-update call; the scheduler sends them and confirms
+        result["outbox"] = [dict(r) for r in conn.execute(
+            "SELECT id, to_addr AS \"to\", subject, body_text AS text, body_html AS html FROM mail_outbox "
+            "WHERE owner_id = %s AND sent_at IS NULL ORDER BY id LIMIT 10", (svc.owner_id,)).fetchall()]
     ok = (not any(isinstance(v, dict) and v.get("error") for v in result.values())
           and result.get("email", {}).get("why") != "send_failed")
-    summary = {k: ({a: b for a, b in v.items() if a != "deliver"} if isinstance(v, dict) else v) for k, v in result.items()}
+    summary = {k: ({a: b for a, b in v.items() if a != "deliver"} if isinstance(v, dict) else v) for k, v in result.items() if k != "outbox"}
     _log(svc, "tick", ok, str(summary))   # never log the e-mail body
     return result

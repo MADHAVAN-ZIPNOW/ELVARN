@@ -539,7 +539,12 @@ class ChatService:
         for name, address in people:
             subject, plain, page = dayreport.render_team(summary, items, owner, name, now.date(), note)
             try:
-                self.mailbox.send(address, subject, plain, page)
+                if self.settings.smtp_mode == "external" and not self.settings.brevo_api_key:
+                    with self.svc.db() as conn:      # the scheduler sends it within minutes (the server's own SMTP is blocked)
+                        conn.execute("INSERT INTO mail_outbox (owner_id, to_addr, subject, body_text, body_html) VALUES (%s,%s,%s,%s,%s)",
+                                     (self.svc.owner_id, address, subject, plain, page))
+                else:
+                    self.mailbox.send(address, subject, plain, page)
                 sent.append(name)
             except Exception as exc:       # only the type is kept: never a password or an address
                 log.info("Team update e-mail failed (%s)", type(exc).__name__)

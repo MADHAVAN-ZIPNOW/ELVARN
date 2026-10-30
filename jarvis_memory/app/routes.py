@@ -172,6 +172,13 @@ def make_router(guard) -> APIRouter:
         svc.mark_review_emailed(day)
         return {"ok": True}
 
+    @router.post("/mail/outbox-sent")
+    def outbox_sent(id: int, svc: MemoryService = Depends(service_of)):
+        """The scheduler confirms it e-mailed one queued message (the team update)."""
+        with svc.db() as conn:
+            conn.execute("UPDATE mail_outbox SET sent_at = now() WHERE id = %s AND owner_id = %s", (id, svc.owner_id))
+        return {"ok": True}
+
     @router.get("/tasks")
     def open_tasks(svc: MemoryService = Depends(service_of)):
         """Open tasks from every memory (what JARVIS adds by voice or chat), for the desktop Tasks page."""

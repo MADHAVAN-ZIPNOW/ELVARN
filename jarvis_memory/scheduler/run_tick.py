@@ -73,7 +73,8 @@ def main():
           "| reminders due:", len(result.get("reminders_due", [])))
     item = email.get("deliver")
     review_mail = (result.get("review") or {}).get("email") or {}
-    if (item or review_mail.get("deliver")) and not (GMAIL and APP_PASSWORD):
+    outbox = result.get("outbox") or []
+    if (item or review_mail.get("deliver") or outbox) and not (GMAIL and APP_PASSWORD):
         print("GMAIL_ADDRESS / GMAIL_APP_PASSWORD secrets are missing")
         return 1
     if item:
@@ -84,6 +85,10 @@ def main():
         send_mail(review_mail["deliver"])
         call("POST", "/api/jarvis/memory/mail/review-sent?day=" + review_mail["day"])
         print("daily review e-mail delivered")
+    for queued in outbox:
+        send_mail(queued)
+        call("POST", f"/api/jarvis/memory/mail/outbox-sent?id={queued['id']}")
+        print("team update e-mail delivered")
     return 0
 
 
