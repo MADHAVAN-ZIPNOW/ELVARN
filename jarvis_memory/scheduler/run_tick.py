@@ -47,7 +47,9 @@ def wake_service(max_wait=150):
 def send_mail(item):
     msg = EmailMessage()
     msg["From"], msg["To"], msg["Subject"] = f"JARVIS <{GMAIL}>", item["to"], item["subject"]
-    msg["Message-ID"] = make_msgid(domain="jarvis-memory.local")
+    msg["Message-ID"] = make_msgid(domain=(GMAIL.split("@")[-1] or "gmail.com"))      # a real domain: ".local" looks like spam to filters
+    msg["Reply-To"] = GMAIL
+    msg["X-Auto-Response-Suppress"] = "All"
     msg.set_content(item["text"])
     if item.get("html"):
         msg.add_alternative(item["html"], subtype="html")

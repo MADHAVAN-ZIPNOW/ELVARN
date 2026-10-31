@@ -125,46 +125,46 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
     for i in items:
         counts[i["kind"]] = counts.get(i["kind"], 0) + 1
     tiles = "".join(
-        f'<td align="center" style="padding:4px"><div style="background:{KINDS[k][1]};border-radius:14px;padding:10px 4px;color:#fff">'
-        f'<div style="font-size:22px;font-weight:800;line-height:1">{counts[k]}</div>'
+        f'<td align="center" style="padding:4px"><div style="background:{KINDS[k][1]};border-radius:12px;padding:6px 4px;color:#fff">'
+        f'<div style="font-size:19px;font-weight:800;line-height:1">{counts[k]}</div>'
         f'<div style="font-size:11px;letter-spacing:.04em;margin-top:3px;opacity:.95">{e(KINDS[k][0])}</div></div></td>' for k in KINDS if k in counts)
-    tiles_row = (f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px"><tr>{tiles}</tr></table>'
+    tiles_row = (f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:6px"><tr>{tiles}</tr></table>'
                  if tiles else "")
     cards = "".join(
-        f'<tr><td style="padding:3px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        f'<tr><td style="padding:2px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
         f'style="background:{tints[i["kind"]]};border-radius:10px;border-left:5px solid {KINDS[i["kind"]][1]}"><tr>'
-        f'<td width="34" align="center" style="padding:7px 0 7px 6px;font-size:18px;vertical-align:top">{icons[i["kind"]]}</td>'
-        f'<td style="padding:7px 12px 7px 4px;font-size:13.5px;line-height:1.4;color:#1e293b">'
+        f'<td width="30" align="center" style="padding:5px 0 5px 5px;font-size:16px;vertical-align:top">{icons[i["kind"]]}</td>'
+        f'<td style="padding:5px 10px 5px 3px;font-size:13px;line-height:1.35;color:#1e293b">'
         f'<span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;color:{KINDS[i["kind"]][1]}">{e(KINDS[i["kind"]][0]).upper()}</span><br>{e(i["text"])}</td>'
         f'</tr></table></td></tr>' for i in items)
-    table = (f'<div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin:12px 0 2px">TODAY AT A GLANCE</div>'
+    table = (f'<div style="font-weight:800;font-size:11px;letter-spacing:.08em;color:#7c3aed;margin:8px 0 1px">TODAY AT A GLANCE</div>'
              f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0">{cards}</table>') if items else ""
     chart = _bars("Update breakdown", [(KINDS[k][0], counts[k], KINDS[k][1]) for k in KINDS if k in counts])
     chart = chart.replace('<tr><td style="padding:14px 24px 0">', '<div>').replace("</td></tr>", "</div>") if chart else ""
     if chart_png and items:      # the 3D picture (attached by the sender as cid:chart3d) replaces the flat bars
-        chart = ('<img src="cid:chart3d" width="480" alt="Update breakdown" '
-                 'style="display:block;width:100%;max-width:480px;height:auto;border:0;border-radius:14px">')
+        chart = ('<img src="cid:chart3d" width="420" alt="Update breakdown" '
+                 'style="display:block;width:100%;max-width:420px;height:auto;border:0;border-radius:14px">')
     note_html = (f'<div style="background:#fdf2f8;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#9d174d;margin-top:10px">'
                  f'&#128140; <em>Note from {e(owner)}: {e(note)}</em></div>') if note else ""
     page = f"""<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:760px){{.col{{display:block!important;width:100%!important;box-sizing:border-box}}}}</style></head><body style="margin:0;background:#f5f3ff;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:12px 8px">
-<table role="presentation" width="100%" style="max-width:940px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 10px 36px rgba(109,40,217,.22)">
-<tr><td style="background:#6d28d9;background-image:linear-gradient(135deg,#4f46e5,#7c3aed 45%,#ec4899 80%,#f59e0b);padding:14px 24px 20px;color:#fff">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:6px 8px">
+<table role="presentation" width="100%" style="max-width:1000px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 10px 36px rgba(109,40,217,.22)">
+<tr><td style="background:#6d28d9;background-image:linear-gradient(135deg,#4f46e5,#7c3aed 45%,#ec4899 80%,#f59e0b);padding:8px 22px 10px;color:#fff">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td width="112" valign="middle" style="width:112px;line-height:0"><img src="cid:rocket" width="120" height="224" alt="&#128640;" style="display:block;border:0;font-size:44px;line-height:224px;text-align:center"></td>
-<td valign="middle" style="padding-left:10px">
-<div style="font-size:12px;letter-spacing:.24em;opacity:.9">J·A·R·V·I·S · TEAM UPDATE</div>
-<div style="font-size:26px;font-weight:800;margin-top:8px;line-height:1.2">{e(owner)}'s day, in a glance</div>
-<div style="font-size:14px;margin-top:6px;opacity:.95">{e(day.strftime('%A, %d %B %Y'))}</div></td></tr></table></td></tr>
-<tr><td style="padding:16px 24px 4px;color:#1e293b;font-size:15px;line-height:1.55">Dear {e(recipient)}, I am <b style="color:#7c3aed">JARVIS</b>, {e(owner)}'s Super Intelligence assistant. {e(owner)} asked me to share today's team update with you.</td></tr>
-<tr><td style="padding:6px 16px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td class="col" width="55%" valign="top" style="padding:6px 8px">
-<div style="background:#f5f3ff;border-radius:14px;border-left:5px solid #7c3aed;padding:12px 14px;font-size:14.5px;line-height:1.55;color:#312e81">
-<div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin-bottom:3px">SUMMARY</div>{e(summary)}</div>
+<td width="88" valign="middle" style="width:88px;line-height:0"><img src="cid:rocket" width="82" height="153" alt="&#128640;" style="display:block;border:0;font-size:36px;line-height:153px;text-align:center"></td>
+<td valign="middle" style="padding-left:8px">
+<div style="font-size:11px;letter-spacing:.24em;opacity:.9">J·A·R·V·I·S · TEAM UPDATE</div>
+<div style="font-size:23px;font-weight:800;margin-top:5px;line-height:1.2">{e(owner)}'s day, in a glance</div>
+<div style="font-size:13px;margin-top:4px;opacity:.95">{e(day.strftime('%A, %d %B %Y'))}</div></td></tr></table></td></tr>
+<tr><td style="padding:9px 22px 0;color:#1e293b;font-size:14px;line-height:1.5">Dear {e(recipient)}, I am <b style="color:#7c3aed">JARVIS</b>, {e(owner)}'s Super Intelligence assistant. {e(owner)} asked me to share today's team update with you.</td></tr>
+<tr><td style="padding:2px 14px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td class="col" width="55%" valign="top" style="padding:4px 8px">
+<div style="background:#f5f3ff;border-radius:12px;border-left:5px solid #7c3aed;padding:8px 12px;font-size:13.5px;line-height:1.45;color:#312e81">
+<div style="font-weight:800;font-size:11px;letter-spacing:.08em;color:#7c3aed;margin-bottom:2px">SUMMARY</div>{e(summary)}</div>
 {note_html}{table}</td>
-<td class="col" width="45%" valign="top" style="padding:6px 8px">{tiles_row}{chart}</td>
+<td class="col" width="45%" valign="top" style="padding:4px 8px">{tiles_row}{chart}</td>
 </tr></table></td></tr>
-<tr><td style="padding:12px 24px 10px;color:#334155;font-size:14px;line-height:1.55">{e(closing)} {closing_icon} &nbsp;Warm regards, <b style="color:#7c3aed">JARVIS</b> <span style="color:#64748b">· Super Intelligence assistant to {e(owner)}</span></td></tr>
-<tr><td style="background:#faf5ff;padding:10px 24px;color:#94a3b8;font-size:11px;text-align:center">Written from what {e(owner)} said on today's update call.</td></tr>
+<tr><td style="padding:6px 22px 6px;color:#334155;font-size:13px;line-height:1.5">{e(closing)} {closing_icon} &nbsp;Warm regards, <b style="color:#7c3aed">JARVIS</b> <span style="color:#64748b">· Super Intelligence assistant to {e(owner)}</span></td></tr>
+<tr><td style="background:#faf5ff;padding:5px 24px;color:#94a3b8;font-size:10px;text-align:center">Written from what {e(owner)} said on today's update call.</td></tr>
 </table></td></tr></table></body></html>"""
     return subject, "\n".join(plain), page
