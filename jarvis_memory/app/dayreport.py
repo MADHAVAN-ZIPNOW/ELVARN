@@ -94,7 +94,18 @@ def _bars(title: str, items: list[tuple[str, int, str]]) -> str:
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px">{rows}</table></td></tr>')
 
 
-def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient: str, day: date, note: str = "") -> tuple[str, str, str]:
+CLOSINGS = [
+    ("Thank you, and have a lovely evening!", "&#127775;"),
+    ("Thank you for your time, and have a wonderful evening!", "&#127769;"),
+    ("Many thanks, and wishing you a relaxing evening!", "&#10024;"),
+    ("Thank you, and enjoy the rest of your day!", "&#128522;"),
+    ("Thanks a lot, and have a great evening!", "&#127751;"),
+    ("Thank you, and have a peaceful evening!", "&#127807;"),
+    ("Thank you, and see you tomorrow!", "&#128640;"),
+]
+
+
+def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient: str, day: date, note: str = "", chart_png: bool = False) -> tuple[str, str, str]:
     """(subject, plain text, HTML) for one recipient: a summary, a table of the items, and a chart of how they break down."""
     e = html.escape
     subject = f"{owner}'s team update: {day:%a %d %b}"
@@ -105,7 +116,8 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
         plain.append("Status | Update")
         plain += [f"{KINDS[i['kind']][0]} | {i['text']}" for i in items]
         plain.append("")
-    plain += [f"Thank you, and have a lovely evening.", "", "Warm regards,", f"JARVIS", f"Super Intelligence assistant to {owner}", "", f"(Written from what {owner} said on today's update call.)"]
+    closing, closing_icon = CLOSINGS[day.toordinal() % len(CLOSINGS)]      # a different goodbye each day
+    plain += [closing, "", "Warm regards,", f"JARVIS", f"Super Intelligence assistant to {owner}", "", f"(Written from what {owner} said on today's update call.)"]
 
     icons = {"done": "&#9989;", "progress": "&#128640;", "next": "&#127919;", "blocked": "&#9888;&#65039;", "update": "&#128161;"}
     tints = {"done": "#ecfdf5", "progress": "#eef2ff", "next": "#fffbeb", "blocked": "#fef2f2", "update": "#f1f5f9"}
@@ -128,6 +140,9 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
     table = (f'<tr><td style="padding:16px 20px 0"><div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin-bottom:4px">'
              f'TODAY AT A GLANCE</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0">{cards}</table></td></tr>') if items else ""
     chart = _bars("Update breakdown", [(KINDS[k][0], counts[k], KINDS[k][1]) for k in KINDS if k in counts])
+    if chart_png and items:      # the 3D picture (attached by the sender as cid:chart3d) replaces the flat bars
+        chart = ('<tr><td style="padding:14px 20px 0"><img src="cid:chart3d" width="580" alt="Update breakdown" '
+                 'style="display:block;width:100%;max-width:580px;height:auto;border:0;border-radius:16px"></td></tr>')
     note_html = (f'<tr><td style="padding:14px 20px 0"><div style="background:#fdf2f8;border-radius:12px;padding:12px 14px;font-size:14px;color:#9d174d">'
                  f'&#128140; <em>Note from {e(owner)}: {e(note)}</em></div></td></tr>') if note else ""
     page = f"""<!doctype html><html><body style="margin:0;background:#f5f3ff;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif">
@@ -144,7 +159,7 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
 <tr><td style="padding:14px 20px 0"><div style="background:#f5f3ff;border-radius:14px;border-left:5px solid #7c3aed;padding:14px 16px;font-size:15px;line-height:1.6;color:#312e81">
 <div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin-bottom:4px">SUMMARY</div>{e(summary)}</div></td></tr>
 {note_html}{tiles_row}{table}{chart}
-<tr><td style="padding:22px 24px 8px;color:#334155;font-size:14px;line-height:1.6">Thank you, and have a lovely evening! &#127775;<br><br>Warm regards,<br><b style="color:#7c3aed">JARVIS</b><br><span style="color:#64748b">Super Intelligence assistant to {e(owner)}</span></td></tr>
+<tr><td style="padding:22px 24px 8px;color:#334155;font-size:14px;line-height:1.6">{e(closing)} {closing_icon}<br><br>Warm regards,<br><b style="color:#7c3aed">JARVIS</b><br><span style="color:#64748b">Super Intelligence assistant to {e(owner)}</span></td></tr>
 <tr><td style="background:#faf5ff;padding:14px 24px;color:#94a3b8;font-size:11px;text-align:center">Written from what {e(owner)} said on today's update call.</td></tr>
 </table></td></tr></table></body></html>"""
     return subject, "\n".join(plain), page

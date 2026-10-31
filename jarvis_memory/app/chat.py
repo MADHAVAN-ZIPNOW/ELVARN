@@ -536,13 +536,24 @@ class ChatService:
         summary, items = dayreport.compose_team(self.settings, texts)
         owner, note = self.settings.owner_name or "The owner", " ".join(str(a.get("note", "")).split())[:300]
         sent, failed = [], []
+        external = self.settings.smtp_mode == "external" and not self.settings.brevo_api_key
+        picture = None
+        if external:         # the scheduler attaches this 3D chart; any failure just means the flat bars are used
+            try:
+                from . import chart3d
+                kinds = [k for k in dayreport.KINDS if any(i["kind"] == k for i in items)]
+                done = sum(1 for i in items if i["kind"] == "done")
+                picture = chart3d.render([(dayreport.KINDS[k][0], sum(1 for i in items if i["kind"] == k), dayreport.KINDS[k][1]) for k in kinds],
+                                         round(100 * done / max(1, len(items))))
+            except Exception as exc:
+                log.info("3D chart failed (%s)", type(exc).__name__)
         for name, address in people:
-            subject, plain, page = dayreport.render_team(summary, items, owner, name, now.date(), note)
+            subject, plain, page = dayreport.render_team(summary, items, owner, name, now.date(), note, chart_png=picture is not None)
             try:
                 if self.settings.smtp_mode == "external" and not self.settings.brevo_api_key:
                     with self.svc.db() as conn:      # the scheduler sends it within minutes (the server's own SMTP is blocked)
-                        conn.execute("INSERT INTO mail_outbox (owner_id, to_addr, subject, body_text, body_html) VALUES (%s,%s,%s,%s,%s)",
-                                     (self.svc.owner_id, address, subject, plain, page))
+                        conn.execute("INSERT INTO mail_outbox (owner_id, to_addr, subject, body_text, body_html, chart_png) VALUES (%s,%s,%s,%s,%s,%s)",
+                                     (self.svc.owner_id, address, subject, plain, page, picture))
                 else:
                     self.mailbox.send(address, subject, plain, page)
                 sent.append(name)

@@ -314,7 +314,8 @@ def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datet
         result["review"] = {"error": type(exc).__name__}   # reminders are only marked "sent" when a phone actually accepted them
     with svc.db() as conn:      # queued by the team-update call; the scheduler sends them and confirms
         result["outbox"] = [dict(r) for r in conn.execute(
-            "SELECT id, to_addr AS \"to\", subject, body_text AS text, body_html AS html FROM mail_outbox "
+            "SELECT id, to_addr AS \"to\", subject, body_text AS text, body_html AS html, "
+            "replace(encode(chart_png, 'base64'), E'\\n', '') AS chart FROM mail_outbox "
             "WHERE owner_id = %s AND sent_at IS NULL ORDER BY id LIMIT 10", (svc.owner_id,)).fetchall()]
     ok = (not any(isinstance(v, dict) and v.get("error") for v in result.values())
           and result.get("email", {}).get("why") != "send_failed")

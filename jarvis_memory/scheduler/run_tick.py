@@ -6,6 +6,7 @@
 
 Secrets come from environment variables (GitHub Actions secrets). Nothing is printed except short status words.
 """
+import base64
 import json
 import os
 import smtplib
@@ -50,10 +51,13 @@ def send_mail(item):
     msg.set_content(item["text"])
     if item.get("html"):
         msg.add_alternative(item["html"], subtype="html")
+        html_part = msg.get_payload()[1]
         gif = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rocket.gif")
         if "cid:rocket" in item["html"] and os.path.exists(gif):      # the animated rocket in the team update, sent inside the e-mail
             with open(gif, "rb") as fh:
-                msg.get_payload()[1].add_related(fh.read(), "image", "gif", cid="<rocket>", disposition="inline")
+                html_part.add_related(fh.read(), "image", "gif", cid="<rocket>", disposition="inline")
+        if "cid:chart3d" in item["html"] and item.get("chart"):       # the 3D chart picture drawn by the server
+            html_part.add_related(base64.b64decode(item["chart"]), "image", "png", cid="<chart3d>", disposition="inline")
     last = None
     for _ in range(3):
         try:
