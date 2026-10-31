@@ -67,6 +67,8 @@ def main():
     if not wake_service():
         print("service did not wake up in time")
         return 1
+    if os.environ.get("RING_TEAM") == "true":      # started by hand: ring the team-update call again today
+        print("team call:", call("POST", "/api/jarvis/memory/team-call/ring").get("why", "rang"))
     result = call("POST", "/api/jarvis/memory/tick", timeout=120)
     email = result.get("email", {})
     print("replies:", result.get("replies"), "| email:", email.get("why") or ("sent" if email.get("sent") else "none"),

@@ -231,6 +231,19 @@ def make_router(guard) -> APIRouter:
 
         return ask_module.answer(svc, body.question)
 
+    @router.post("/team-call/ring")
+    def ring_team_call(request: Request, svc: MemoryService = Depends(service_of)):
+        """Ring the phone for the team update again today (the owner missed it or hung up before speaking)."""
+        from datetime import datetime, timezone
+        from zoneinfo import ZoneInfo
+
+        from . import jobs
+
+        with svc.db() as conn:
+            conn.execute("DELETE FROM job_log WHERE owner_id = %s AND job = 'team_call' AND detail = %s",
+                         (svc.owner_id, datetime.now(timezone.utc).astimezone(ZoneInfo(svc.get_settings()["timezone"])).date().isoformat()))
+        return jobs.send_team_call(svc, request.app.state.pusher, datetime.now(timezone.utc))
+
     @router.post("/tick")
     def tick(request: Request, svc: MemoryService = Depends(service_of)):
         """Called by the scheduler: read e-mail replies, send the hourly check-in if due, report reminders that are due."""
