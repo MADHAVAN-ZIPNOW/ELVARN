@@ -115,7 +115,7 @@ def test_email_has_summary_table_chart_and_escapes_html():
     subject, plain, page = dayreport.render_team("Madhavan finished two things.", items, "Madhavan", "Ravi", date(2026, 10, 29), "Talk tomorrow")
     assert subject == "Madhavan's team update: Thu 29 Oct" and plain.startswith("Dear Ravi,")
     assert "Done | Login <b>screen</b>" in plain and "from what Madhavan said on today's update call" in plain
-    assert "&lt;b&gt;screen" in page and "<b>screen</b>" not in page and "STATUS" in page and "UPDATE BREAKDOWN" in page and "Talk tomorrow" in page
+    assert "&lt;b&gt;screen" in page and "<b>screen</b>" not in page and "TODAY AT A GLANCE" in page and "UPDATE BREAKDOWN" in page and "Talk tomorrow" in page
 
 
 # ---------------------------------------------------------------------------------------------- the call

@@ -107,29 +107,41 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
         plain.append("")
     plain += [f"Thank you, and have a lovely evening.", "", "Warm regards,", f"JARVIS", f"Super Intelligence assistant to {owner}", "", f"(Written from what {owner} said on today's update call.)"]
 
-    cell = 'style="padding:7px 8px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#1e293b;vertical-align:top"'
-    table = ""
-    if items:
-        body = "".join(
-            f'<tr><td {cell} nowrap><span style="background:{KINDS[i["kind"]][1]};color:#fff;border-radius:9px;padding:2px 9px;font-size:11px;font-weight:700">'
-            f'{e(KINDS[i["kind"]][0])}</span></td><td {cell}>{e(i["text"])}</td></tr>' for i in items)
-        table = ('<tr><td style="padding:16px 24px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
-                 'style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden"><tr style="background:#eef2ff">'
-                 '<th align="left" style="padding:8px;font-size:12px;color:#4338ca">STATUS</th>'
-                 f'<th align="left" style="padding:8px;font-size:12px;color:#4338ca">UPDATE</th></tr>{body}</table></td></tr>')
+    icons = {"done": "&#9989;", "progress": "&#128640;", "next": "&#127919;", "blocked": "&#9888;&#65039;", "update": "&#128161;"}
+    tints = {"done": "#ecfdf5", "progress": "#eef2ff", "next": "#fffbeb", "blocked": "#fef2f2", "update": "#f1f5f9"}
     counts: dict[str, int] = {}
     for i in items:
         counts[i["kind"]] = counts.get(i["kind"], 0) + 1
+    tiles = "".join(
+        f'<td align="center" style="padding:4px"><div style="background:{KINDS[k][1]};border-radius:14px;padding:10px 4px;color:#fff">'
+        f'<div style="font-size:22px;font-weight:800;line-height:1">{counts[k]}</div>'
+        f'<div style="font-size:11px;letter-spacing:.04em;margin-top:3px;opacity:.95">{e(KINDS[k][0])}</div></div></td>' for k in KINDS if k in counts)
+    tiles_row = (f'<tr><td style="padding:16px 20px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>{tiles}</tr></table></td></tr>'
+                 if tiles else "")
+    cards = "".join(
+        f'<tr><td style="padding:5px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        f'style="background:{tints[i["kind"]]};border-radius:12px;border-left:5px solid {KINDS[i["kind"]][1]}"><tr>'
+        f'<td width="40" align="center" style="padding:10px 0 10px 8px;font-size:20px;vertical-align:top">{icons[i["kind"]]}</td>'
+        f'<td style="padding:10px 14px 10px 6px;font-size:14px;line-height:1.45;color:#1e293b">'
+        f'<span style="font-size:11px;font-weight:800;letter-spacing:.06em;color:{KINDS[i["kind"]][1]}">{e(KINDS[i["kind"]][0]).upper()}</span><br>{e(i["text"])}</td>'
+        f'</tr></table></td></tr>' for i in items)
+    table = (f'<tr><td style="padding:16px 20px 0"><div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin-bottom:4px">'
+             f'TODAY AT A GLANCE</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0">{cards}</table></td></tr>') if items else ""
     chart = _bars("Update breakdown", [(KINDS[k][0], counts[k], KINDS[k][1]) for k in KINDS if k in counts])
-    note_html = f'<tr><td style="padding:12px 24px 0;font-size:14px;color:#334155"><em>Note from {e(owner)}: {e(note)}</em></td></tr>' if note else ""
-    page = f"""<!doctype html><html><body style="margin:0;background:#eef2ff;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:20px 10px">
-<table role="presentation" width="100%" style="max-width:600px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(30,27,75,.2)">
-<tr><td style="background:#1e1b4b;background-image:linear-gradient(135deg,#1e1b4b,#6d28d9 60%,#db2777);padding:24px;color:#fff">
-<div style="font-size:12px;letter-spacing:.2em;opacity:.85">J·A·R·V·I·S · TEAM UPDATE</div>
-<div style="font-size:24px;font-weight:800;margin-top:6px">{e(owner)} · {e(day.strftime('%A, %d %B'))}</div></td></tr>
-<tr><td style="padding:20px 24px 0;color:#1e293b;font-size:16px;line-height:1.55">Dear {e(recipient)},<br><br>I am JARVIS, {e(owner)}'s Super Intelligence assistant. {e(owner)} asked me to share today's team update with you.<br><br>{e(summary)}</td></tr>
-{note_html}{table}{chart}
-<tr><td style="padding:18px 24px 22px;color:#64748b;font-size:12px;text-align:center">Thank you, and have a lovely evening.<br><br>Warm regards,<br><b>JARVIS</b> · Super Intelligence assistant to {e(owner)}<br><span style="font-size:11px">Written from what {e(owner)} said on today's update call.</span></td></tr>
+    note_html = (f'<tr><td style="padding:14px 20px 0"><div style="background:#fdf2f8;border-radius:12px;padding:12px 14px;font-size:14px;color:#9d174d">'
+                 f'&#128140; <em>Note from {e(owner)}: {e(note)}</em></div></td></tr>') if note else ""
+    page = f"""<!doctype html><html><body style="margin:0;background:#f5f3ff;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:22px 10px">
+<table role="presentation" width="100%" style="max-width:620px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 10px 36px rgba(109,40,217,.22)">
+<tr><td style="background:#6d28d9;background-image:linear-gradient(135deg,#4f46e5,#7c3aed 45%,#ec4899 80%,#f59e0b);padding:28px 24px;color:#fff">
+<div style="font-size:12px;letter-spacing:.24em;opacity:.9">&#10024; J·A·R·V·I·S · TEAM UPDATE</div>
+<div style="font-size:26px;font-weight:800;margin-top:8px;line-height:1.2">{e(owner)}'s day, in a glance</div>
+<div style="font-size:14px;margin-top:6px;opacity:.95">{e(day.strftime('%A, %d %B %Y'))}</div></td></tr>
+<tr><td style="padding:22px 24px 0;color:#1e293b;font-size:16px;line-height:1.6">Dear {e(recipient)},<br><br>I am <b style="color:#7c3aed">JARVIS</b>, {e(owner)}'s Super Intelligence assistant. {e(owner)} asked me to share today's team update with you.</td></tr>
+<tr><td style="padding:14px 20px 0"><div style="background:#f5f3ff;border-radius:14px;border-left:5px solid #7c3aed;padding:14px 16px;font-size:15px;line-height:1.6;color:#312e81">
+<div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin-bottom:4px">SUMMARY</div>{e(summary)}</div></td></tr>
+{note_html}{tiles_row}{table}{chart}
+<tr><td style="padding:22px 24px 8px;color:#334155;font-size:14px;line-height:1.6">Thank you, and have a lovely evening! &#127775;<br><br>Warm regards,<br><b style="color:#7c3aed">JARVIS</b><br><span style="color:#64748b">Super Intelligence assistant to {e(owner)}</span></td></tr>
+<tr><td style="background:#faf5ff;padding:14px 24px;color:#94a3b8;font-size:11px;text-align:center">Written from what {e(owner)} said on today's update call.</td></tr>
 </table></td></tr></table></body></html>"""
     return subject, "\n".join(plain), page
