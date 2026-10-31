@@ -98,14 +98,14 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
     """(subject, plain text, HTML) for one recipient: a summary, a table of the items, and a chart of how they break down."""
     e = html.escape
     subject = f"{owner}'s team update: {day:%a %d %b}"
-    plain = [f"Hi {recipient},", "", f"{owner}'s team update for {day:%A %d %B}", "", summary, ""]
+    plain = [f"Dear {recipient},", "", f"I am JARVIS, {owner}'s Super Intelligence assistant. {owner} asked me to share today's team update with you, {day:%A %d %B}.", "", summary, ""]
     if note:
         plain += [f"Note from {owner}: {note}", ""]
     if items:
         plain.append("Status | Update")
         plain += [f"{KINDS[i['kind']][0]} | {i['text']}" for i in items]
         plain.append("")
-    plain.append(f"Sent by JARVIS on behalf of {owner}, from what {owner} said on today's update call.")
+    plain += [f"Thank you, and have a lovely evening.", "", "Warm regards,", f"JARVIS", f"Super Intelligence assistant to {owner}", "", f"(Written from what {owner} said on today's update call.)"]
 
     cell = 'style="padding:7px 8px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#1e293b;vertical-align:top"'
     table = ""
@@ -128,8 +128,8 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
 <tr><td style="background:#1e1b4b;background-image:linear-gradient(135deg,#1e1b4b,#6d28d9 60%,#db2777);padding:24px;color:#fff">
 <div style="font-size:12px;letter-spacing:.2em;opacity:.85">J·A·R·V·I·S · TEAM UPDATE</div>
 <div style="font-size:24px;font-weight:800;margin-top:6px">{e(owner)} · {e(day.strftime('%A, %d %B'))}</div></td></tr>
-<tr><td style="padding:20px 24px 0;color:#1e293b;font-size:16px;line-height:1.55">Hi {e(recipient)},<br><br>{e(summary)}</td></tr>
+<tr><td style="padding:20px 24px 0;color:#1e293b;font-size:16px;line-height:1.55">Dear {e(recipient)},<br><br>I am JARVIS, {e(owner)}'s Super Intelligence assistant. {e(owner)} asked me to share today's team update with you.<br><br>{e(summary)}</td></tr>
 {note_html}{table}{chart}
-<tr><td style="padding:18px 24px 22px;color:#64748b;font-size:12px;text-align:center">Sent by JARVIS on behalf of {e(owner)}, from what {e(owner)} said on today's update call.</td></tr>
+<tr><td style="padding:18px 24px 22px;color:#64748b;font-size:12px;text-align:center">Thank you, and have a lovely evening.<br><br>Warm regards,<br><b>JARVIS</b> · Super Intelligence assistant to {e(owner)}<br><span style="font-size:11px">Written from what {e(owner)} said on today's update call.</span></td></tr>
 </table></td></tr></table></body></html>"""
     return subject, "\n".join(plain), page

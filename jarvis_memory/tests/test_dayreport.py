@@ -113,7 +113,7 @@ def test_the_ai_sorts_what_was_said_and_a_bad_answer_falls_back_to_the_plain_tex
 def test_email_has_summary_table_chart_and_escapes_html():
     items = [{"kind": "done", "text": "Login <b>screen</b>"}, {"kind": "progress", "text": "Payment page"}, {"kind": "done", "text": "Invoice sent"}]
     subject, plain, page = dayreport.render_team("Madhavan finished two things.", items, "Madhavan", "Ravi", date(2026, 10, 29), "Talk tomorrow")
-    assert subject == "Madhavan's team update: Thu 29 Oct" and plain.startswith("Hi Ravi,")
+    assert subject == "Madhavan's team update: Thu 29 Oct" and plain.startswith("Dear Ravi,")
     assert "Done | Login <b>screen</b>" in plain and "from what Madhavan said on today's update call" in plain
     assert "&lt;b&gt;screen" in page and "<b>screen</b>" not in page and "STATUS" in page and "UPDATE BREAKDOWN" in page and "Talk tomorrow" in page
 
@@ -159,7 +159,7 @@ def test_team_call_keeps_to_the_call_reads_back_and_sends_only_after_a_yes():
     out = chat.chat("yes, send it", sid, now=NOW)
     assert out["actions"][0]["tool"] == "send_team_update" and [m["to"] for m in box.sent] == ["ravi@example.com", "priya@example.com"]
     body = box.sent[0]["body"]
-    assert "Hi Ravi," in body and "I finished the login screen" in body and "release on Friday" in body
+    assert "Dear Ravi," in body and "Super Intelligence assistant" in body and "I finished the login screen" in body and "release on Friday" in body
     assert "yes, send it" not in body                                                # the confirmation is not part of the update
     assert db.sessions[sid].endswith("(sent)")
     assert "NOT SENT" not in out["actions"][0]["summary"]
