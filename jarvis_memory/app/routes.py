@@ -231,6 +231,31 @@ def make_router(guard) -> APIRouter:
 
         return ask_module.answer(svc, body.question)
 
+    @router.post("/team-update/test")
+    def team_update_test(request: Request, svc: MemoryService = Depends(service_of)):
+        """Queue ONE sample team-update e-mail to the owner's own address only (never the team) so the owner can see how it looks."""
+        from datetime import datetime, timezone
+        from zoneinfo import ZoneInfo
+
+        from . import chart3d, dayreport
+
+        s = svc.get_settings()
+        if not s["owner_email"]:
+            raise HTTPException(status_code=409, detail="no owner e-mail set")
+        items = [{"kind": "done", "text": "Finished the login screen"}, {"kind": "done", "text": "Fixed the payment bug"},
+                 {"kind": "progress", "text": "Working on the report page"}, {"kind": "next", "text": "Release on Friday"},
+                 {"kind": "blocked", "text": "Waiting for API access"}]
+        owner = s["owner_name"] or "The owner"
+        today = datetime.now(timezone.utc).astimezone(ZoneInfo(s["timezone"])).date()
+        picture = chart3d.render([(dayreport.KINDS[k][0], sum(1 for i in items if i["kind"] == k), dayreport.KINDS[k][1])
+                                  for k in dayreport.KINDS if any(i["kind"] == k for i in items)], 40)
+        subject, plain, page = dayreport.render_team(f"This is a TEST with sample items. {owner} finished two things and has three more on the list.",
+                                                     items, owner, owner, today, "", chart_png=True)
+        with svc.db() as conn:
+            conn.execute("INSERT INTO mail_outbox (owner_id, to_addr, subject, body_text, body_html, chart_png) VALUES (%s,%s,%s,%s,%s,%s)",
+                         (svc.owner_id, s["owner_email"], "TEST - " + subject, plain, page, picture))
+        return {"queued": True}
+
     @router.post("/team-call/ring")
     def ring_team_call(request: Request, svc: MemoryService = Depends(service_of)):
         """Ring the phone for the team update again today (the owner missed it or hung up before speaking)."""

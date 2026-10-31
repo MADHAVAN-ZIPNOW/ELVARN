@@ -6,7 +6,7 @@ import math
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-W, H, S = 600, 270, 3
+W, H, S = 480, 300, 3
 BG_TOP, BG_BOTTOM = (30, 27, 75), (76, 29, 149)
 FONTS = ("segoeuib.ttf", "arialbd.ttf", "DejaVuSans-Bold.ttf", "LiberationSans-Bold.ttf")
 
@@ -47,7 +47,7 @@ def render(parts: list[tuple[str, int, str]], pct: int) -> bytes:
     total = sum(p[1] for p in parts)
 
     # ---------------------------------------------------------------- the exploded 3D pie (left)
-    cx, cy, R, r, depth = 150.0, 118.0, 92.0, 46.0, 24
+    cx, cy, R, r, depth = 120.0, 156.0, 76.0, 38.0, 20
     shadow = Image.new("RGBA", img.size, (0, 0, 0, 0))
     ImageDraw.Draw(shadow).ellipse([(cx - R - 6) * S, (cy + depth - r + 10) * S, (cx + R + 14) * S, (cy + depth + r + 16) * S], fill=(0, 0, 0, 120))
     img = Image.alpha_composite(img, shadow.filter(ImageFilter.GaussianBlur(9 * S)))
@@ -92,13 +92,13 @@ def render(parts: list[tuple[str, int, str]], pct: int) -> bytes:
         ImageDraw.Draw(gl).polygon(gloss, fill=(255, 255, 255, 36))
         img = Image.alpha_composite(img, gl)
         d = ImageDraw.Draw(img)
-    _text(d, (cx, cy - r - 26), f"{pct}% DONE", 15, (255, 255, 255))
+    _text(d, (cx, cy - r - 34), f"{pct}% DONE", 20, (255, 255, 255))
 
     # ---------------------------------------------------------------- the 3D columns (right)
-    left, right, floor, top_y = 318.0, 580.0, 218.0, 58.0
+    left, right, floor, top_y = 244.0, 468.0, 262.0, 62.0
     slot = (right - left) / max(1, len(parts))
-    bw = min(46.0, slot * 0.58)
-    dx, dy = 13.0, -8.0                                      # the depth offset: the columns are seen from the corner
+    bw = min(38.0, slot * 0.6)
+    dx, dy = 11.0, -7.0                                      # the depth offset: the columns are seen from the corner
     peak = max(p[1] for p in parts)
     sh = Image.new("RGBA", img.size, (0, 0, 0, 0))
     ImageDraw.Draw(sh).rectangle([left * S, (floor - 2) * S, right * S, (floor + 10) * S], fill=(0, 0, 0, 90))
@@ -116,8 +116,8 @@ def render(parts: list[tuple[str, int, str]], pct: int) -> bytes:
             d.line([(x0 * S, (y0 * S) + k), ((x0 + bw) * S, (y0 * S) + k)], fill=_shade(rgb, 1.18 - 0.38 * t))
         d.polygon([(x0 * S, y0 * S), ((x0 + dx) * S, (y0 + dy) * S), ((x0 + bw + dx) * S, (y0 + dy) * S), ((x0 + bw) * S, y0 * S)], fill=_shade(rgb, 1.38))               # top
         d.line([(x0 * S, y0 * S), ((x0 + bw) * S, y0 * S)], fill=(255, 255, 255, 120), width=S)
-        _text(d, (x0 + bw / 2 + dx / 2, y0 + dy - 11), str(n), 17, (255, 255, 255))
-        _text(d, (x0 + bw / 2 + dx / 2, floor + 17), label.upper(), 9, (214, 205, 255))
+        _text(d, (x0 + bw / 2 + dx / 2, y0 + dy - 11), str(n), 24, (255, 255, 255))
+        _text(d, (x0 + bw / 2 + dx / 2, floor + 20), label, 12, (225, 218, 255))
     return _png(img)
 
 
