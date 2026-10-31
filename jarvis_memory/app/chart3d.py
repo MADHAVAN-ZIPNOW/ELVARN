@@ -3,21 +3,20 @@ from __future__ import annotations
 
 import io
 import math
+from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H, S = 480, 300, 3
 BG_TOP, BG_BOTTOM = (30, 27, 75), (76, 29, 149)
-FONTS = ("segoeuib.ttf", "arialbd.ttf", "DejaVuSans-Bold.ttf", "LiberationSans-Bold.ttf")
+FONT_FILE = Path(__file__).resolve().parent / "fonts" / "DejaVuSans-Bold.ttf"      # shipped with the app: the server has no fonts of its own
 
 
 def _font(size: int) -> ImageFont.ImageFont:
-    for name in FONTS:
-        try:
-            return ImageFont.truetype(name, size * S)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+    try:
+        return ImageFont.truetype(str(FONT_FILE), size * S)
+    except OSError:
+        return ImageFont.load_default(size=size * S)      # still scalable, never a tiny bitmap font
 
 
 def _hex(c: str) -> tuple[int, int, int]:
@@ -92,7 +91,7 @@ def render(parts: list[tuple[str, int, str]], pct: int) -> bytes:
         ImageDraw.Draw(gl).polygon(gloss, fill=(255, 255, 255, 36))
         img = Image.alpha_composite(img, gl)
         d = ImageDraw.Draw(img)
-    _text(d, (cx, cy - r - 34), f"{pct}% DONE", 20, (255, 255, 255))
+    _text(d, (cx, cy - r - 34), f"{pct}% DONE", 18, (255, 255, 255))
 
     # ---------------------------------------------------------------- the 3D columns (right)
     left, right, floor, top_y = 244.0, 468.0, 262.0, 62.0
@@ -116,8 +115,8 @@ def render(parts: list[tuple[str, int, str]], pct: int) -> bytes:
             d.line([(x0 * S, (y0 * S) + k), ((x0 + bw) * S, (y0 * S) + k)], fill=_shade(rgb, 1.18 - 0.38 * t))
         d.polygon([(x0 * S, y0 * S), ((x0 + dx) * S, (y0 + dy) * S), ((x0 + bw + dx) * S, (y0 + dy) * S), ((x0 + bw) * S, y0 * S)], fill=_shade(rgb, 1.38))               # top
         d.line([(x0 * S, y0 * S), ((x0 + bw) * S, y0 * S)], fill=(255, 255, 255, 120), width=S)
-        _text(d, (x0 + bw / 2 + dx / 2, y0 + dy - 11), str(n), 24, (255, 255, 255))
-        _text(d, (x0 + bw / 2 + dx / 2, floor + 20), label, 12, (225, 218, 255))
+        _text(d, (x0 + bw / 2 + dx / 2, y0 + dy - 11), str(n), 22, (255, 255, 255))
+        _text(d, (x0 + bw / 2 + dx / 2, floor + 20), label, 10, (225, 218, 255))
     return _png(img)
 
 
