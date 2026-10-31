@@ -50,6 +50,10 @@ def send_mail(item):
     msg.set_content(item["text"])
     if item.get("html"):
         msg.add_alternative(item["html"], subtype="html")
+        gif = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rocket.gif")
+        if "cid:rocket" in item["html"] and os.path.exists(gif):      # the animated rocket in the team update, sent inside the e-mail
+            with open(gif, "rb") as fh:
+                msg.get_payload()[1].add_related(fh.read(), "image", "gif", cid="<rocket>", disposition="inline")
     last = None
     for _ in range(3):
         try:

@@ -133,10 +133,13 @@ def render_team(summary: str, items: list[dict[str, str]], owner: str, recipient
     page = f"""<!doctype html><html><body style="margin:0;background:#f5f3ff;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:22px 10px">
 <table role="presentation" width="100%" style="max-width:620px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 10px 36px rgba(109,40,217,.22)">
-<tr><td style="background:#6d28d9;background-image:linear-gradient(135deg,#4f46e5,#7c3aed 45%,#ec4899 80%,#f59e0b);padding:28px 24px;color:#fff">
-<div style="font-size:12px;letter-spacing:.24em;opacity:.9">&#10024; J·A·R·V·I·S · TEAM UPDATE</div>
+<tr><td style="background:#6d28d9;background-image:linear-gradient(135deg,#4f46e5,#7c3aed 45%,#ec4899 80%,#f59e0b);padding:14px 24px 20px;color:#fff">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td width="112" valign="middle" style="width:112px;line-height:0"><img src="cid:rocket" width="120" height="224" alt="&#128640;" style="display:block;border:0;font-size:44px;line-height:224px;text-align:center"></td>
+<td valign="middle" style="padding-left:10px">
+<div style="font-size:12px;letter-spacing:.24em;opacity:.9">J·A·R·V·I·S · TEAM UPDATE</div>
 <div style="font-size:26px;font-weight:800;margin-top:8px;line-height:1.2">{e(owner)}'s day, in a glance</div>
-<div style="font-size:14px;margin-top:6px;opacity:.95">{e(day.strftime('%A, %d %B %Y'))}</div></td></tr>
+<div style="font-size:14px;margin-top:6px;opacity:.95">{e(day.strftime('%A, %d %B %Y'))}</div></td></tr></table></td></tr>
 <tr><td style="padding:22px 24px 0;color:#1e293b;font-size:16px;line-height:1.6">Dear {e(recipient)},<br><br>I am <b style="color:#7c3aed">JARVIS</b>, {e(owner)}'s Super Intelligence assistant. {e(owner)} asked me to share today's team update with you.</td></tr>
 <tr><td style="padding:14px 20px 0"><div style="background:#f5f3ff;border-radius:14px;border-left:5px solid #7c3aed;padding:14px 16px;font-size:15px;line-height:1.6;color:#312e81">
 <div style="font-weight:800;font-size:12px;letter-spacing:.08em;color:#7c3aed;margin-bottom:4px">SUMMARY</div>{e(summary)}</div></td></tr>
