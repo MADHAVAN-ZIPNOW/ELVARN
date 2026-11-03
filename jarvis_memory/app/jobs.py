@@ -173,15 +173,24 @@ def send_pushes(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     return out
 
 
-def _team_call_done(svc: MemoryService, day) -> bool:
+def _team_call_done(svc: MemoryService, slot: str) -> bool:
+    """Has the phone already been rung for this slot ("2026-10-29 18:00")?"""
     with svc.db() as conn:
         return conn.execute("SELECT 1 FROM job_log WHERE owner_id = %s AND job = 'team_call' AND detail = %s LIMIT 1",
-                            (svc.owner_id, day.isoformat())).fetchone() is not None
+                            (svc.owner_id, slot)).fetchone() is not None
+
+
+def _team_update_sent(svc: MemoryService, day) -> bool:
+    """Was today's team update already e-mailed? (its chat session is renamed "Team update <date> (sent)")"""
+    with svc.db() as conn:
+        return conn.execute("SELECT 1 FROM chat_sessions WHERE owner_id = %s AND title LIKE %s LIMIT 1",
+                            (svc.owner_id, f"Team update {day:%d %b}%(sent)")).fetchone() is not None
 
 
 def send_team_call(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
-    """Once a day, from JM_TEAM_CALL_TIME on: ring the phone for the team update. The call's answers go only to the team e-mail
-    (see ChatService), never into the owner's personal memories. Retried every tick until a phone accepts it, then not again that day."""
+    """Ring the phone for the team update at each of JM_TEAM_CALL_TIME's times (default 18:00, 19:00, 21:00), each time once, and stop for
+    the day as soon as the update has been sent. The call's answers go only to the team e-mail (see ChatService), never into the
+    owner's personal memories. A slot is retried every tick until a phone accepts it; only the latest slot that has passed rings."""
     if not dayreport.parse_contacts(svc.settings.email_contacts):
         return {"why": "no_team_contacts"}
     if pusher is None or not svc.device_tokens():
@@ -190,16 +199,18 @@ def send_team_call(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     if not s["push_enabled"]:
         return {"why": "push_disabled"}
     local = now.astimezone(ZoneInfo(s["timezone"]))
-    if (local.hour, local.minute) < dayreport.parse_clock(svc.settings.team_call_time):
+    passed = [t for t in dayreport.parse_clocks(svc.settings.team_call_time) if t <= (local.hour, local.minute)]
+    if not passed:
         return {"why": "not_yet"}
     if in_quiet_hours(local.hour, s["quiet_start_hour"], s["quiet_end_hour"]):
         return {"why": "quiet_hours"}
-    if _team_call_done(svc, local.date()):
+    slot = f"{local.date().isoformat()} {passed[-1][0]:02d}:{passed[-1][1]:02d}"
+    if _team_call_done(svc, slot) or _team_update_sent(svc, local.date()):
         return {"why": "done_today"}
     line = f"{s['owner_name']}, it is time for your team update. What did you get done today?"
     if _push_all(svc, pusher, {"type": "team", "line": line, "title": "Team update", "emoji": "📋"}):
         svc.record_push(now, call=True)         # also counts as the hourly call, so the two never ring back to back
-        _log(svc, "team_call", True, local.date().isoformat())
+        _log(svc, "team_call", True, slot)
         return {"sent": True}
     return {"why": "push_failed"}
 

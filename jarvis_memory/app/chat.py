@@ -87,6 +87,8 @@ You cannot join or hear a meeting yourself, and you cannot read Teams chats. If 
 in one or two sentences and use search_memory to look for "Meeting:" notes; never say you have no meeting ability at all."""
 
 TEAM_RE = re.compile(r"\byour team update\b", re.I)    # the opening line of the daily team-update call ("...it is time for your team update...")
+TEAM_ASK = re.compile(r"^\W*(?:(?:hey|hi|hello|ok|okay)\W+)?(?:jarvis\W+)?(?:please\W+)?(?:(?:start|begin|do|take|call|give)\W+)?(?:(?:me|my|the|a)\W+)*"
+                      r"team[- ]?updates?(?:\W+(?:please|now|call))*\W*$", re.I)   # the owner asking for it: "hey team update", "Jarvis, start my team update"
 TEAM_PREFIX = "Team update"
 TEAM_TOOLS = {"answer", "send_team_update"}
 TEAM_SYSTEM = """You are JARVIS on {owner}'s daily TEAM UPDATE phone call. Now: {now}. The update goes by e-mail to {names}. Everything is spoken aloud,
@@ -349,6 +351,12 @@ class ChatService:
         tz = ZoneInfo(self.settings.timezone)
         now = (now or datetime.now(tz)).astimezone(tz)
         team = bool(context and TEAM_RE.search(context))     # the daily team-update call: its own mode, kept apart from personal memories
+        if not team and TEAM_ASK.match(message):
+            # "Hey Jarvis, team update": the owner asks for the update call themselves (a missed call, or any time of day) -> a fresh team session
+            sid = self._sid = self._ensure_session(None, message, f"{TEAM_PREFIX} {now:%d %b}")
+            reply = f"{self.settings.owner_name or 'Okay'}, let's do your team update. What did you get done today?"
+            self._save(sid, "assistant", reply)
+            return {"session_id": sid, "reply": reply, "actions": []}
         sid = self._sid = self._ensure_session(session_id, message, f"{TEAM_PREFIX} {now:%d %b}" if team else None)
         team = team or self._is_team_session(sid)
         history = self._history(sid)

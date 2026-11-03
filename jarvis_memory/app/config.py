@@ -40,7 +40,7 @@ class Settings:
     brevo_api_key: str = ""            # optional: free Brevo key (HTTPS) so the server e-mails at the exact minute, even though Render blocks SMTP
     smtp_mode: str = "direct"          # "external": the scheduler sends the e-mail (Render free blocks outgoing SMTP)
     email_contacts: str = ""           # the team that gets the daily team update: "Name:address, Name:address" (JM_EMAIL_CONTACTS). Empty = no team call
-    team_call_time: str = "18:00"      # when JARVIS calls for the team update, local time (JM_TEAM_CALL_TIME)
+    team_call_time: str = "18:00,19:00,21:00"   # when JARVIS calls for the team update, local time, comma separated (JM_TEAM_CALL_TIME)
     firebase_service_account_json: str = ""   # Firebase service-account key (Render env var only) used to ring the phone
     llm_model: str = "qwen/qwen3.8-27b"
     llm_base_url: str = "https://api.groq.com/openai/v1"
@@ -76,7 +76,7 @@ def get_settings() -> Settings:
         smtp_mode=_env("JM_SMTP_MODE", "direct").lower(),
         brevo_api_key=_env("BREVO_API_KEY"),
         email_contacts=_env("JM_EMAIL_CONTACTS"),
-        team_call_time=_env("JM_TEAM_CALL_TIME", "18:00"),
+        team_call_time=_env("JM_TEAM_CALL_TIME", "18:00,19:00,21:00"),
         gemini_api_key=_env("GEMINI_API_KEY"),
         gemini_base_url=_env("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai"),
         gemini_model=_env("GEMINI_MODEL", "gemini-flash-lite-latest"),

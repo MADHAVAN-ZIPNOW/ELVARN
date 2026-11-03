@@ -38,6 +38,12 @@ def parse_contacts(raw: str) -> dict[str, tuple[str, str]]:
     return out
 
 
+def parse_clocks(text: str) -> list[tuple[int, int]]:
+    """"18:00, 19:00,21:00" -> [(18, 0), (19, 0), (21, 0)], in time order; unusable parts are dropped, nothing usable gives [(18, 0)]."""
+    found = {parse_clock(p, (-1, -1)) for p in (text or "").split(",")} - {(-1, -1)}
+    return sorted(found) or [(18, 0)]
+
+
 def parse_clock(text: str, default: tuple[int, int] = (18, 0)) -> tuple[int, int]:
     """"18:00" -> (18, 0); anything unusable gives the default."""
     m = re.fullmatch(r"\s*(\d{1,2}):(\d{2})\s*", text or "")

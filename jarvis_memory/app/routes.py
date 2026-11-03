@@ -265,8 +265,8 @@ def make_router(guard) -> APIRouter:
         from . import jobs
 
         with svc.db() as conn:
-            conn.execute("DELETE FROM job_log WHERE owner_id = %s AND job = 'team_call' AND detail = %s",
-                         (svc.owner_id, datetime.now(timezone.utc).astimezone(ZoneInfo(svc.get_settings()["timezone"])).date().isoformat()))
+            conn.execute("DELETE FROM job_log WHERE owner_id = %s AND job = 'team_call' AND detail LIKE %s",
+                         (svc.owner_id, datetime.now(timezone.utc).astimezone(ZoneInfo(svc.get_settings()["timezone"])).date().isoformat() + " %"))
         return jobs.send_team_call(svc, request.app.state.pusher, datetime.now(timezone.utc))
 
     @router.post("/tick")

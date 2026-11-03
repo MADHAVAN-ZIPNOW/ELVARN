@@ -119,29 +119,55 @@ def test_email_has_summary_table_chart_and_escapes_html():
 
 
 # ---------------------------------------------------------------------------------------------- the call
-def test_the_call_is_made_once_a_day_after_the_chosen_time(monkeypatch):
-    pushed, logged = [], []
+def test_the_call_rings_at_each_chosen_time_once_and_stops_when_the_update_is_sent(monkeypatch):
+    pushed, logged, sent = [], [], []
 
     class Pusher:
         def send(self, token, data):
             pushed.append(data)
             return "ok"
 
-    svc = SimpleNamespace(settings=Settings(email_contacts=CONTACTS, team_call_time="18:00"), device_tokens=lambda: ["t1"],
+    svc = SimpleNamespace(settings=Settings(email_contacts=CONTACTS, team_call_time="18:00,19:00,21:00"), device_tokens=lambda: ["t1"],
                           get_settings=lambda: {"push_enabled": True, "timezone": "Asia/Kolkata", "quiet_start_hour": 22, "quiet_end_hour": 3, "owner_name": "Madhavan"},
                           record_push=lambda now, call=False: 1, forget_device=lambda t: None)
-    monkeypatch.setattr(jobs, "_team_call_done", lambda s, day: bool(logged))
+    monkeypatch.setattr(jobs, "_team_call_done", lambda s, slot: slot in [d for _, d in logged])
+    monkeypatch.setattr(jobs, "_team_update_sent", lambda s, day: bool(sent))
     monkeypatch.setattr(jobs, "_log", lambda s, job, ok, detail: logged.append((job, detail)))
     at = lambda h, m: datetime(2026, 10, 29, h, m, tzinfo=IST)
-    assert jobs.send_team_call(svc, Pusher(), at(17, 59))["why"] == "not_yet" and pushed == []
-    assert jobs.send_team_call(svc, Pusher(), at(18, 0)) == {"sent": True}
+    ring = lambda h, m: jobs.send_team_call(svc, Pusher(), at(h, m))
+    assert ring(17, 59)["why"] == "not_yet" and pushed == []
+    assert ring(18, 0) == {"sent": True}
     assert pushed[0]["type"] == "team" and "your team update" in pushed[0]["line"]
-    assert logged == [("team_call", "2026-10-29")]
-    assert jobs.send_team_call(svc, Pusher(), at(18, 30))["why"] == "done_today" and len(pushed) == 1
+    assert logged == [("team_call", "2026-10-29 18:00")]
+    assert ring(18, 30)["why"] == "done_today" and len(pushed) == 1       # one ring per slot
+    assert ring(19, 0) == {"sent": True} and ring(19, 15)["why"] == "done_today"   # not answered: the 7 PM slot rings again
+    assert ring(21, 0) == {"sent": True} and len(pushed) == 3
+    assert ring(21, 45)["why"] == "done_today" and len(pushed) == 3        # three missed calls, then nothing more that day
     logged.clear()
-    assert jobs.send_team_call(svc, Pusher(), at(22, 30))["why"] == "quiet_hours"
+    sent.append(1)
+    assert ring(19, 0)["why"] == "done_today"                             # the update went out: no more calls today
+    sent.clear()
+    assert ring(22, 30)["why"] == "quiet_hours"
     off = SimpleNamespace(**{**svc.__dict__, "settings": Settings(email_contacts="")})
     assert jobs.send_team_call(off, Pusher(), at(18, 0))["why"] == "no_team_contacts"        # no team set up: no call
+
+
+def test_clock_lists_are_sorted_and_bad_parts_dropped():
+    assert dayreport.parse_clocks("21:00, 18:00 ,x,19:00,18:00") == [(18, 0), (19, 0), (21, 0)]
+    assert dayreport.parse_clocks("nonsense") == [(18, 0)]
+
+
+def test_saying_team_update_starts_the_team_call_by_itself():
+    box = FakeMailbox()
+    chat, script, db = make_chat(say("Nice. What is next?"), mailbox=box)
+    out = chat.chat("hey team update", None, now=NOW, client="phone")
+    sid = out["session_id"]
+    assert db.sessions[sid] == "Team update 29 Oct" and "team update" in out["reply"] and script.seen == []   # no AI call: JARVIS just opens
+    chat.chat("I finished the login screen", sid, now=NOW)                    # the next turn is the team conversation
+    assert "TEAM UPDATE" in script.seen[0][0]["content"]
+    ordinary, _, db2 = make_chat(say("Okay."))
+    ordinary.chat("what did my team update say last week and who read it please thanks", None, now=NOW)   # long sentences are not the command
+    assert not any(t.startswith("Team update") for t in db2.sessions.values())
 
 
 # ---------------------------------------------------------------------------------------------- the conversation
