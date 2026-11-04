@@ -127,7 +127,7 @@ def test_the_call_rings_at_each_chosen_time_once_and_stops_when_the_update_is_se
             pushed.append(data)
             return "ok"
 
-    svc = SimpleNamespace(settings=Settings(email_contacts=CONTACTS, team_call_time="18:00,19:00,21:00"), device_tokens=lambda: ["t1"],
+    svc = SimpleNamespace(settings=Settings(email_contacts=CONTACTS, team_call_time="18:00,19:00,20:00,21:00,22:00"), device_tokens=lambda: ["t1"],
                           get_settings=lambda: {"push_enabled": True, "timezone": "Asia/Kolkata", "quiet_start_hour": 22, "quiet_end_hour": 3, "owner_name": "Madhavan"},
                           record_push=lambda now, call=False: 1, forget_device=lambda t: None)
     monkeypatch.setattr(jobs, "_team_call_done", lambda s, slot: slot in [d for _, d in logged])
@@ -141,13 +141,14 @@ def test_the_call_rings_at_each_chosen_time_once_and_stops_when_the_update_is_se
     assert logged == [("team_call", "2026-10-29 18:00")]
     assert ring(18, 30)["why"] == "done_today" and len(pushed) == 1       # one ring per slot
     assert ring(19, 0) == {"sent": True} and ring(19, 15)["why"] == "done_today"   # not answered: the 7 PM slot rings again
-    assert ring(21, 0) == {"sent": True} and len(pushed) == 3
-    assert ring(21, 45)["why"] == "done_today" and len(pushed) == 3        # three missed calls, then nothing more that day
+    assert ring(20, 0) == {"sent": True} and ring(21, 0) == {"sent": True}
+    assert ring(22, 0) == {"sent": True} and len(pushed) == 5               # the 10 PM call rings even though quiet hours start at 22:00
+    assert ring(22, 45)["why"] == "done_today" and len(pushed) == 5        # five missed calls, then nothing more that day
     logged.clear()
     sent.append(1)
     assert ring(19, 0)["why"] == "done_today"                             # the update went out: no more calls today
     sent.clear()
-    assert ring(22, 30)["why"] == "quiet_hours"
+    assert ring(23, 40)["why"] == "slot_missed" and len(pushed) == 5       # a slot nothing could ring for 90 minutes is dropped, not rung at midnight
     off = SimpleNamespace(**{**svc.__dict__, "settings": Settings(email_contacts="")})
     assert jobs.send_team_call(off, Pusher(), at(18, 0))["why"] == "no_team_contacts"        # no team set up: no call
 

@@ -20,6 +20,7 @@ from .service import CapacityError, MemoryService
 log = logging.getLogger("jarvis_memory.jobs")
 _NO_AI = Settings()  # no API key: build_checkin() falls back to the built-in wording
 SEND_ATTEMPTS = 2
+TEAM_CALL_WINDOW_MIN = 90
 LOG_KEEP = 200
 
 
@@ -188,7 +189,7 @@ def _team_update_sent(svc: MemoryService, day) -> bool:
 
 
 def send_team_call(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
-    """Ring the phone for the team update at each of JM_TEAM_CALL_TIME's times (default 18:00, 19:00, 21:00), each time once, and stop for
+    """Ring the phone for the team update at each of JM_TEAM_CALL_TIME's times (default 18:00 to 22:00, hourly), each time once, and stop for
     the day as soon as the update has been sent. The call's answers go only to the team e-mail (see ChatService), never into the
     owner's personal memories. A slot is retried every tick until a phone accepts it; only the latest slot that has passed rings."""
     if not dayreport.parse_contacts(svc.settings.email_contacts):
@@ -202,8 +203,9 @@ def send_team_call(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     passed = [t for t in dayreport.parse_clocks(svc.settings.team_call_time) if t <= (local.hour, local.minute)]
     if not passed:
         return {"why": "not_yet"}
-    if in_quiet_hours(local.hour, s["quiet_start_hour"], s["quiet_end_hour"]):
-        return {"why": "quiet_hours"}
+    last = local.replace(hour=passed[-1][0], minute=passed[-1][1], second=0, microsecond=0)
+    if local - last > timedelta(minutes=TEAM_CALL_WINDOW_MIN):         # the owner chose these times themselves, so quiet hours do not apply; a slot
+        return {"why": "slot_missed"}                                   # that nothing could ring for 90 minutes is dropped, never rung late at night
     slot = f"{local.date().isoformat()} {passed[-1][0]:02d}:{passed[-1][1]:02d}"
     if _team_call_done(svc, slot) or _team_update_sent(svc, local.date()):
         return {"why": "done_today"}
