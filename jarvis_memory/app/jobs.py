@@ -6,6 +6,7 @@ duplicate or late call never sends two e-mails or stores a reply twice.
 from __future__ import annotations
 
 import logging
+import threading
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -22,6 +23,7 @@ _NO_AI = Settings()  # no API key: build_checkin() falls back to the built-in wo
 SEND_ATTEMPTS = 2
 TEAM_CALL_WINDOW_MIN = 90
 LOG_KEEP = 200
+_TICK_LOCK = threading.Lock()
 
 
 def in_quiet_hours(hour: int, start: int, end: int) -> bool:
@@ -296,6 +298,11 @@ def send_review(svc: MemoryService, pusher, mailbox: Optional[Mailbox], now: dat
 
 
 def run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datetime] = None, pusher=None) -> dict[str, Any]:
+    with _TICK_LOCK:     # ticks come from the service itself, the owner's PC and outside timers: one at a time, so a call never rings twice
+        return _run_tick(svc, mailbox, now, pusher)
+
+
+def _run_tick(svc: MemoryService, mailbox: Optional[Mailbox], now: Optional[datetime] = None, pusher=None) -> dict[str, Any]:
     now = now or datetime.now(timezone.utc)
     result: dict[str, Any] = {}
     s = svc.get_settings()

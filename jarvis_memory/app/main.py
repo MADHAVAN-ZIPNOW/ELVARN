@@ -1,6 +1,7 @@
 """Jarvis Memory service entry point: ``uvicorn app.main:app`` (run from the jarvis_memory folder)."""
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -13,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import Settings, get_settings
 from .db import connect, run_migrations
-from . import fcm, mailer
+from . import fcm, mailer, selftick
 from .extraction import Extractor
 from .routes import install_error_handlers, make_router
 from .security import Guard
@@ -37,7 +38,12 @@ def create_app(settings: Optional[Settings] = None, extractor: Optional[Extracto
                     log.info("Applied migrations: %s", applied)
             except Exception as exc:  # the API still starts and reports the problem on /health
                 log.error("Migrations failed: %s", type(exc).__name__)
+        ticker = None
+        if settings.self_tick and settings.database_url:
+            ticker = asyncio.create_task(selftick.run(_app))
         yield
+        if ticker:
+            ticker.cancel()
 
     app = FastAPI(title="Jarvis Memory", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.state.settings = settings

@@ -38,6 +38,7 @@ class Settings:
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
     gemini_model: str = "gemini-flash-lite-latest"
     brevo_api_key: str = ""            # optional: free Brevo key (HTTPS) so the server e-mails at the exact minute, even though Render blocks SMTP
+    self_tick: bool = True             # the service runs its own schedule every 5 minutes while awake (JM_SELF_TICK=0 turns it off)
     public_url: str = ""               # this service's own address, for the pictures in e-mails (JM_PUBLIC_URL, else Render's RENDER_EXTERNAL_URL)
     smtp_mode: str = "direct"          # "external": the scheduler sends the e-mail (Render free blocks outgoing SMTP)
     email_contacts: str = ""           # the team that gets the daily team update: "Name:address, Name:address" (JM_EMAIL_CONTACTS). Empty = no team call
@@ -77,6 +78,7 @@ def get_settings() -> Settings:
         smtp_mode=_env("JM_SMTP_MODE", "direct").lower(),
         brevo_api_key=_env("BREVO_API_KEY"),
         public_url=_env("JM_PUBLIC_URL") or _env("RENDER_EXTERNAL_URL"),
+        self_tick=_env("JM_SELF_TICK", "1") != "0",
         email_contacts=_env("JM_EMAIL_CONTACTS"),
         team_call_time=_env("JM_TEAM_CALL_TIME", "18:00,19:00,20:00,21:00,22:00"),
         gemini_api_key=_env("GEMINI_API_KEY"),
