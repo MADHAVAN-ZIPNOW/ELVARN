@@ -63,6 +63,9 @@ def create_app(settings: Optional[Settings] = None, extractor: Optional[Extracto
 
     install_error_handlers(app)
     app.include_router(make_router(Guard(settings, settings.rate_limit_per_minute)))
+    from . import mailimages
+
+    app.include_router(mailimages.make_router())      # the team-update e-mail's rocket and 3D chart (public, unguessable links)
 
     @app.get("/api/jarvis/health")
     def health():

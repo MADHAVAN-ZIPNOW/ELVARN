@@ -549,18 +549,25 @@ class ChatService:
         owner, note = self.settings.owner_name or "The owner", " ".join(str(a.get("note", "")).split())[:300]
         sent, failed = [], []
         external = self.settings.smtp_mode == "external" and not self.settings.brevo_api_key
-        picture = None
-        if external:         # the scheduler attaches this 3D chart; any failure just means the flat bars are used
-            try:
-                from . import chart3d
-                kinds = [k for k in dayreport.KINDS if any(i["kind"] == k for i in items)]
-                done = sum(1 for i in items if i["kind"] == "done")
-                picture = chart3d.render([(dayreport.KINDS[k][0], sum(1 for i in items if i["kind"] == k), dayreport.KINDS[k][1]) for k in kinds],
-                                         round(100 * done / max(1, len(items))))
-            except Exception as exc:
-                log.info("3D chart failed (%s)", type(exc).__name__)
+        picture, chart_url = None, None
+        try:                 # the 3D chart: attached by the scheduler, or hosted here for the server's own e-mail; any failure just means the flat bars are used
+            from . import chart3d, mailimages
+            kinds = [k for k in dayreport.KINDS if any(i["kind"] == k for i in items)]
+            done = sum(1 for i in items if i["kind"] == "done")
+            picture = chart3d.render([(dayreport.KINDS[k][0], sum(1 for i in items if i["kind"] == k), dayreport.KINDS[k][1]) for k in kinds],
+                                     round(100 * done / max(1, len(items))))
+            if not external:
+                chart_url = mailimages.store_chart(self.svc, self.settings, picture)
+                if chart_url is None:
+                    picture = None
+        except Exception as exc:
+            picture = None
+            log.info("3D chart failed (%s)", type(exc).__name__)
         for name, address in people:
             subject, plain, page = dayreport.render_team(summary, items, owner, name, now.date(), note, chart_png=picture is not None)
+            if not external:
+                from . import mailimages
+                page = mailimages.link_pictures(page, self.settings, chart_url)
             try:
                 if self.settings.smtp_mode == "external" and not self.settings.brevo_api_key:
                     with self.svc.db() as conn:      # the scheduler sends it within minutes (the server's own SMTP is blocked)

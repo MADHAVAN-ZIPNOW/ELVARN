@@ -38,6 +38,7 @@ class Settings:
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
     gemini_model: str = "gemini-flash-lite-latest"
     brevo_api_key: str = ""            # optional: free Brevo key (HTTPS) so the server e-mails at the exact minute, even though Render blocks SMTP
+    public_url: str = ""               # this service's own address, for the pictures in e-mails (JM_PUBLIC_URL, else Render's RENDER_EXTERNAL_URL)
     smtp_mode: str = "direct"          # "external": the scheduler sends the e-mail (Render free blocks outgoing SMTP)
     email_contacts: str = ""           # the team that gets the daily team update: "Name:address, Name:address" (JM_EMAIL_CONTACTS). Empty = no team call
     team_call_time: str = "18:00,19:00,20:00,21:00,22:00"   # when JARVIS calls for the team update, local time, comma separated (JM_TEAM_CALL_TIME)
@@ -75,6 +76,7 @@ def get_settings() -> Settings:
         tavily_api_key=_env("TAVILY_API_KEY"),
         smtp_mode=_env("JM_SMTP_MODE", "direct").lower(),
         brevo_api_key=_env("BREVO_API_KEY"),
+        public_url=_env("JM_PUBLIC_URL") or _env("RENDER_EXTERNAL_URL"),
         email_contacts=_env("JM_EMAIL_CONTACTS"),
         team_call_time=_env("JM_TEAM_CALL_TIME", "18:00,19:00,20:00,21:00,22:00"),
         gemini_api_key=_env("GEMINI_API_KEY"),

@@ -251,6 +251,12 @@ def make_router(guard) -> APIRouter:
                                   for k in dayreport.KINDS if any(i["kind"] == k for i in items)], 40)
         subject, plain, page = dayreport.render_team(f"This is a TEST with sample items. {owner} finished two things and has three more on the list.",
                                                      items, owner, owner, today, "", chart_png=True)
+        settings, mailbox = request.app.state.settings, request.app.state.mailbox
+        if settings.brevo_api_key and mailbox is not None:      # the server sends it itself: the pictures are linked, not attached
+            from . import mailimages
+
+            mailbox.send(s["owner_email"], "TEST - " + subject, plain, mailimages.link_pictures(page, settings, mailimages.store_chart(svc, settings, picture)))
+            return {"sent": True}
         with svc.db() as conn:
             conn.execute("INSERT INTO mail_outbox (owner_id, to_addr, subject, body_text, body_html, chart_png) VALUES (%s,%s,%s,%s,%s,%s)",
                          (svc.owner_id, s["owner_email"], "TEST - " + subject, plain, page, picture))
