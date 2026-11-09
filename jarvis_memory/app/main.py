@@ -73,7 +73,7 @@ def create_app(settings: Optional[Settings] = None, extractor: Optional[Extracto
 
     app.include_router(mailimages.make_router())      # the team-update e-mail's rocket and 3D chart (public, unguessable links)
 
-    @app.get("/api/jarvis/health")
+    @app.api_route("/api/jarvis/health", methods=["GET", "HEAD"])      # uptime monitors (UptimeRobot free) probe with HEAD
     def health():
         """Public, no data: is the service up, is the database reachable, is AI extraction configured."""
         db_ok = False
