@@ -211,7 +211,7 @@ def send_team_call(svc: MemoryService, pusher, now: datetime) -> dict[str, Any]:
     slot = f"{local.date().isoformat()} {passed[-1][0]:02d}:{passed[-1][1]:02d}"
     if _team_call_done(svc, slot) or _team_update_sent(svc, local.date()):
         return {"why": "done_today"}
-    line = f"{s['owner_name']}, it is time for your team update. What did you get done today?"
+    line = f"{s['owner_name']}, it is time for your team update. What did you get done today? Take your time, and say I'm done when you finish."
     if _push_all(svc, pusher, {"type": "team", "line": line, "title": "Team update", "emoji": "📋"}):
         svc.record_push(now, call=True)         # also counts as the hourly call, so the two never ring back to back
         _log(svc, "team_call", True, slot)

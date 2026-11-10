@@ -225,3 +225,27 @@ def test_a_failed_send_is_reported_honestly():
     sid = chat.chat("Finished the invoice for the client", context=OPENING, now=NOW)["session_id"]
     out = chat.chat("yes", sid, now=NOW)
     assert out["actions"][0]["summary"] == "team update sent to 1, failed 1" and not db.sessions[sid].endswith("(sent)")
+
+
+# ---------------------------------------------------------------------------------------------- blockers
+def test_things_that_read_like_blockers_are_marked_blocked_but_done_work_is_not():
+    items = [{"kind": "progress", "text": "Waiting for API access from the vendor"}, {"kind": "progress", "text": "Working on the report page"},
+             {"kind": "done", "text": "Resolved the blocker in login"}, {"kind": "update", "text": "I can't test the payment page yet"},
+             {"kind": "next", "text": "Release on Friday"}]
+    kinds = [i["kind"] for i in dayreport.mark_blockers(items)]
+    assert kinds == ["blocked", "progress", "done", "blocked", "next"]
+
+
+def test_without_the_ai_a_blocker_still_lands_in_blocked():
+    summary, items = dayreport.compose_team(Settings(), ["I am stuck waiting for the database access", "Finished the login screen"])
+    assert [i["kind"] for i in items] == ["blocked", "update"] and summary
+
+
+def test_the_e_mail_has_its_own_blockers_place_or_says_there_are_none():
+    items = [{"kind": "done", "text": "Finished the login screen"}, {"kind": "blocked", "text": "Waiting for API access"}]
+    _, plain, page = dayreport.render_team("Summary.", items, "Madhavan", "Ravi", date(2026, 11, 10))
+    assert "BLOCKERS (1)" in page and "Waiting for API access" in page
+    assert plain.count("Waiting for API access") == 1 and "Blockers:\n  - Waiting for API access" in plain
+    assert "Blocked | " not in plain                                            # not mixed into the status list
+    _, plain2, page2 = dayreport.render_team("Summary.", [items[0]], "Madhavan", "Ravi", date(2026, 11, 10))
+    assert "None reported" in page2 and "Blockers:\n  None reported." in plain2
