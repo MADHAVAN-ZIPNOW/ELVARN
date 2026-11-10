@@ -113,9 +113,9 @@ class GmailMailbox:
         """Brevo's HTTPS e-mail API (outgoing SMTP is blocked on Render's free plan, HTTPS is not)."""
         import httpx
 
-        message_id = email.utils.make_msgid(domain="jarvis-memory.local")
-        payload = {"sender": {"name": "JARVIS", "email": self.address}, "to": [{"email": to}], "subject": subject,
-                   "textContent": body, "headers": {"Message-ID": message_id}}
+        message_id = email.utils.make_msgid(domain="jarvis-memory.local")      # only returned to the caller: a fake ".local" Message-ID header is a spam signal, so Brevo makes the real one
+        payload = {"sender": {"name": "JARVIS", "email": self.address}, "to": [{"email": to}], "subject": subject, "textContent": body,
+                   "replyTo": {"name": "JARVIS", "email": self.address}}      # Brevo sends from its own domain, so replies to a check-in must be pointed back at the owner's mailbox
         if html:
             payload["htmlContent"] = html
         r = httpx.post("https://api.brevo.com/v3/smtp/email", json=payload, headers={"api-key": self._brevo, "accept": "application/json"}, timeout=10.0)
