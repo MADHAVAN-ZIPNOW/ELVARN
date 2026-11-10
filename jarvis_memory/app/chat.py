@@ -68,6 +68,7 @@ RULES FOR THE PAST: for ANY question about what the owner did, asked, said, note
 - add_task       {{"task": "...", "due": "optional text"}}   add a to-do
 - list_tasks     {{}}                              list open tasks
 - search_chats  {{"query": "..."}}                 look through the owner's EARLIER conversations with you (understands "last week", "yesterday") and answer from them
+- list_meetings {{"query": "optional words"}}      the Teams MEETINGS the desktop took notes of: which ones there were (title, date, time) and, for a matching meeting, what was said. Use it for "what meetings did I have / what was said, decided or assigned in the meeting"
 - complete_task {{"task": "..."}}                mark an open task as done (match it by its words)
 - delete_task   {{"task": "...", "confirmed": true}}   permanently remove a task. FIRST ask the owner to confirm in plain words
                  (say exactly which task); only after they answer yes, call it with confirmed true. Never delete without that yes.
@@ -84,7 +85,8 @@ dates and numbers as they are). Do not wander to other topics, do not pad, and i
 MEETINGS: on the owner's Windows laptop the JARVIS desktop app can take notes of Microsoft Teams calls (only when the owner has switched on Settings -> Meeting notes,
 and only while a Teams call is running there): it writes who said what, using the owner's mic and the call audio, and saves it as a memory titled "Meeting: ...".
 You cannot join or hear a meeting yourself, and you cannot read Teams chats. If asked "are you listening to the meeting / did you take notes", explain that honestly
-in one or two sentences and use search_memory to look for "Meeting:" notes; never say you have no meeting ability at all."""
+in one or two sentences and use list_meetings (and search_memory for "Meeting:" notes); never say you have no meeting ability at all. For "what meetings did I
+attend / what was decided / what tasks came out of the meeting" ALWAYS call list_meetings first, then answer only from what it returns."""
 
 TEAM_RE = re.compile(r"\byour team update\b", re.I)    # the opening line of the daily team-update call ("...it is time for your team update...")
 TEAM_ASK = re.compile(r"^\W*(?:(?:hey|hi|hello|ok|okay)\W+)?(?:jarvis\W+)?(?:please\W+)?(?:(?:start|begin|do|take|call|give)\W+)?(?:(?:me|my|the|a)\W+)*"
@@ -619,6 +621,11 @@ class ChatService:
                 return self._task_change(" ".join(str(a.get("task", "")).split())[:200], a, message, remove=False)
             if name == "delete_task":
                 return self._task_change(" ".join(str(a.get("task", "")).split())[:200], a, message, remove=True)
+            if name == "list_meetings":
+                from . import meetings
+
+                query = " ".join(str(a.get("query", "")).split())[:100]
+                return meetings.digest(self.svc.list(100, 0, "voice"), query), f"looked at meeting notes{(': ' + query[:40]) if query else ''}"
             if name == "list_tasks":
                 tasks = self.svc.open_task_texts(limit=15)
                 return ("Open tasks: " + "; ".join(tasks)) if tasks else "No open tasks.", f"listed tasks ({len(tasks)})"
